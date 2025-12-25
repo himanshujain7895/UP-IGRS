@@ -21,7 +21,7 @@ export const getUPGeoJson = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const filePath = path.join(__dirname, "../assets/UttarPradesh.geo.json");
+    const filePath = path.join(__dirname, "../../assets/UttarPradesh.geo.json");
 
     if (!fs.existsSync(filePath)) {
       throw new Error("Uttar Pradesh GeoJSON file not found");
@@ -49,7 +49,7 @@ export const getBadaunGeoJson = async (
   try {
     const filePath = path.join(
       __dirname,
-      "../assets/districts/badaun/badaun.ervc.geojson"
+      "../../assets/districts/badaun/badaun.ervc.geojson"
     );
 
     if (!fs.existsSync(filePath)) {
@@ -375,7 +375,7 @@ export const getDistrictPOI = async (
 
     const filePath = path.join(
       __dirname,
-      "../assets/districts",
+      "../../assets/districts",
       districtLower,
       poi.toLowerCase() === "india-assets" ? "india-assets" : "adhq",
       fileName
