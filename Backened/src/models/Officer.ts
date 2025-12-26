@@ -4,23 +4,39 @@ export interface IOfficer extends Document {
   name: string;
   designation: string;
   department: string;
-  departmentCategory: "revenue" | "development" | "police" | "health" | "education" | "engineering" | "other";
+  departmentCategory:
+    | "revenue"
+    | "development"
+    | "police"
+    | "health"
+    | "education"
+    | "engineering"
+    | "other";
   email: string;
   phone: string;
   cug?: string;
   officeAddress: string;
   residenceAddress?: string;
-  
+
   // Geographic assignment
   districtName: string;
   districtLgd: number;
   subdistrictName?: string; // For tehsil-level officers
   subdistrictLgd?: number;
-  
+
   // Hierarchy
   isDistrictLevel: boolean;
   isSubDistrictLevel: boolean;
-  
+
+  // User account reference
+  userId?: mongoose.Types.ObjectId; // Reference to User model (ObjectId directly)
+
+  // Complaint tracking
+  assignedComplaints?: mongoose.Types.ObjectId[]; // Array of Complaint ObjectIds
+  noOfComplaintsArrived?: number; // Total complaints assigned
+  noOfComplaintsActed?: number; // Complaints on which action was taken
+  noOfComplaintsClosed?: number; // Complaints closed/resolved
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,7 +58,15 @@ const OfficerSchema: Schema = new Schema(
     departmentCategory: {
       type: String,
       required: true,
-      enum: ["revenue", "development", "police", "health", "education", "engineering", "other"],
+      enum: [
+        "revenue",
+        "development",
+        "police",
+        "health",
+        "education",
+        "engineering",
+        "other",
+      ],
     },
     email: {
       type: String,
@@ -90,6 +114,35 @@ const OfficerSchema: Schema = new Schema(
       required: true,
       default: false,
     },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+      index: true,
+      unique: true,
+      sparse: true, // Allows multiple nulls
+    },
+    assignedComplaints: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Complaint",
+      },
+    ],
+    noOfComplaintsArrived: {
+      type: Number,
+      default: 0,
+      min: [0, "Cannot be negative"],
+    },
+    noOfComplaintsActed: {
+      type: Number,
+      default: 0,
+      min: [0, "Cannot be negative"],
+    },
+    noOfComplaintsClosed: {
+      type: Number,
+      default: 0,
+      min: [0, "Cannot be negative"],
+    },
   },
   {
     timestamps: true,
@@ -101,6 +154,7 @@ OfficerSchema.index({ districtLgd: 1 });
 OfficerSchema.index({ subdistrictLgd: 1 });
 OfficerSchema.index({ departmentCategory: 1 });
 OfficerSchema.index({ isDistrictLevel: 1 });
+OfficerSchema.index({ userId: 1 }); // For finding officer by user
+OfficerSchema.index({ assignedComplaints: 1 }); // For complaint queries
 
 export default mongoose.model<IOfficer>("Officer", OfficerSchema);
-

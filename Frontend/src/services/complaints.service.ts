@@ -395,4 +395,87 @@ export const complaintsService = {
     }
     return [];
   },
+
+  /**
+   * Send email with drafted letter
+   * POST /api/v1/complaints/:id/send-email
+   */
+  async sendComplaintEmail(
+    id: string,
+    recipientEmail?: string
+  ): Promise<{
+    success: boolean;
+    messageId: string;
+    recipient: string;
+    subject: string;
+    sentAt?: string;
+  }> {
+    const response = await apiClient.post<
+      ApiResponse<{
+        success: boolean;
+        messageId: string;
+        recipient: string;
+        subject: string;
+        sentAt?: string;
+      }>
+    >(`/complaints/${id}/send-email`, { recipientEmail });
+
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error?.message || "Failed to send email");
+  },
+
+  /**
+   * Get email history for a complaint
+   * GET /api/v1/complaints/:id/email-history
+   */
+  async getEmailHistory(id: string): Promise<any[]> {
+    const response = await apiClient.get<ApiResponse<any[]>>(
+      `/complaints/${id}/email-history`
+    );
+
+    if (response.success && response.data) {
+      return response.data;
+    }
+    return [];
+  },
+
+  /**
+   * Assign complaint to officer
+   * POST /api/v1/complaints/:id/assign-officer
+   */
+  async assignOfficer(
+    id: string,
+    executive: any
+  ): Promise<{
+    complaint: Complaint;
+    officer: any;
+    user?: {
+      id: string;
+      email: string;
+      name: string;
+      password?: string;
+    };
+    isNewOfficer: boolean;
+  }> {
+    const response = await apiClient.post<
+      ApiResponse<{
+        complaint: Complaint;
+        officer: any;
+        user?: {
+          id: string;
+          email: string;
+          name: string;
+          password?: string;
+        };
+        isNewOfficer: boolean;
+      }>
+    >(`/complaints/${id}/assign-officer`, { executive });
+
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error?.message || "Failed to assign officer");
+  },
 };

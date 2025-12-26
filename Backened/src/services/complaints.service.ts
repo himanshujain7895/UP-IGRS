@@ -5,6 +5,12 @@ import { ComplaintDocument } from "../models/ComplaintDocument";
 import { AIStepExecutionInstruction } from "../models/AIStepExecutionInstruction";
 import { NotFoundError, ValidationError } from "../utils/errors";
 import logger from "../config/logger";
+import { emailService } from "../modules/email";
+import { env } from "../config/env";
+import { User } from "../models/User";
+import Officer from "../models/Officer";
+import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 
 /**
  * Complaints Service
@@ -652,4 +658,487 @@ export const getAIAnalysisProgress = async (complaintId: string) => {
     completed_steps: completedSteps,
     completion_percentage: completionPercentage,
   };
+};
+
+/**
+ * Send email with drafted letter
+ */
+export const sendComplaintEmail = async (
+  complaintId: string,
+  recipientEmail?: string
+): Promise<any> => {
+  const complaint = await Complaint.findOne({ id: complaintId });
+
+  if (!complaint) {
+    throw new NotFoundError("Complaint");
+  }
+
+  // Check if drafted letter exists
+  if (!complaint.drafted_letter) {
+    throw new ValidationError(
+      "Drafted letter not found. Please draft a letter first."
+    );
+  }
+
+  const letter = complaint.drafted_letter;
+
+  // For testing: send all emails to 'rajamoulirrr46@gmail.com'
+  // TODO: Remove this hardcoding after testing
+  const testEmail = "himanshujainhj70662@gmail.com";
+
+  // Determine recipient email
+  // Priority: testEmail (for testing) > recipientEmail (from request) > primary_officer.email
+  let emailTo: string | undefined = testEmail;
+  if (!testEmail) {
+    emailTo = recipientEmail || complaint.primary_officer?.email;
+  }
+
+  if (!emailTo) {
+    throw new ValidationError(
+      "Recipient email address is required. Please provide recipientEmail or ensure primary_officer has an email."
+    );
+  }
+
+  // Prepare email content
+  const emailSubject = letter.subject || `Complaint Letter: ${complaint.title}`;
+
+  // Format email body with letter content
+  const emailBody = `
+${letter.body || ""}
+
+---
+Complaint ID: ${complaint.id}
+Complaint Title: ${complaint.title}
+Category: ${complaint.category}
+Status: ${complaint.status}
+  `.trim();
+
+  // Get sender email (from environment)
+  const fromEmail = env.SMTP_FROM_EMAIL || env.SMTP_USER || "";
+
+  try {
+    // Send email using email service
+    const emailResult = await emailService.sendEmail({
+      to: emailTo,
+      subject: emailSubject,
+      text: emailBody,
+      html: `<pre style="white-space: pre-wrap; font-family: Arial, sans-serif;">${emailBody.replace(
+        /\n/g,
+        "<br>"
+      )}</pre>`,
+    });
+
+    logger.info(`Email sent successfully for complaint ${complaintId}`, {
+      messageId: emailResult.messageId,
+      to: emailTo,
+      subject: emailSubject,
+    });
+
+    // Save email history to complaint
+    const emailHistoryEntry = {
+      from: fromEmail,
+      to: emailTo,
+      subject: emailSubject,
+      messageId: emailResult.messageId,
+      sentAt: new Date(),
+      status: "sent" as const,
+    };
+
+    // Initialize email_history array if it doesn't exist
+    if (!complaint.email_history) {
+      complaint.email_history = [];
+    }
+
+    // Add email history entry
+    complaint.email_history.push(emailHistoryEntry);
+    complaint.updated_at = new Date();
+    await complaint.save({ validateModifiedOnly: true });
+
+    logger.info(`Email history saved for complaint ${complaintId}`);
+
+    return {
+      success: true,
+      messageId: emailResult.messageId,
+      recipient: emailTo,
+      subject: emailSubject,
+      sentAt: emailHistoryEntry.sentAt,
+    };
+  } catch (error) {
+    logger.error(`Failed to send email for complaint ${complaintId}:`, error);
+
+    // Save failed email attempt to history
+    const emailHistoryEntry = {
+      from: fromEmail,
+      to: emailTo,
+      subject: emailSubject,
+      sentAt: new Date(),
+      status: "failed" as const,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+
+    // Initialize email_history array if it doesn't exist
+    if (!complaint.email_history) {
+      complaint.email_history = [];
+    }
+
+    // Add failed email history entry
+    complaint.email_history.push(emailHistoryEntry);
+    complaint.updated_at = new Date();
+    await complaint.save({ validateModifiedOnly: true });
+
+    logger.info(`Failed email history saved for complaint ${complaintId}`);
+
+    throw new ValidationError(
+      error instanceof Error
+        ? `Failed to send email: ${error.message}`
+        : "Failed to send email"
+    );
+  }
+};
+
+/**
+ * Get email history for a complaint
+ */
+export const getComplaintEmailHistory = async (
+  complaintId: string
+): Promise<any[]> => {
+  const complaint = await Complaint.findOne({ id: complaintId }).lean();
+
+  if (!complaint) {
+    throw new NotFoundError("Complaint");
+  }
+
+  // Return email history or empty array
+  return complaint.email_history || [];
+};
+
+/**
+ * Assign complaint to a new officer (creates User and Officer records)
+ * Service function for internal use
+ */
+export const assignNewOfficerService = async (
+  complaintId: string,
+  executive: any
+): Promise<any> => {
+  // Find complaint
+  const complaint = await Complaint.findOne({ id: complaintId });
+  if (!complaint) {
+    throw new NotFoundError("Complaint not found");
+  }
+
+  // Generate dummy password for testing
+  const dummyPassword = `Officer@${Date.now()}`;
+  const hashedPassword = await bcrypt.hash(dummyPassword, 10);
+
+  // Log the password for testing purposes
+  logger.info(
+    `[TESTING] Created officer user with email: ${executive.email}, Password: ${dummyPassword}`
+  );
+  console.log(
+    `[TESTING] Officer User Created - Email: ${executive.email}, Password: ${dummyPassword}`
+  );
+
+  // Create User account
+  const newUser = new User({
+    email: executive.email.toLowerCase().trim(),
+    password: hashedPassword,
+    name: executive.name.trim(),
+    role: "officer",
+    isActive: true,
+  });
+  await newUser.save();
+
+  // Determine department category from designation or department
+  let departmentCategory:
+    | "revenue"
+    | "development"
+    | "police"
+    | "health"
+    | "education"
+    | "engineering"
+    | "other" = "other";
+  const designationLower = (executive.designation || "").toLowerCase();
+  const departmentLower = (executive.department || "").toLowerCase();
+
+  if (
+    designationLower.includes("revenue") ||
+    departmentLower.includes("revenue")
+  ) {
+    departmentCategory = "revenue";
+  } else if (
+    designationLower.includes("development") ||
+    departmentLower.includes("development")
+  ) {
+    departmentCategory = "development";
+  } else if (
+    designationLower.includes("police") ||
+    departmentLower.includes("police")
+  ) {
+    departmentCategory = "police";
+  } else if (
+    designationLower.includes("health") ||
+    departmentLower.includes("health")
+  ) {
+    departmentCategory = "health";
+  } else if (
+    designationLower.includes("education") ||
+    departmentLower.includes("education")
+  ) {
+    departmentCategory = "education";
+  } else if (
+    designationLower.includes("engineer") ||
+    departmentLower.includes("engineering")
+  ) {
+    departmentCategory = "engineering";
+  }
+
+  // Extract district LGD from complaint or use default
+  const districtLgd = complaint.district_name === "Budaun" ? 134 : 0; // Default to 0 if unknown
+
+  // Create or update Officer record
+  let officer = await Officer.findOne({
+    email: executive.email.toLowerCase(),
+  });
+
+  if (officer) {
+    // Update existing officer
+    officer.name = executive.name.trim();
+    officer.designation = executive.designation.trim();
+    officer.department = executive.department || executive.designation;
+    officer.departmentCategory =
+      executive.departmentCategory || departmentCategory;
+    officer.phone = executive.phone || executive.contact?.phone || "";
+    officer.cug = executive.contact?.cug_mobile || executive.cug || "";
+    // officeAddress is required - check for non-empty strings
+    const officeAddressValue =
+      (executive.office_address && executive.office_address.trim()) ||
+      (executive.contact?.address && executive.contact.address.trim()) ||
+      (executive.contact?.official_address &&
+        executive.contact.official_address.trim()) ||
+      (executive.officeAddress && executive.officeAddress.trim()) ||
+      `${
+        executive.district || complaint.district_name || "District"
+      } District Office`;
+    officer.officeAddress = officeAddressValue;
+    officer.districtName = executive.district || complaint.district_name;
+    officer.districtLgd = districtLgd;
+    officer.userId = newUser._id;
+
+    // Initialize counters if not present
+    if (!officer.assignedComplaints) {
+      officer.assignedComplaints = [];
+    }
+    if (officer.noOfComplaintsArrived === undefined) {
+      officer.noOfComplaintsArrived = 0;
+    }
+    if (officer.noOfComplaintsActed === undefined) {
+      officer.noOfComplaintsActed = 0;
+    }
+    if (officer.noOfComplaintsClosed === undefined) {
+      officer.noOfComplaintsClosed = 0;
+    }
+  } else {
+    // Create new officer
+    officer = new Officer({
+      name: executive.name.trim(),
+      designation: executive.designation.trim(),
+      department: executive.department || executive.designation,
+      departmentCategory: executive.departmentCategory || departmentCategory,
+      email: executive.email.toLowerCase().trim(),
+      phone: executive.phone || executive.contact?.phone || "",
+      cug: executive.contact?.cug_mobile || executive.cug || "",
+      // officeAddress is required - check for non-empty strings
+      officeAddress: (() => {
+        const addr =
+          (executive.office_address && executive.office_address.trim()) ||
+          (executive.contact?.address && executive.contact.address.trim()) ||
+          (executive.contact?.official_address &&
+            executive.contact.official_address.trim()) ||
+          (executive.officeAddress && executive.officeAddress.trim());
+        return (
+          addr ||
+          `${
+            executive.district || complaint.district_name || "District"
+          } District Office`
+        );
+      })(),
+      districtName: executive.district || complaint.district_name,
+      districtLgd: districtLgd,
+      isDistrictLevel: true, // Default to district level
+      isSubDistrictLevel: false,
+      userId: newUser._id,
+      assignedComplaints: [],
+      noOfComplaintsArrived: 0,
+      noOfComplaintsActed: 0,
+      noOfComplaintsClosed: 0,
+    });
+  }
+
+  // Add complaint to officer's assigned complaints
+  if (!officer.assignedComplaints) {
+    officer.assignedComplaints = [];
+  }
+  if (!officer.assignedComplaints.includes(complaint._id)) {
+    officer.assignedComplaints.push(complaint._id);
+    officer.noOfComplaintsArrived = (officer.noOfComplaintsArrived || 0) + 1;
+  }
+  await officer.save();
+
+  // Update User with officerId reference
+  newUser.officerId = officer._id;
+  await newUser.save();
+
+  // Update complaint with assignment details
+  complaint.assigned_to_user_id = newUser.id;
+  complaint.assignedOfficer = officer._id;
+  complaint.isOfficerAssigned = true;
+  complaint.assignedTime = new Date();
+  complaint.arrivalTime = new Date();
+  complaint.timeBoundary = 7; // 1 week default
+  complaint.status = "in_progress";
+  await complaint.save();
+
+  logger.info(
+    `Complaint ${complaintId} assigned to new officer ${executive.name} (${executive.email})`
+  );
+
+  return {
+    complaint: complaint.toObject(),
+    officer: officer.toObject(),
+    user: {
+      id: newUser.id,
+      email: newUser.email,
+      name: newUser.name,
+      password: dummyPassword, // Return password for testing
+    },
+    isNewOfficer: true,
+  };
+};
+
+/**
+ * Assign complaint to an existing officer (officer already has User account)
+ * Service function for internal use
+ */
+export const assignExistingOfficerService = async (
+  complaintId: string,
+  officerId: string
+): Promise<any> => {
+  // Find complaint
+  const complaint = await Complaint.findOne({ id: complaintId });
+  if (!complaint) {
+    throw new NotFoundError("Complaint not found");
+  }
+
+  // Validate officer ID format
+  if (!mongoose.Types.ObjectId.isValid(officerId)) {
+    throw new ValidationError("Invalid officer ID format");
+  }
+
+  // Find officer
+  const officer = await Officer.findById(officerId);
+  if (!officer) {
+    throw new NotFoundError("Officer not found");
+  }
+
+  // Find user associated with officer
+  const user = await User.findOne({ officerId: officer._id, role: "officer" });
+  if (!user) {
+    throw new NotFoundError("User account not found for this officer");
+  }
+
+  // Check if complaint is already assigned to this officer
+  if (
+    complaint.assignedOfficer &&
+    complaint.assignedOfficer.toString() === officerId
+  ) {
+    throw new ValidationError("Complaint is already assigned to this officer");
+  }
+
+  // Add complaint to officer's assigned complaints if not already present
+  if (!officer.assignedComplaints) {
+    officer.assignedComplaints = [];
+  }
+  if (!officer.assignedComplaints.includes(complaint._id)) {
+    officer.assignedComplaints.push(complaint._id);
+    officer.noOfComplaintsArrived = (officer.noOfComplaintsArrived || 0) + 1;
+    await officer.save();
+  }
+
+  // Update complaint with assignment details
+  complaint.assigned_to_user_id = user.id;
+  complaint.assignedOfficer = officer._id;
+  complaint.isOfficerAssigned = true;
+  complaint.assignedTime = new Date();
+  complaint.arrivalTime = new Date();
+  complaint.timeBoundary = 7; // 1 week default
+  complaint.status = "in_progress";
+  await complaint.save();
+
+  logger.info(
+    `Complaint ${complaintId} assigned to existing officer ${officer.name} (${officer.email})`
+  );
+
+  return {
+    complaint: complaint.toObject(),
+    officer: officer.toObject(),
+    isNewOfficer: false,
+  };
+};
+
+/**
+ * Assign complaint to officer (main service function)
+ * Intelligently determines whether to create new officer or use existing one
+ * based on email in the request
+ */
+export const assignOfficer = async (
+  complaintId: string,
+  executive: any
+): Promise<any> => {
+  // Validate executive data
+  if (!executive) {
+    throw new ValidationError("Executive data is required");
+  }
+
+  if (!executive.name || !executive.designation || !executive.email) {
+    throw new ValidationError(
+      "Executive name, designation, and email are required"
+    );
+  }
+
+  const email = executive.email.toLowerCase().trim();
+
+  // Check if officer exists by email
+  const existingOfficer = await Officer.findOne({ email });
+
+  if (existingOfficer) {
+    // Officer exists - check if user account exists
+    const existingUser = await User.findOne({
+      email,
+      role: "officer",
+    });
+
+    if (existingUser && existingOfficer.userId) {
+      // Both officer and user exist - use existing officer
+      logger.info(
+        `Officer with email ${email} already exists. Using existing officer assignment.`
+      );
+      return await assignExistingOfficerService(
+        complaintId,
+        existingOfficer._id.toString()
+      );
+    } else {
+      // Officer exists but no user account - create user and link
+      logger.info(
+        `Officer with email ${email} exists but no user account. Creating user account.`
+      );
+      // This case is handled by assignNewOfficerService which will update the existing officer
+      return await assignNewOfficerService(complaintId, executive);
+    }
+  } else {
+    // Officer doesn't exist - create new officer and user
+    logger.info(
+      `Officer with email ${email} does not exist. Creating new officer and user.`
+    );
+    return await assignNewOfficerService(complaintId, executive);
+  }
 };

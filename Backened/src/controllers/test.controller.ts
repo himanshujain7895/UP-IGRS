@@ -8,6 +8,7 @@ import DistrictAdministrativeHead from "../models/DistrictAdministrativeHead";
 import DemographicReligion from "../models/DemographicReligion";
 import DemographicCaste from "../models/DemographicCaste";
 import District from "../models/District";
+import Officer from "../models/Officer";
 import { sendSuccess } from "../utils/response";
 import { ValidationError, ConflictError } from "../utils/errors";
 import logger from "../config/logger";
@@ -648,6 +649,263 @@ export const createDemographicCaste = async (
       },
       isUpdate ? 200 : 201
     );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/test/create-officer-user
+ * Create a new officer user (auth-free route for testing)
+ * Requires: email, password in req.body
+ * Optional: name, officerId (to link to an Officer record)
+ * Role is automatically set to 'officer'
+ *
+ * Request body format:
+ * {
+ *   "email": "officer@example.com",
+ *   "password": "password123",
+ *   "name": "John Doe",
+ *   "officerId": "507f1f77bcf86cd799439011" // Optional: Officer MongoDB _id
+ * }
+ */
+export const createOfficerUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { email, name, password, officerId } = req.body;
+
+    // Validate required fields
+    if (!email || !password) {
+      throw new ValidationError("Email and password are required");
+    }
+
+    // Validate email format
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
+      throw new ValidationError("Please provide a valid email address");
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      throw new ValidationError("Password must be at least 6 characters");
+    }
+
+    // If officerId is provided, validate and link to Officer
+    let linkedOfficer = null;
+    if (officerId) {
+      if (!mongoose.Types.ObjectId.isValid(officerId)) {
+        throw new ValidationError("Invalid officer ID format");
+      }
+
+      // Check if officer exists
+      linkedOfficer = await Officer.findById(officerId);
+      if (!linkedOfficer) {
+        throw new ValidationError("Officer not found with the provided ID");
+      }
+
+      // Check if officer already has a user account
+      const existingOfficerUser = await User.findOne({
+        officerId: linkedOfficer._id,
+      });
+      if (existingOfficerUser) {
+        throw new ConflictError("This officer already has a user account");
+      }
+    }
+
+    // Check if user with this email already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      throw new ConflictError("User with this email already exists");
+    }
+
+    // Auto-fill name and email from officer if not provided
+    let finalName = name?.trim();
+    let finalEmail = email.toLowerCase().trim();
+
+    if (linkedOfficer) {
+      if (!finalName && linkedOfficer.name) {
+        finalName = linkedOfficer.name;
+      }
+      if (!finalEmail && linkedOfficer.email) {
+        finalEmail = linkedOfficer.email.toLowerCase().trim();
+        // Re-check email uniqueness with officer's email
+        const existingEmailUser = await User.findOne({ email: finalEmail });
+        if (existingEmailUser) {
+          throw new ConflictError(
+            "User with this officer's email already exists"
+          );
+        }
+      }
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new officer user
+    const officerUser = new User({
+      email: finalEmail,
+      password: hashedPassword,
+      name: finalName || undefined,
+      role: "officer",
+      officerId: linkedOfficer ? linkedOfficer._id : undefined,
+      isActive: true,
+    });
+
+    await officerUser.save();
+
+    // Return user without password, with populated officer details
+    const officerUserResponse = await User.findById(officerUser._id)
+      .select("-password")
+      .populate("officerId")
+      .lean();
+
+    logger.info(
+      `Officer user created: ${finalEmail}${
+        linkedOfficer ? ` (linked to officer: ${linkedOfficer.name})` : ""
+      }`
+    );
+
+    sendSuccess(res, officerUserResponse, 201);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/test/officer
+ * Create a new officer (auth-free route for testing)
+ * Requires: name, designation, department, departmentCategory, officeAddress, districtName, districtLgd in req.body
+ *
+ * Request body format:
+ * {
+ *   "name": "John Doe",
+ *   "designation": "District Magistrate",
+ *   "department": "Revenue",
+ *   "departmentCategory": "revenue",
+ *   "email": "john.doe@example.com",
+ *   "phone": "1234567890",
+ *   "cug": "9876543210",
+ *   "officeAddress": "District Office, Agra",
+ *   "residenceAddress": "Residence Address",
+ *   "districtName": "Agra",
+ *   "districtLgd": 1,
+ *   "subdistrictName": "Agra Tehsil",
+ *   "subdistrictLgd": 101,
+ *   "isDistrictLevel": true,
+ *   "isSubDistrictLevel": false
+ * }
+ */
+export const createOfficer = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const {
+      name,
+      designation,
+      department,
+      departmentCategory,
+      email,
+      phone,
+      cug,
+      officeAddress,
+      residenceAddress,
+      districtName,
+      districtLgd,
+      subdistrictName,
+      subdistrictLgd,
+      isDistrictLevel = true,
+      isSubDistrictLevel = false,
+    } = req.body;
+
+    // Validate required fields
+    if (!name) {
+      throw new ValidationError("Name is required");
+    }
+    if (!designation) {
+      throw new ValidationError("Designation is required");
+    }
+    if (!department) {
+      throw new ValidationError("Department is required");
+    }
+    if (!departmentCategory) {
+      throw new ValidationError("Department category is required");
+    }
+    if (!officeAddress) {
+      throw new ValidationError("Office address is required");
+    }
+    if (!districtName) {
+      throw new ValidationError("District name is required");
+    }
+    if (districtLgd === undefined || districtLgd === null) {
+      throw new ValidationError("District LGD is required");
+    }
+
+    // Validate departmentCategory enum
+    const validCategories = [
+      "revenue",
+      "development",
+      "police",
+      "health",
+      "education",
+      "engineering",
+      "other",
+    ];
+    if (!validCategories.includes(departmentCategory)) {
+      throw new ValidationError(
+        `Department category must be one of: ${validCategories.join(", ")}`
+      );
+    }
+
+    // Validate districtLgd is a number
+    if (typeof districtLgd !== "number") {
+      throw new ValidationError("District LGD must be a number");
+    }
+
+    // Validate subdistrictLgd if provided
+    if (subdistrictLgd !== undefined && typeof subdistrictLgd !== "number") {
+      throw new ValidationError("Subdistrict LGD must be a number");
+    }
+
+    // Validate email format if provided
+    if (email) {
+      const emailRegex = /^\S+@\S+\.\S+$/;
+      if (!emailRegex.test(email)) {
+        throw new ValidationError("Please provide a valid email address");
+      }
+    }
+
+    // Create new officer
+    const officer = new Officer({
+      name: name.trim(),
+      designation: designation.trim(),
+      department: department.trim(),
+      departmentCategory,
+      email: email?.trim() || undefined,
+      phone: phone?.trim() || undefined,
+      cug: cug?.trim() || undefined,
+      officeAddress: officeAddress.trim(),
+      residenceAddress: residenceAddress?.trim() || undefined,
+      districtName: districtName.trim(),
+      districtLgd,
+      subdistrictName: subdistrictName?.trim() || undefined,
+      subdistrictLgd: subdistrictLgd || undefined,
+      isDistrictLevel,
+      isSubDistrictLevel,
+    });
+
+    await officer.save();
+
+    logger.info(`Officer created: ${name} (${designation}) in ${districtName}`);
+
+    // Return the created officer
+    const result = await Officer.findById(officer._id).lean();
+
+    sendSuccess(res, result, 201);
   } catch (error) {
     next(error);
   }

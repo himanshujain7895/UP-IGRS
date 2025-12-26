@@ -17,5 +17,7 @@ router.post("/heatmap", testController.createHeatMap); // Create or update heat 
 router.post("/administrative-head", testController.createAdministrativeHead); // Create or update district administrative head data
 router.post("/demographic-religion", testController.createDemographicReligion); // Create or update demographic religion data
 router.post("/demographic-caste", testController.createDemographicCaste); // Create or update demographic caste data
+router.post("/officer", testController.createOfficer); // Create a new officer
+router.post("/create-officer-user", testController.createOfficerUser); // Create a new officer user
 
 export default router;

@@ -45,6 +45,18 @@ export interface IComplaint extends Document {
   // ASSIGNMENT & RESOLUTION
   assigned_department?: string; // Assigned department
   assigned_to_user_id?: string; // User ID of assigned officer (UUID)
+  assignedOfficer?: mongoose.Types.ObjectId; // Reference to Officer model
+  isOfficerAssigned?: boolean; // Whether complaint is assigned to an officer
+  arrivalTime?: Date; // When complaint arrived to officer
+  assignedTime?: Date; // When complaint was assigned to officer
+  timeBoundary?: number; // Time boundary in days (default: 7 days = 1 week)
+  isClosed?: boolean; // Whether complaint is closed by officer
+  closingTime?: Date; // When complaint was closed
+  officerRemarks?: string; // Officer's remarks/notes (max 2000 chars)
+  officerAttachments?: string[]; // Array of attachment URLs uploaded by officer
+  closingProof?: string; // URL to closing proof document
+  isExtended?: boolean; // Whether time boundary was extended
+  officerFeedback?: string; // Officer's feedback (max 2000 chars)
   estimated_resolution_date?: Date; // Expected completion date
   actual_resolution_date?: Date; // Actual completion date
   resolution_notes?: string; // Resolution details (max 2000 chars)
@@ -92,6 +104,16 @@ export interface IComplaint extends Document {
     attachments?: string[];
   };
   stage1_additional_docs?: string[]; // Additional documents URLs
+  email_history?: Array<{
+    // Email sending history
+    from: string; // Sender email
+    to: string; // Recipient email
+    subject: string; // Email subject
+    messageId?: string; // SMTP message ID
+    sentAt: Date; // Timestamp when email was sent
+    status: "sent" | "failed"; // Email status
+    error?: string; // Error message if failed
+  }>;
 
   // TIMESTAMPS
   created_at: Date; // Creation timestamp
@@ -244,6 +266,82 @@ const ComplaintSchema = new Schema<IComplaint>(
       required: false,
       index: true,
     },
+    assignedOfficer: {
+      type: Schema.Types.ObjectId,
+      ref: "Officer",
+      required: false,
+      index: true,
+    },
+    isOfficerAssigned: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    arrivalTime: {
+      type: Date,
+      required: false,
+    },
+    assignedTime: {
+      type: Date,
+      required: false,
+    },
+    timeBoundary: {
+      type: Number,
+      default: 7, // 1 week in days
+      min: [1, "Time boundary must be at least 1 day"],
+    },
+    isClosed: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    closingTime: {
+      type: Date,
+      required: false,
+    },
+    officerRemarks: {
+      type: String,
+      maxlength: [2000, "Officer remarks cannot exceed 2000 characters"],
+    },
+    officerAttachments: [
+      {
+        type: String,
+        validate: {
+          validator: (v: string) => {
+            try {
+              new URL(v);
+              return true;
+            } catch {
+              return false;
+            }
+          },
+          message: "Invalid attachment URL",
+        },
+      },
+    ],
+    closingProof: {
+      type: String,
+      validate: {
+        validator: (v: string) => {
+          if (!v) return true; // Optional
+          try {
+            new URL(v);
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        message: "Invalid closing proof URL",
+      },
+    },
+    isExtended: {
+      type: Boolean,
+      default: false,
+    },
+    officerFeedback: {
+      type: String,
+      maxlength: [2000, "Officer feedback cannot exceed 2000 characters"],
+    },
     estimated_resolution_date: Date,
     actual_resolution_date: Date,
     resolution_notes: {
@@ -299,6 +397,21 @@ const ComplaintSchema = new Schema<IComplaint>(
       type: Schema.Types.Mixed,
     },
     stage1_additional_docs: [String],
+    email_history: [
+      {
+        from: { type: String, required: true },
+        to: { type: String, required: true },
+        subject: { type: String, required: true },
+        messageId: String,
+        sentAt: { type: Date, required: true, default: Date.now },
+        status: {
+          type: String,
+          enum: ["sent", "failed"],
+          default: "sent",
+        },
+        error: String,
+      },
+    ],
     created_at: {
       type: Date,
       default: Date.now,
@@ -325,6 +438,8 @@ ComplaintSchema.index({ category: 1, sub_category: 1 }); // For filtering by cat
 ComplaintSchema.index({ contact_email: 1 });
 ComplaintSchema.index({ created_at: -1 });
 ComplaintSchema.index({ assigned_to_user_id: 1, status: 1 }); // For officer complaint queries
+ComplaintSchema.index({ assignedOfficer: 1, isOfficerAssigned: 1 }); // For officer assignment queries
+ComplaintSchema.index({ isClosed: 1, closingTime: 1 }); // For closed complaints queries
 
 // Text search index (for MongoDB Atlas or with text search enabled)
 ComplaintSchema.index({ title: "text", description: "text", location: "text" });

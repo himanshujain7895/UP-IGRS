@@ -158,11 +158,27 @@ export interface Complaint {
   notes?: ComplaintNote[];
   aiResolution?: AIResolution;
   assignedTo?: string;
-  assignedOfficer?: {
-    _id: string;
-    name: string;
-    email: string;
-  };
+  assigned_to_user_id?: string; // User ID of assigned officer (UUID)
+  assignedOfficer?:
+    | string
+    | {
+        _id: string;
+        name: string;
+        email: string;
+        designation?: string;
+        department?: string;
+      }; // Officer ObjectId or populated object
+  isOfficerAssigned?: boolean; // Whether complaint is assigned to an officer
+  arrivalTime?: string; // When complaint arrived to officer (ISO date string)
+  assignedTime?: string; // When complaint was assigned to officer (ISO date string)
+  timeBoundary?: number; // Time boundary in days (default: 7 days = 1 week)
+  isClosed?: boolean; // Whether complaint is closed by officer
+  closingTime?: string; // When complaint was closed (ISO date string)
+  officerRemarks?: string; // Officer's remarks/notes
+  officerAttachments?: string[]; // Array of attachment URLs uploaded by officer
+  closingProof?: string; // URL to closing proof document
+  isExtended?: boolean; // Whether time boundary was extended
+  officerFeedback?: string; // Officer's feedback
   createdAt: string;
   updatedAt: string;
 }

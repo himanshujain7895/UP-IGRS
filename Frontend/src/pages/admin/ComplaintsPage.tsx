@@ -3,23 +3,38 @@
  * Main complaints listing page
  */
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useComplaints } from '@/hooks/useComplaints';
-import { useAuth } from '@/hooks/useAuth';
-import { complaintsService } from '@/services/complaints.service';
-import { Search, Filter, Plus, Eye, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+} from "@/components/ui/select";
+import { useComplaints } from "@/hooks/useComplaints";
+import { useAuth } from "@/hooks/useAuth";
+import { complaintsService } from "@/services/complaints.service";
+import {
+  Search,
+  Filter,
+  Plus,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Tag,
+} from "lucide-react";
 
 const ComplaintsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -29,12 +44,12 @@ const ComplaintsPage: React.FC = () => {
   const { complaints, fetchComplaints, loading } = useComplaints();
   const [myComplaints, setMyComplaints] = React.useState<any[]>([]);
   const [loadingMyComplaints, setLoadingMyComplaints] = React.useState(false);
-  
-  const isMyComplaintsPage = location.pathname.includes('/my-complaints');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+
+  const isMyComplaintsPage = location.pathname.includes("/my-complaints");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   // Initialize filters from URL
   useEffect(() => {
@@ -42,28 +57,28 @@ const ComplaintsPage: React.FC = () => {
     if (params.category) {
       setCategoryFilter(params.category);
       // Reset status filter when filtering by category
-      setStatusFilter('all');
+      setStatusFilter("all");
     } else {
       // Check if we're on a status route
-      const pathParts = location.pathname.split('/');
+      const pathParts = location.pathname.split("/");
       const lastPart = pathParts[pathParts.length - 1];
-      
-      if (lastPart === 'pending') {
-        setStatusFilter('pending');
-        setCategoryFilter('all'); // Reset category when filtering by status
-      } else if (lastPart === 'in-progress' || lastPart === 'in_progress') {
-        setStatusFilter('in_progress');
-        setCategoryFilter('all');
-      } else if (lastPart === 'resolved') {
-        setStatusFilter('resolved');
-        setCategoryFilter('all');
-      } else if (lastPart === 'rejected') {
-        setStatusFilter('rejected');
-        setCategoryFilter('all');
-      } else if (lastPart === 'complaints') {
+
+      if (lastPart === "pending") {
+        setStatusFilter("pending");
+        setCategoryFilter("all"); // Reset category when filtering by status
+      } else if (lastPart === "in-progress" || lastPart === "in_progress") {
+        setStatusFilter("in_progress");
+        setCategoryFilter("all");
+      } else if (lastPart === "resolved") {
+        setStatusFilter("resolved");
+        setCategoryFilter("all");
+      } else if (lastPart === "rejected") {
+        setStatusFilter("rejected");
+        setCategoryFilter("all");
+      } else if (lastPart === "complaints") {
         // Reset to all if on base complaints route
-        setStatusFilter('all');
-        setCategoryFilter('all');
+        setStatusFilter("all");
+        setCategoryFilter("all");
       }
     }
   }, [location.pathname, params.category]);
@@ -75,14 +90,16 @@ const ComplaintsPage: React.FC = () => {
         try {
           setLoadingMyComplaints(true);
           const response = await complaintsService.getMyComplaints({
-            status: statusFilter !== 'all' ? statusFilter as any : undefined,
-            category: categoryFilter !== 'all' ? categoryFilter as any : undefined,
-            priority: priorityFilter !== 'all' ? priorityFilter as any : undefined,
+            status: statusFilter !== "all" ? (statusFilter as any) : undefined,
+            category:
+              categoryFilter !== "all" ? (categoryFilter as any) : undefined,
+            priority:
+              priorityFilter !== "all" ? (priorityFilter as any) : undefined,
             search: searchTerm || undefined,
           });
           setMyComplaints(response.data || []);
         } catch (error: any) {
-          console.error('Error loading my complaints:', error);
+          console.error("Error loading my complaints:", error);
           setMyComplaints([]);
         } finally {
           setLoadingMyComplaints(false);
@@ -92,20 +109,55 @@ const ComplaintsPage: React.FC = () => {
     } else {
       fetchComplaints({});
     }
-  }, [isMyComplaintsPage, isOfficer, statusFilter, categoryFilter, priorityFilter, searchTerm]);
+  }, [
+    isMyComplaintsPage,
+    isOfficer,
+    statusFilter,
+    categoryFilter,
+    priorityFilter,
+    searchTerm,
+  ]);
 
   const getStatusBadge = (status: string) => {
     const config = {
-      pending: { variant: 'destructive' as const, icon: Clock, label: 'Pending' },
-      'in-progress': { variant: 'default' as const, icon: AlertCircle, label: 'In Progress' },
-      in_progress: { variant: 'default' as const, icon: AlertCircle, label: 'In Progress' },
-      resolved: { variant: 'default' as const, icon: CheckCircle, label: 'Resolved' },
-      rejected: { variant: 'secondary' as const, icon: XCircle, label: 'Rejected' },
+      pending: {
+        bgColor: "bg-yellow-500",
+        textColor: "text-white",
+        icon: Clock,
+        label: "Pending",
+      },
+      "in-progress": {
+        bgColor: "bg-orange-500",
+        textColor: "text-white",
+        icon: AlertCircle,
+        label: "In Progress",
+      },
+      in_progress: {
+        bgColor: "bg-orange-500",
+        textColor: "text-white",
+        icon: AlertCircle,
+        label: "In Progress",
+      },
+      resolved: {
+        bgColor: "bg-green-500",
+        textColor: "text-white",
+        icon: CheckCircle,
+        label: "Resolved",
+      },
+      rejected: {
+        bgColor: "bg-red-700",
+        textColor: "text-white",
+        icon: XCircle,
+        label: "Rejected",
+      },
     };
-    const statusConfig = config[status as keyof typeof config] || config.pending;
+    const statusConfig =
+      config[status as keyof typeof config] || config.pending;
     const Icon = statusConfig.icon;
     return (
-      <Badge variant={statusConfig.variant} className="flex items-center gap-1">
+      <Badge
+        className={`flex items-center gap-1 ${statusConfig.bgColor} ${statusConfig.textColor} border-0`}
+      >
         <Icon className="w-3 h-3" />
         {statusConfig.label}
       </Badge>
@@ -114,42 +166,80 @@ const ComplaintsPage: React.FC = () => {
 
   const getPriorityBadge = (priority: string) => {
     const config = {
-      low: { variant: 'secondary' as const, label: 'Low' },
-      medium: { variant: 'default' as const, label: 'Medium' },
-      high: { variant: 'destructive' as const, label: 'High' },
-      urgent: { variant: 'destructive' as const, label: 'Urgent' },
+      low: {
+        iconColor: "text-green-600",
+        label: "Low",
+      },
+      medium: {
+        iconColor: "text-yellow-500",
+        label: "Medium",
+      },
+      high: {
+        iconColor: "text-orange-500",
+        label: "High",
+      },
+      urgent: {
+        iconColor: "text-red-700",
+        label: "Urgent",
+      },
     };
-    const priorityConfig = config[priority as keyof typeof config] || config.medium;
-    return <Badge variant={priorityConfig.variant}>{priorityConfig.label}</Badge>;
+    const priorityConfig =
+      config[priority as keyof typeof config] || config.medium;
+    return (
+      <Badge
+        variant="outline"
+        className="flex items-center gap-1 bg-transparent border-0 text-foreground"
+      >
+        <Tag className={`w-3 h-3 ${priorityConfig.iconColor}`} />
+        {priorityConfig.label}
+      </Badge>
+    );
   };
 
   // Use my complaints if on my-complaints page, otherwise use all complaints
-  const complaintsToDisplay = isMyComplaintsPage && isOfficer ? myComplaints : (complaints || []);
-  const isLoading = isMyComplaintsPage && isOfficer ? loadingMyComplaints : loading;
+  const complaintsToDisplay =
+    isMyComplaintsPage && isOfficer ? myComplaints : complaints || [];
+  const isLoading =
+    isMyComplaintsPage && isOfficer ? loadingMyComplaints : loading;
 
-  const filteredComplaints = complaintsToDisplay.filter((complaint) => {
-    const matchesSearch =
-      searchTerm === '' ||
-      complaint.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.complaintId?.toLowerCase().includes(searchTerm.toLowerCase());
-    // Handle both 'in-progress' and 'in_progress' status formats
-    const normalizedStatus = complaint.status === 'in-progress' ? 'in_progress' : complaint.status;
-    const matchesStatus = statusFilter === 'all' || normalizedStatus === statusFilter || complaint.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || complaint.priority === priorityFilter;
-    // Case-insensitive category matching
-    const matchesCategory = categoryFilter === 'all' || 
-      (complaint.category && complaint.category.toLowerCase() === categoryFilter.toLowerCase());
-    return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
-  }) || [];
+  const filteredComplaints =
+    complaintsToDisplay.filter((complaint) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        complaint.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        complaint.description
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        complaint.complaintId?.toLowerCase().includes(searchTerm.toLowerCase());
+      // Handle both 'in-progress' and 'in_progress' status formats
+      const normalizedStatus =
+        complaint.status === "in-progress" ? "in_progress" : complaint.status;
+      const matchesStatus =
+        statusFilter === "all" ||
+        normalizedStatus === statusFilter ||
+        complaint.status === statusFilter;
+      const matchesPriority =
+        priorityFilter === "all" || complaint.priority === priorityFilter;
+      // Case-insensitive category matching
+      const matchesCategory =
+        categoryFilter === "all" ||
+        (complaint.category &&
+          complaint.category.toLowerCase() === categoryFilter.toLowerCase());
+      return (
+        matchesSearch && matchesStatus && matchesPriority && matchesCategory
+      );
+    }) || [];
 
   // Debug logging (can be removed in production)
   useEffect(() => {
-    if (categoryFilter !== 'all') {
-      console.log('Category Filter:', categoryFilter);
-      console.log('Total Complaints:', complaints?.length || 0);
-      console.log('Filtered Complaints:', filteredComplaints.length);
-      console.log('Sample complaint categories:', complaints?.slice(0, 3).map(c => c.category));
+    if (categoryFilter !== "all") {
+      console.log("Category Filter:", categoryFilter);
+      console.log("Total Complaints:", complaints?.length || 0);
+      console.log("Filtered Complaints:", filteredComplaints.length);
+      console.log(
+        "Sample complaint categories:",
+        complaints?.slice(0, 3).map((c) => c.category)
+      );
     }
   }, [categoryFilter, complaints, filteredComplaints]);
 
@@ -159,24 +249,26 @@ const ComplaintsPage: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
-            {isMyComplaintsPage && isOfficer ? 'My Complaints' : 'Complaints Management'}
+            {isMyComplaintsPage && isOfficer
+              ? "My Complaints"
+              : "Complaints Management"}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {isMyComplaintsPage && isOfficer 
-              ? 'View complaints assigned to you' 
-              : 'View and manage all complaints'}
+            {isMyComplaintsPage && isOfficer
+              ? "View complaints assigned to you"
+              : "View and manage all complaints"}
           </p>
         </div>
-        <Button onClick={() => navigate('/admin/complaints/new')}>
+        <Button onClick={() => navigate("/admin/complaints/new")}>
           <Plus className="w-4 h-4 mr-2" />
           New Complaint
         </Button>
       </div>
 
       {/* Filters */}
-      <Card className="border-gray-200">
+      <Card className="">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Filter className="w-5 h-5 text-primary" />
             Filters
           </CardTitle>
@@ -192,17 +284,17 @@ const ComplaintsPage: React.FC = () => {
                 className="pl-10"
               />
             </div>
-            <Select 
-              value={statusFilter} 
+            <Select
+              value={statusFilter}
               onValueChange={(value) => {
                 setStatusFilter(value);
                 // Reset category filter when changing status
-                setCategoryFilter('all');
+                setCategoryFilter("all");
                 // Navigate to status route if not "all"
-                if (value === 'all') {
-                  navigate('/admin/complaints');
-                } else if (value === 'in_progress') {
-                  navigate('/admin/complaints/in-progress');
+                if (value === "all") {
+                  navigate("/admin/complaints");
+                } else if (value === "in_progress") {
+                  navigate("/admin/complaints/in-progress");
                 } else {
                   navigate(`/admin/complaints/${value}`);
                 }
@@ -231,17 +323,17 @@ const ComplaintsPage: React.FC = () => {
                 <SelectItem value="urgent">Urgent</SelectItem>
               </SelectContent>
             </Select>
-            <Select 
-              value={categoryFilter} 
+            <Select
+              value={categoryFilter}
               onValueChange={(value) => {
                 setCategoryFilter(value);
                 // Reset status filter when changing category
-                setStatusFilter('all');
+                setStatusFilter("all");
                 // Navigate to category route if not "all"
-                if (value === 'all') {
+                if (value === "all") {
                   // If we're on a category route, go back to base complaints
-                  if (location.pathname.includes('/category/')) {
-                    navigate('/admin/complaints');
+                  if (location.pathname.includes("/category/")) {
+                    navigate("/admin/complaints");
                   }
                 } else {
                   navigate(`/admin/complaints/category/${value}`);
@@ -256,7 +348,9 @@ const ComplaintsPage: React.FC = () => {
                 <SelectItem value="roads">Roads & Infrastructure</SelectItem>
                 <SelectItem value="water">Water Supply</SelectItem>
                 <SelectItem value="electricity">Electricity</SelectItem>
-                <SelectItem value="documents">Documents & Certificates</SelectItem>
+                <SelectItem value="documents">
+                  Documents & Certificates
+                </SelectItem>
                 <SelectItem value="health">Health Services</SelectItem>
                 <SelectItem value="education">Education</SelectItem>
               </SelectContent>
@@ -266,62 +360,87 @@ const ComplaintsPage: React.FC = () => {
       </Card>
 
       {/* Complaints List */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {isLoading ? (
-          <Card>
+          <Card className="md:col-span-2">
             <CardContent className="p-6 text-center">
               <p className="text-muted-foreground">Loading complaints...</p>
             </CardContent>
           </Card>
         ) : filteredComplaints.length === 0 ? (
-          <Card>
+          <Card className="md:col-span-2">
             <CardContent className="p-6 text-center">
               <p className="text-muted-foreground">No complaints found</p>
             </CardContent>
           </Card>
         ) : (
-          filteredComplaints.map((complaint) => (
-            <Card key={complaint.id || complaint._id} className="border-gray-200 hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline">{complaint.complaintId || complaint.id}</Badge>
-                      {getStatusBadge(complaint.status)}
-                      {getPriorityBadge(complaint.priority)}
+          filteredComplaints.map((complaint) => {
+            const complaintId = complaint.id || complaint._id;
+            return (
+              <Card
+                key={complaintId}
+                className="border-[#011a60] border-2 hover:border-blue-900/60 hover:shadow-[0_4px_12px_rgba(30,58,138,0.15)] transition-all cursor-pointer "
+                onClick={() => {
+                  console.log(
+                    "Navigating to complaint:",
+                    complaintId,
+                    "Full complaint:",
+                    complaint
+                  );
+                  navigate(`/admin/complaints/${complaintId}`);
+                }}
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {complaint.complaintId && (
+                          <Badge
+                            variant="outline"
+                            className="border-blue-900/40 text-foreground"
+                          >
+                            {complaint.complaintId}
+                          </Badge>
+                        )}
+                        {getStatusBadge(complaint.status)}
+                        {getPriorityBadge(complaint.priority)}
+                      </div>
+                      <CardTitle className="text-lg text-foreground">
+                        {complaint.title}
+                      </CardTitle>
+                      <CardDescription className="mt-2 line-clamp-2">
+                        {complaint.description}
+                      </CardDescription>
                     </div>
-                    <CardTitle className="text-lg">{complaint.title}</CardTitle>
-                    <CardDescription className="mt-2">{complaint.description}</CardDescription>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const complaintId = complaint.id || complaint._id;
-                      console.log('Navigating to complaint:', complaintId, 'Full complaint:', complaint);
-                      navigate(`/admin/complaints/${complaintId}`);
-                    }}
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    View
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>Category: {complaint.category}</span>
-                  <span>•</span>
-                  <span>Submitted: {new Date(complaint.submittedAt).toLocaleDateString()}</span>
-                  {complaint.location && (
-                    <>
-                      <span>•</span>
-                      <span>{complaint.location}</span>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                    <span>Category: {complaint.category}</span>
+                    <span>•</span>
+                    <span>
+                      Submitted:{" "}
+                      {(complaint as any).created_at ||
+                      complaint.createdAt ||
+                      (complaint as any).submittedAt
+                        ? new Date(
+                            (complaint as any).created_at ||
+                              complaint.createdAt ||
+                              (complaint as any).submittedAt
+                          ).toLocaleDateString()
+                        : "N/A"}
+                    </span>
+                    {complaint.location && (
+                      <>
+                        <span>•</span>
+                        <span>{complaint.location}</span>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
         )}
       </div>
     </div>
@@ -329,4 +448,3 @@ const ComplaintsPage: React.FC = () => {
 };
 
 export default ComplaintsPage;
-

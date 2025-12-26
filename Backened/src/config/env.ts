@@ -20,6 +20,15 @@ interface EnvConfig {
   LOCATIONIQ_API_KEY?: string;
   CORS_ORIGIN: string;
   FRONTEND_URL: string;
+  // SMTP Email Configuration
+  SMTP_HOST?: string;
+  SMTP_PORT?: number;
+  SMTP_USER?: string;
+  SMTP_PASS?: string;
+  SMTP_FROM_EMAIL?: string; // Fixed sender email (defaults to SMTP_USER if not provided)
+  SMTP_POOL?: boolean; // Enable connection pooling
+  SMTP_MAX_CONNECTIONS?: number; // Max connections in pool
+  SMTP_MAX_MESSAGES?: number; // Max messages per connection
 }
 
 /**
@@ -54,6 +63,18 @@ const validateEnv = (): EnvConfig => {
     console.warn('⚠️  Warning: Neither OPENAI_API_KEY nor OPENROUTER_API_KEY is set. AI features will not work.');
   }
 
+  // SMTP Email variables - optional, required for email functionality
+  const smtpVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'];
+  const missingSmtp = smtpVars.filter((key) => !process.env[key]);
+  if (missingSmtp.length > 0) {
+    const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    if (isDev) {
+      console.warn(`⚠️  Warning: Missing SMTP variables: ${missingSmtp.join(', ')}. Email features will not work.`);
+    } else {
+      console.warn(`⚠️  Warning: Missing SMTP variables: ${missingSmtp.join(', ')}. Email features will not work.`);
+    }
+  }
+
   return {
     NODE_ENV: process.env.NODE_ENV || 'development',
     PORT: parseInt(process.env.PORT || '5000', 10),
@@ -71,6 +92,15 @@ const validateEnv = (): EnvConfig => {
     LOCATIONIQ_API_KEY: process.env.LOCATIONIQ_API_KEY || '',
     CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:8080',
     FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:8080',
+    // SMTP Email Configuration
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER, // Default to SMTP_USER if not provided
+    SMTP_POOL: process.env.SMTP_POOL === 'true',
+    SMTP_MAX_CONNECTIONS: process.env.SMTP_MAX_CONNECTIONS ? parseInt(process.env.SMTP_MAX_CONNECTIONS, 10) : 5,
+    SMTP_MAX_MESSAGES: process.env.SMTP_MAX_MESSAGES ? parseInt(process.env.SMTP_MAX_MESSAGES, 10) : 100,
   };
 };
 

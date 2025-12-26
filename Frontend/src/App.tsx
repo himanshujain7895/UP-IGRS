@@ -17,6 +17,7 @@ import { I18nProvider } from "@/contexts/I18nContext";
 import { Toaster } from "@/components/ui/sonner";
 import AppLayout from "@/components/AppLayout";
 import AdminLayout from "@/components/AdminLayout";
+import OfficerLayout from "@/components/OfficerLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Home from "@/pages/Home";
 import Admin from "@/pages/Admin";
@@ -41,6 +42,8 @@ import UserManagementPage from "@/pages/admin/UserManagementPage";
 import BadaunMapTestPage from "./pages/admin/BadaunMapTestPage";
 import BadaunHeatMapPage from "./pages/admin/BadaunHeatMapPage";
 import HierarchicalDataUploadPage from "./pages/admin/HierarchicalDataUploadPage";
+import MyComplaintsPage from "./pages/officer/MyComplaintsPage";
+import OfficerComplaintDetailPage from "./pages/officer/OfficerComplaintDetailPage";
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -96,11 +99,11 @@ const AppContent: React.FC = () => {
                     }
                   />
 
-                  {/* Protected Admin Routes */}
+                  {/* Protected Admin Routes - Admin Only */}
                   <Route
                     path="/admin/*"
                     element={
-                      <ProtectedRoute allowOfficer={true}>
+                      <ProtectedRoute requireAdmin={true}>
                         <AdminLayout>
                           <Routes>
                             <Route index element={<Admin />} />
@@ -215,13 +218,28 @@ const AppContent: React.FC = () => {
                                 </ProtectedRoute>
                               }
                             />
-                            <Route
-                              path="complaints/my-complaints"
-                              element={<ComplaintsPage />}
-                            />
                             <Route path="settings" element={<SettingsPage />} />
                           </Routes>
                         </AdminLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Protected Officer Routes - Officer Only */}
+                  <Route
+                    path="/officer/*"
+                    element={
+                      <ProtectedRoute requireOfficer={true}>
+                        <OfficerLayout>
+                          <Routes>
+                            <Route index element={<MyComplaintsPage />} />
+                            <Route
+                              path="complaints/:id"
+                              element={<OfficerComplaintDetailPage />}
+                            />
+                            <Route path="settings" element={<SettingsPage />} />
+                          </Routes>
+                        </OfficerLayout>
                       </ProtectedRoute>
                     }
                   />

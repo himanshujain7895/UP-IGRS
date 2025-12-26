@@ -40,6 +40,8 @@ import {
   districtService,
   type DistrictData,
 } from "@/services/district.service";
+import { demographicsService } from "@/services/demographics.service";
+import { testService } from "@/services/test.service";
 import {
   createComplaintHeatmapData,
   createPopulationHeatmapData,
@@ -251,15 +253,8 @@ const BadaunHeatMapPage: React.FC = () => {
   useEffect(() => {
     const fetchTowns = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:5000/api/v1/demographics/towns"
-        );
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.data) {
-            setTownsList(data.data.towns || []);
-          }
-        }
+        const towns = await demographicsService.getTowns();
+        setTownsList(towns);
       } catch (err) {
         console.warn("Could not load towns list:", err);
       }
@@ -287,41 +282,31 @@ const BadaunHeatMapPage: React.FC = () => {
         // Fetch total complaints for Badaun
         try {
           // Use test endpoint which doesn't require auth
-          const response = await fetch(
-            "http://localhost:5000/api/v1/test/complaints"
+          const allComplaints = await testService.getAllComplaints();
+          console.log("Complaints API response:", allComplaints);
+
+          // Filter for Badaun district
+          const badaunComplaints = allComplaints.filter(
+            (c: any) =>
+              c.district_name === "Budaun" || c.district_name === "Badaun"
           );
 
-          if (response.ok) {
-            const data = await response.json();
-            console.log("Complaints API response:", data);
+          console.log(
+            `Found ${badaunComplaints.length} complaints for Badaun out of ${allComplaints.length} total`
+          );
+          setAllComplaints(badaunComplaints);
+          setFilteredComplaints(badaunComplaints);
+          setTotalComplaints(badaunComplaints.length);
 
-            if (data.success && data.data) {
-              const allComplaints = data.data.complaints || [];
-
-              // Filter for Badaun district
-              const badaunComplaints = allComplaints.filter(
-                (c: any) =>
-                  c.district_name === "Budaun" || c.district_name === "Badaun"
-              );
-
-              console.log(
-                `Found ${badaunComplaints.length} complaints for Badaun out of ${allComplaints.length} total`
-              );
-              setAllComplaints(badaunComplaints);
-              setFilteredComplaints(badaunComplaints);
-              setTotalComplaints(badaunComplaints.length);
-
-              // Count by status
-              const byStatus = badaunComplaints.reduce(
-                (acc: Record<string, number>, c: any) => {
-                  acc[c.status] = (acc[c.status] || 0) + 1;
-                  return acc;
-                },
-                {}
-              );
-              setComplaintsByStatus(byStatus);
-            }
-          }
+          // Count by status
+          const byStatus = badaunComplaints.reduce(
+            (acc: Record<string, number>, c: any) => {
+              acc[c.status] = (acc[c.status] || 0) + 1;
+              return acc;
+            },
+            {}
+          );
+          setComplaintsByStatus(byStatus);
         } catch (err) {
           console.error("Error loading complaints count:", err);
         }
@@ -396,77 +381,57 @@ const BadaunHeatMapPage: React.FC = () => {
         try {
           console.log("🏘️ Fetching towns from API...");
           // Fetch towns from demographics API
-          const response = await fetch(
-            "http://localhost:5000/api/v1/demographics/towns"
+          const towns = await demographicsService.getTowns();
+          console.log(`Found ${towns.length} towns in API response`);
+
+          // Filter for valid coordinates within Budaun ACTUAL bounds (from GeoJSON)
+          const BUDAUN_BOUNDS = {
+            north: 28.52,
+            south: 27.61,
+            east: 79.56,
+            west: 78.52,
+          };
+          const townsWithCoords = towns.filter(
+            (t: any) =>
+              t.latitude &&
+              t.longitude &&
+              t.latitude >= BUDAUN_BOUNDS.south &&
+              t.latitude <= BUDAUN_BOUNDS.north &&
+              t.longitude >= BUDAUN_BOUNDS.west &&
+              t.longitude <= BUDAUN_BOUNDS.east
           );
-          console.log("Towns API response status:", response.status);
+          console.log(
+            `Towns with valid coordinates (within bounds): ${townsWithCoords.length}`
+          );
 
-          if (response.ok) {
-            const data = await response.json();
-            console.log("Towns API data:", data);
-
-            // Handle response structure: { success: true, data: { count, towns: [...] } }
-            const towns = data.data?.towns || data.towns || [];
-            console.log(`Found ${towns.length} towns in API response`);
-
-            // Filter for valid coordinates within Budaun ACTUAL bounds (from GeoJSON)
-            const BUDAUN_BOUNDS = {
-              north: 28.52,
-              south: 27.61,
-              east: 79.56,
-              west: 78.52,
+          if (townsWithCoords.length > 0) {
+            // Convert to GeoJSON
+            const geoJSON: FeatureCollection = {
+              type: "FeatureCollection",
+              features: townsWithCoords.map((town: any) => ({
+                type: "Feature",
+                geometry: {
+                  type: "Point",
+                  coordinates: [Number(town.longitude), Number(town.latitude)],
+                },
+                properties: {
+                  name: town.areaName,
+                  subdistrict: town.subdistrict,
+                  population: town.totalPopulation,
+                  households: town.totalHouseholds,
+                  type: "town",
+                  poiType: "Town",
+                },
+              })),
             };
-            const townsWithCoords = towns.filter(
-              (t: any) =>
-                t.latitude &&
-                t.longitude &&
-                t.latitude >= BUDAUN_BOUNDS.south &&
-                t.latitude <= BUDAUN_BOUNDS.north &&
-                t.longitude >= BUDAUN_BOUNDS.west &&
-                t.longitude <= BUDAUN_BOUNDS.east
-            );
             console.log(
-              `Towns with valid coordinates (within bounds): ${townsWithCoords.length}`
+              "✅ Created towns GeoJSON with",
+              geoJSON.features.length,
+              "features"
             );
-
-            if (townsWithCoords.length > 0) {
-              // Convert to GeoJSON
-              const geoJSON: FeatureCollection = {
-                type: "FeatureCollection",
-                features: townsWithCoords.map((town: any) => ({
-                  type: "Feature",
-                  geometry: {
-                    type: "Point",
-                    coordinates: [
-                      Number(town.longitude),
-                      Number(town.latitude),
-                    ],
-                  },
-                  properties: {
-                    name: town.areaName,
-                    subdistrict: town.subdistrict,
-                    population: town.totalPopulation,
-                    households: town.totalHouseholds,
-                    type: "town",
-                    poiType: "Town",
-                  },
-                })),
-              };
-              console.log(
-                "✅ Created towns GeoJSON with",
-                geoJSON.features.length,
-                "features"
-              );
-              setTownsGeoData(geoJSON);
-            } else {
-              console.warn("⚠️ No towns have coordinates yet!");
-            }
+            setTownsGeoData(geoJSON);
           } else {
-            console.error(
-              "Towns API failed:",
-              response.status,
-              response.statusText
-            );
+            console.warn("⚠️ No towns have coordinates yet!");
           }
         } catch (err) {
           console.error("Failed to fetch towns:", err);
@@ -485,76 +450,56 @@ const BadaunHeatMapPage: React.FC = () => {
         try {
           console.log("🏛️ Fetching wards from API...");
           // Fetch wards from demographics API
-          const response = await fetch(
-            "http://localhost:5000/api/v1/demographics/wards"
+          const wards = await demographicsService.getWards();
+          console.log(`Found ${wards.length} wards in API response`);
+
+          // Filter for valid coordinates within Budaun ACTUAL bounds (from GeoJSON)
+          const BUDAUN_BOUNDS = {
+            north: 28.52,
+            south: 27.61,
+            east: 79.56,
+            west: 78.52,
+          };
+          const wardsWithCoords = wards.filter(
+            (w: any) =>
+              w.latitude &&
+              w.longitude &&
+              w.latitude >= BUDAUN_BOUNDS.south &&
+              w.latitude <= BUDAUN_BOUNDS.north &&
+              w.longitude >= BUDAUN_BOUNDS.west &&
+              w.longitude <= BUDAUN_BOUNDS.east
           );
-          console.log("Wards API response status:", response.status);
+          console.log(
+            `Wards with valid coordinates (within bounds): ${wardsWithCoords.length}`
+          );
 
-          if (response.ok) {
-            const data = await response.json();
-            console.log("Wards API data:", data);
-
-            // Handle response structure
-            const wards = data.data?.wards || data.wards || [];
-            console.log(`Found ${wards.length} wards in API response`);
-
-            // Filter for valid coordinates within Budaun ACTUAL bounds (from GeoJSON)
-            const BUDAUN_BOUNDS = {
-              north: 28.52,
-              south: 27.61,
-              east: 79.56,
-              west: 78.52,
+          if (wardsWithCoords.length > 0) {
+            // Convert to GeoJSON
+            const geoJSON: FeatureCollection = {
+              type: "FeatureCollection",
+              features: wardsWithCoords.map((ward: any) => ({
+                type: "Feature",
+                geometry: {
+                  type: "Point",
+                  coordinates: [Number(ward.longitude), Number(ward.latitude)],
+                },
+                properties: {
+                  name: ward.areaName,
+                  subdistrict: ward.subdistrict,
+                  population: ward.totalPopulation,
+                  type: "ward",
+                  poiType: "Ward",
+                },
+              })),
             };
-            const wardsWithCoords = wards.filter(
-              (w: any) =>
-                w.latitude &&
-                w.longitude &&
-                w.latitude >= BUDAUN_BOUNDS.south &&
-                w.latitude <= BUDAUN_BOUNDS.north &&
-                w.longitude >= BUDAUN_BOUNDS.west &&
-                w.longitude <= BUDAUN_BOUNDS.east
-            );
             console.log(
-              `Wards with valid coordinates (within bounds): ${wardsWithCoords.length}`
+              "✅ Created wards GeoJSON with",
+              geoJSON.features.length,
+              "features"
             );
-
-            if (wardsWithCoords.length > 0) {
-              // Convert to GeoJSON
-              const geoJSON: FeatureCollection = {
-                type: "FeatureCollection",
-                features: wardsWithCoords.map((ward: any) => ({
-                  type: "Feature",
-                  geometry: {
-                    type: "Point",
-                    coordinates: [
-                      Number(ward.longitude),
-                      Number(ward.latitude),
-                    ],
-                  },
-                  properties: {
-                    name: ward.areaName,
-                    subdistrict: ward.subdistrict,
-                    population: ward.totalPopulation,
-                    type: "ward",
-                    poiType: "Ward",
-                  },
-                })),
-              };
-              console.log(
-                "✅ Created wards GeoJSON with",
-                geoJSON.features.length,
-                "features"
-              );
-              setWardsGeoData(geoJSON);
-            } else {
-              console.warn("⚠️ No wards have coordinates yet!");
-            }
+            setWardsGeoData(geoJSON);
           } else {
-            console.error(
-              "Wards API failed:",
-              response.status,
-              response.statusText
-            );
+            console.warn("⚠️ No wards have coordinates yet!");
           }
         } catch (err) {
           console.error("Failed to fetch wards:", err);
@@ -587,23 +532,12 @@ const BadaunHeatMapPage: React.FC = () => {
       if (type === "towns" || type === "all") {
         try {
           console.log("🏘️ Geocoding towns with Google Maps...");
-          const response = await fetch(
-            "http://localhost:5000/api/v1/demographics/geocode-towns",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ batchSize: type === "towns" ? 23 : 23 }),
-            }
+          const result = await demographicsService.geocodeTowns(
+            type === "towns" ? 23 : 23
           );
-
-          if (response.ok) {
-            const data = await response.json();
-            console.log("Towns geocoding result:", data);
-            if (data.success && data.data) {
-              successTotal += data.data.success || 0;
-              failedTotal += data.data.failed || 0;
-            }
-          }
+          console.log("Towns geocoding result:", result);
+          successTotal += result.success || 0;
+          failedTotal += result.failed || 0;
         } catch (err) {
           console.error("Town geocoding error:", err);
         }
@@ -613,25 +547,12 @@ const BadaunHeatMapPage: React.FC = () => {
       if (type === "wards" || type === "all") {
         try {
           console.log("🏛️ Geocoding wards with Google Maps...");
-          const response = await fetch(
-            "http://localhost:5000/api/v1/demographics/geocode-wards",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                batchSize: type === "wards" ? batchSize : 50,
-              }),
-            }
+          const result = await demographicsService.geocodeWards(
+            type === "wards" ? batchSize : 50
           );
-
-          if (response.ok) {
-            const data = await response.json();
-            console.log("Wards geocoding result:", data);
-            if (data.success && data.data) {
-              successTotal += data.data.success || 0;
-              failedTotal += data.data.failed || 0;
-            }
-          }
+          console.log("Wards geocoding result:", result);
+          successTotal += result.success || 0;
+          failedTotal += result.failed || 0;
         } catch (err) {
           console.error("Ward geocoding error:", err);
         }

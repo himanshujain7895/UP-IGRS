@@ -1,12 +1,16 @@
-import { Response, NextFunction } from 'express';
-import { AuthRequest } from '../middleware/auth.middleware';
-import * as complaintsService from '../services/complaints.service';
-import { sendSuccess, sendPaginated, sendError } from '../utils/response';
-import { ValidationError, NotFoundError, UnauthorizedError } from '../utils/errors';
-import { Complaint } from '../models/Complaint';
-import { User } from '../models/User';
-import DistrictAdministrativeHead from '../models/DistrictAdministrativeHead';
-import logger from '../config/logger';
+import { Response, NextFunction } from "express";
+import { AuthRequest } from "../middleware/auth.middleware";
+import * as complaintsService from "../services/complaints.service";
+import { sendSuccess, sendPaginated, sendError } from "../utils/response";
+import {
+  ValidationError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../utils/errors";
+import { Complaint } from "../models/Complaint";
+import { User } from "../models/User";
+import DistrictAdministrativeHead from "../models/DistrictAdministrativeHead";
+import logger from "../config/logger";
 
 /**
  * Complaints Controller
@@ -76,46 +80,75 @@ export const createComplaint = async (
 ): Promise<void> => {
   try {
     const complaintData = req.body;
-    
+
     // Validate required geographic fields
-    if (complaintData.latitude === undefined || complaintData.latitude === null) {
-      throw new ValidationError('latitude is required');
+    if (
+      complaintData.latitude === undefined ||
+      complaintData.latitude === null
+    ) {
+      throw new ValidationError("latitude is required");
     }
-    if (complaintData.longitude === undefined || complaintData.longitude === null) {
-      throw new ValidationError('longitude is required');
+    if (
+      complaintData.longitude === undefined ||
+      complaintData.longitude === null
+    ) {
+      throw new ValidationError("longitude is required");
     }
-    if (!complaintData.district_name || typeof complaintData.district_name !== 'string' || complaintData.district_name.trim().length === 0) {
-      throw new ValidationError('district_name is required');
+    if (
+      !complaintData.district_name ||
+      typeof complaintData.district_name !== "string" ||
+      complaintData.district_name.trim().length === 0
+    ) {
+      throw new ValidationError("district_name is required");
     }
-    if (!complaintData.subdistrict_name || typeof complaintData.subdistrict_name !== 'string' || complaintData.subdistrict_name.trim().length === 0) {
-      throw new ValidationError('subdistrict_name is required');
+    if (
+      !complaintData.subdistrict_name ||
+      typeof complaintData.subdistrict_name !== "string" ||
+      complaintData.subdistrict_name.trim().length === 0
+    ) {
+      throw new ValidationError("subdistrict_name is required");
     }
-    
+
     // Validate latitude and longitude ranges
-    if (typeof complaintData.latitude !== 'number' || complaintData.latitude < -90 || complaintData.latitude > 90) {
-      throw new ValidationError('latitude must be a number between -90 and 90');
+    if (
+      typeof complaintData.latitude !== "number" ||
+      complaintData.latitude < -90 ||
+      complaintData.latitude > 90
+    ) {
+      throw new ValidationError("latitude must be a number between -90 and 90");
     }
-    if (typeof complaintData.longitude !== 'number' || complaintData.longitude < -180 || complaintData.longitude > 180) {
-      throw new ValidationError('longitude must be a number between -180 and 180');
+    if (
+      typeof complaintData.longitude !== "number" ||
+      complaintData.longitude < -180 ||
+      complaintData.longitude > 180
+    ) {
+      throw new ValidationError(
+        "longitude must be a number between -180 and 180"
+      );
     }
-    
-    logger.info('Creating complaint with data:', {
+
+    logger.info("Creating complaint with data:", {
       title: complaintData.title,
       category: complaintData.category,
-      hasImages: Array.isArray(complaintData.images) && complaintData.images.length > 0,
-      imageCount: Array.isArray(complaintData.images) ? complaintData.images.length : 0,
+      hasImages:
+        Array.isArray(complaintData.images) && complaintData.images.length > 0,
+      imageCount: Array.isArray(complaintData.images)
+        ? complaintData.images.length
+        : 0,
       latitude: complaintData.latitude,
       longitude: complaintData.longitude,
       district_name: complaintData.district_name,
       subdistrict_name: complaintData.subdistrict_name,
-      village_name: complaintData.village_name || 'not provided',
+      village_name: complaintData.village_name || "not provided",
     });
-    
+
     const complaint = await complaintsService.createComplaint(complaintData);
-    logger.info(`Complaint created successfully: ${complaint.id || complaint._id}`);
+    logger.info(
+      `Complaint created successfully: ${complaint.id || complaint._id}`
+    );
     sendSuccess(res, complaint, 201);
   } catch (error) {
-    logger.error('Error creating complaint:', error);
+    logger.error("Error creating complaint:", error);
     next(error);
   }
 };
@@ -151,7 +184,7 @@ export const deleteComplaint = async (
   try {
     const { id } = req.params;
     await complaintsService.deleteComplaint(id);
-    sendSuccess(res, { message: 'Complaint deleted successfully' });
+    sendSuccess(res, { message: "Complaint deleted successfully" });
   } catch (error) {
     next(error);
   }
@@ -171,10 +204,13 @@ export const updateComplaintResearch = async (
     const { research_data } = req.body;
 
     if (!research_data) {
-      throw new ValidationError('research_data is required');
+      throw new ValidationError("research_data is required");
     }
 
-    const complaint = await complaintsService.updateComplaintResearch(id, research_data);
+    const complaint = await complaintsService.updateComplaintResearch(
+      id,
+      research_data
+    );
     sendSuccess(res, complaint);
   } catch (error) {
     next(error);
@@ -195,17 +231,20 @@ export const updateComplaintStage1Data = async (
     const stage1Data = req.body;
 
     // Validate at least one field is provided
-    const hasData = 
+    const hasData =
       stage1Data.primary_officer !== undefined ||
       stage1Data.secondary_officer !== undefined ||
       stage1Data.drafted_letter !== undefined ||
       stage1Data.stage1_additional_docs !== undefined;
 
     if (!hasData) {
-      throw new ValidationError('At least one stage1 field must be provided');
+      throw new ValidationError("At least one stage1 field must be provided");
     }
 
-    const complaint = await complaintsService.updateComplaintStage1Data(id, stage1Data);
+    const complaint = await complaintsService.updateComplaintStage1Data(
+      id,
+      stage1Data
+    );
     sendSuccess(res, complaint);
   } catch (error) {
     next(error);
@@ -226,7 +265,7 @@ export const addComplaintNote = async (
     const { note } = req.body;
 
     if (!note || note.trim().length < 5) {
-      throw new ValidationError('Note must be at least 5 characters');
+      throw new ValidationError("Note must be at least 5 characters");
     }
 
     const complaintNote = await complaintsService.addComplaintNote(
@@ -273,10 +312,12 @@ export const addComplaintDocument = async (
     const { file_url, file_name, file_type } = req.body;
 
     if (!file_url || !file_name || !file_type) {
-      throw new ValidationError('file_url, file_name, and file_type are required');
+      throw new ValidationError(
+        "file_url, file_name, and file_type are required"
+      );
     }
 
-    if (!['inward', 'outward'].includes(file_type)) {
+    if (!["inward", "outward"].includes(file_type)) {
       throw new ValidationError('file_type must be "inward" or "outward"');
     }
 
@@ -325,7 +366,7 @@ export const trackByPhone = async (
     const { phoneNumber } = req.params;
 
     if (!phoneNumber) {
-      sendError(res, 'Phone number is required', 400, 'VALIDATION_ERROR');
+      sendError(res, "Phone number is required", 400, "VALIDATION_ERROR");
       return;
     }
 
@@ -370,8 +411,8 @@ export const getExecutives = async (
   try {
     // Fetch all district administrative heads with only executive_authorities field
     const administrativeHeads = await DistrictAdministrativeHead.find({})
-      .select('district executive_authorities district_profile')
-      .populate('district', 'districtName districtLgd stateName')
+      .select("district executive_authorities district_profile")
+      .populate("district", "districtName districtLgd stateName")
       .lean();
 
     // Extract executive_authorities from each document
@@ -384,7 +425,7 @@ export const getExecutives = async (
     logger.info(`Fetched executives from ${executives.length} districts`);
     sendSuccess(res, executives);
   } catch (error) {
-    logger.error('Error fetching executives:', error);
+    logger.error("Error fetching executives:", error);
     next(error);
   }
 };
@@ -403,22 +444,25 @@ export const assignComplaintToOfficer = async (
     const { assigned_to_user_id } = req.body;
 
     if (!assigned_to_user_id) {
-      throw new ValidationError('Officer user ID is required');
+      throw new ValidationError("Officer user ID is required");
     }
 
     // Verify officer user exists
-    const officerUser = await User.findOne({ id: assigned_to_user_id, role: 'officer' });
+    const officerUser = await User.findOne({
+      id: assigned_to_user_id,
+      role: "officer",
+    });
     if (!officerUser) {
-      throw new NotFoundError('Officer user not found');
+      throw new NotFoundError("Officer user not found");
     }
 
     const complaint = await Complaint.findOne({ id });
     if (!complaint) {
-      throw new NotFoundError('Complaint not found');
+      throw new NotFoundError("Complaint not found");
     }
 
     complaint.assigned_to_user_id = assigned_to_user_id;
-    complaint.status = 'in_progress';
+    complaint.status = "in_progress";
     await complaint.save();
 
     logger.info(`Complaint ${id} assigned to officer ${officerUser.email}`);
@@ -443,12 +487,12 @@ export const unassignComplaint = async (
 
     const complaint = await Complaint.findOne({ id });
     if (!complaint) {
-      throw new NotFoundError('Complaint not found');
+      throw new NotFoundError("Complaint not found");
     }
 
     complaint.assigned_to_user_id = undefined;
-    if (complaint.status === 'in_progress') {
-      complaint.status = 'pending';
+    if (complaint.status === "in_progress") {
+      complaint.status = "pending";
     }
     await complaint.save();
 
@@ -472,12 +516,14 @@ export const getMyComplaints = async (
   try {
     const userId = req.user?.id;
     if (!userId) {
-      throw new UnauthorizedError('Authentication required');
+      throw new UnauthorizedError("Authentication required");
     }
 
     // Verify user is an officer
-    if (req.user?.role !== 'officer') {
-      throw new UnauthorizedError('Only officers can access their assigned complaints');
+    if (req.user?.role !== "officer") {
+      throw new UnauthorizedError(
+        "Only officers can access their assigned complaints"
+      );
     }
 
     const page = parseInt(req.query.page as string) || 1;
@@ -485,6 +531,7 @@ export const getMyComplaints = async (
     const status = req.query.status as string;
     const category = req.query.category as string;
     const priority = req.query.priority as string;
+    const search = req.query.search as string;
 
     const query: any = {
       assigned_to_user_id: userId,
@@ -500,6 +547,15 @@ export const getMyComplaints = async (
 
     if (priority) {
       query.priority = priority;
+    }
+
+    // Handle search - search in title and description
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { contact_name: { $regex: search, $options: "i" } },
+      ];
     }
 
     const skip = (page - 1) * limit;
@@ -518,3 +574,85 @@ export const getMyComplaints = async (
   }
 };
 
+/**
+ * POST /api/v1/complaints/:id/send-email
+ * Send email with drafted letter (admin only)
+ */
+export const sendComplaintEmail = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { recipientEmail } = req.body;
+
+    const result = await complaintsService.sendComplaintEmail(
+      id,
+      recipientEmail
+    );
+    sendSuccess(res, result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/v1/complaints/:id/email-history
+ * Get email history for a complaint
+ */
+export const getComplaintEmailHistory = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const emailHistory = await complaintsService.getComplaintEmailHistory(id);
+    sendSuccess(res, emailHistory);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/complaints/:id/assign-officer
+ * Assign complaint to officer (intelligently creates new or uses existing)
+ * Admin only
+ *
+ * Request body:
+ * {
+ *   "executive": {
+ *     "name": "Shri Keshav Kumar",
+ *     "designation": "Chief Development Officer (CDO)",
+ *     "email": "cdo.budaun@up.gov.in",
+ *     "phone": "05832-254231",
+ *     "office_address": "Collectorate, Budaun",
+ *     "district": "Budaun",
+ *     "department": "Development",
+ *     "departmentCategory": "development",
+ *     ... (other executive fields from DistrictAdministrativeHead)
+ *   }
+ * }
+ *
+ * The service layer will automatically:
+ * - Check if officer exists by email
+ * - If exists and has User account → use existing officer
+ * - If doesn't exist → create new User and Officer
+ */
+export const assignOfficer = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { executive } = req.body;
+
+    const result = await complaintsService.assignOfficer(id, executive);
+
+    sendSuccess(res, result, result.isNewOfficer ? 201 : 200);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -3,14 +3,20 @@
  * Protects routes requiring authentication/admin access
  */
 
-import React, { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Lock, Mail, Key, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import React, { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Loader2, Lock, Mail, Key, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -20,24 +26,24 @@ interface ProtectedRouteProps {
 }
 
 const AdminLoginForm: React.FC = () => {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const { login, loading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Redux thunk returns a promise that resolves to the action
     const result = await login(email.trim(), password);
-    
+
     // Check if login was successful (fulfilled) or failed (rejected)
-    if (result.type === 'auth/login/fulfilled') {
-      toast.success('Login successful!');
+    if (result.type === "auth/login/fulfilled") {
+      toast.success("Login successful!");
       // ProtectedRoute will automatically show admin UI when auth state updates
-    } else if (result.type === 'auth/login/rejected') {
+    } else if (result.type === "auth/login/rejected") {
       // Error is stored in Redux state and will be shown via useEffect
       // But we can also show it here as fallback
-      const errorMessage = (result.payload as string) || 'Failed to login';
+      const errorMessage = (result.payload as string) || "Failed to login";
       toast.error(errorMessage);
     }
   };
@@ -94,18 +100,14 @@ const AdminLoginForm: React.FC = () => {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Signing in...
                 </>
               ) : (
-                'Sign In'
+                "Sign In"
               )}
             </Button>
           </form>
@@ -124,23 +126,30 @@ const LoadingSpinner: React.FC = () => (
   </div>
 );
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
   requireAdmin = false,
   requireOfficer = false,
   allowOfficer = false,
 }) => {
-  const { user, loading, isAdmin, isOfficer, isAuthenticated, error } = useAuth();
+  const { user, loading, isAdmin, isOfficer, isAuthenticated, error } =
+    useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect to dashboard if on /admin root after login
+  // Redirect to appropriate dashboard after login
   useEffect(() => {
-    if (isAuthenticated && location.pathname === '/admin') {
-      if (isAdmin) {
-        navigate('/admin/dashboard', { replace: true });
-      } else if (isOfficer) {
-        navigate('/admin/complaints/my-complaints', { replace: true });
+    if (isAuthenticated) {
+      if (location.pathname === "/admin" && isAdmin) {
+        navigate("/admin/dashboard", { replace: true });
+      } else if (location.pathname === "/officer" && isOfficer) {
+        navigate("/officer", { replace: true });
+      } else if (location.pathname === "/admin" && isOfficer) {
+        // Officer trying to access admin - redirect to officer panel
+        navigate("/officer", { replace: true });
+      } else if (location.pathname === "/officer" && isAdmin) {
+        // Admin trying to access officer - redirect to admin panel
+        navigate("/admin/dashboard", { replace: true });
       }
     }
   }, [isAuthenticated, isAdmin, isOfficer, location.pathname, navigate]);
@@ -237,4 +246,3 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 };
 
 export default ProtectedRoute;
-

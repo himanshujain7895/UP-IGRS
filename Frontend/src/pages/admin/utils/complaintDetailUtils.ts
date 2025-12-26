@@ -3,10 +3,10 @@
  * Organized by tab functionality
  */
 
-import { toast } from 'sonner';
-import { complaintsService } from '@/services/complaints.service';
-import { aiService } from '@/services/ai.service';
-import { uploadService } from '@/services/upload.service';
+import { toast } from "sonner";
+import { complaintsService } from "@/services/complaints.service";
+import { aiService } from "@/services/ai.service";
+import { uploadService } from "@/services/upload.service";
 
 // ============================================================================
 // NOTES & DOCUMENTS TAB UTILITIES
@@ -19,15 +19,18 @@ export const notesUtils = {
   async addNote(complaintId: string, noteContent: string): Promise<any> {
     // Validate note length
     if (!noteContent || noteContent.trim().length < 5) {
-      throw new Error('Note must be at least 5 characters');
+      throw new Error("Note must be at least 5 characters");
     }
-    
+
     try {
-      const note = await complaintsService.addNote(complaintId, noteContent.trim());
-      toast.success('Note added successfully');
+      const note = await complaintsService.addNote(
+        complaintId,
+        noteContent.trim()
+      );
+      toast.success("Note added successfully");
       return note;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to add note');
+      toast.error(error.message || "Failed to add note");
       throw error;
     }
   },
@@ -40,8 +43,8 @@ export const notesUtils = {
       const notes = await complaintsService.getNotes(complaintId);
       return notes;
     } catch (error: any) {
-      console.error('Failed to load notes:', error);
-      toast.error('Failed to load notes');
+      console.error("Failed to load notes:", error);
+      toast.error("Failed to load notes");
       return [];
     }
   },
@@ -54,22 +57,22 @@ export const documentsUtils = {
   async addDocument(
     complaintId: string,
     file: File,
-    documentType: 'inward' | 'outward'
+    documentType: "inward" | "outward"
   ): Promise<any> {
     // Validate file
     if (!file) {
-      throw new Error('Please select a file');
+      throw new Error("Please select a file");
     }
 
     // Validate document type
-    if (!['inward', 'outward'].includes(documentType)) {
+    if (!["inward", "outward"].includes(documentType)) {
       throw new Error('Document type must be "inward" or "outward"');
     }
 
     try {
       // Step 1: Upload file to S3
       const fileUrl = await uploadService.uploadFile(file);
-      
+
       // Step 2: Add document to complaint
       const document = await complaintsService.addDocument(complaintId, {
         fileName: file.name,
@@ -77,11 +80,11 @@ export const documentsUtils = {
         fileType: documentType,
         fileSize: file.size,
       });
-      
-      toast.success('Document uploaded successfully');
+
+      toast.success("Document uploaded successfully");
       return document;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to upload document');
+      toast.error(error.message || "Failed to upload document");
       throw error;
     }
   },
@@ -94,8 +97,8 @@ export const documentsUtils = {
       const documents = await complaintsService.getDocuments(complaintId);
       return documents;
     } catch (error: any) {
-      console.error('Failed to load documents:', error);
-      toast.error('Failed to load documents');
+      console.error("Failed to load documents:", error);
+      toast.error("Failed to load documents");
       return [];
     }
   },
@@ -109,15 +112,18 @@ export const researchUtils = {
   /**
    * Perform research on complaint
    */
-  async performResearch(complaintId: string, depth: 'basic' | 'detailed' | 'comprehensive' = 'detailed'): Promise<any> {
+  async performResearch(
+    complaintId: string,
+    depth: "basic" | "detailed" | "comprehensive" = "detailed"
+  ): Promise<any> {
     try {
       const response = await aiService.researchRelatedIssues(complaintId);
       // Backend returns { research: ResearchResponse } and auto-saves
       const research = response?.research || response;
-      toast.success('Research completed successfully');
+      toast.success("Research completed successfully");
       return research;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to perform research');
+      toast.error(error.message || "Failed to perform research");
       throw error;
     }
   },
@@ -154,7 +160,7 @@ export const draftLetterUtils = {
         const districtName =
           district?.districtName ||
           districtData.district_profile?.name ||
-          'Unknown District';
+          "Unknown District";
 
         // Add general administration executives
         if (districtData.executive_authorities?.general_administration) {
@@ -163,15 +169,15 @@ export const draftLetterUtils = {
               flattenedExecutives.push({
                 ...exec,
                 district: districtName,
-                category: 'general_administration',
+                category: "general_administration",
                 // Transform to match expected officer format
-                name: exec.name || '',
-                designation: exec.designation || '',
-                email: exec.contact?.email || '',
+                name: exec.name || "",
+                designation: exec.designation || "",
+                email: exec.contact?.email || "",
                 phone:
-                  exec.contact?.office_phone || exec.contact?.cug_mobile || '',
-                office_address: exec.contact?.address || '',
-                role: exec.role || '',
+                  exec.contact?.office_phone || exec.contact?.cug_mobile || "",
+                office_address: exec.contact?.address || "",
+                role: exec.role || "",
               });
             }
           );
@@ -184,15 +190,15 @@ export const draftLetterUtils = {
               flattenedExecutives.push({
                 ...exec,
                 district: districtName,
-                category: 'police_administration',
+                category: "police_administration",
                 // Transform to match expected officer format
-                name: exec.name || '',
-                designation: exec.designation || '',
-                email: exec.contact?.email || '',
+                name: exec.name || "",
+                designation: exec.designation || "",
+                email: exec.contact?.email || "",
                 phone:
-                  exec.contact?.office_phone || exec.contact?.cug_mobile || '',
-                office_address: exec.contact?.address || '',
-                role: exec.role || '',
+                  exec.contact?.office_phone || exec.contact?.cug_mobile || "",
+                office_address: exec.contact?.address || "",
+                role: exec.role || "",
               });
             }
           );
@@ -202,7 +208,7 @@ export const draftLetterUtils = {
       toast.success(`Found ${flattenedExecutives.length} executives`);
       return flattenedExecutives;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to fetch executives');
+      toast.error(error.message || "Failed to fetch executives");
       throw error;
     }
   },
@@ -219,11 +225,11 @@ export const draftLetterUtils = {
       // Transform executive to match expected officer format
       const officerFormat = selectedExecutive
         ? {
-            name: selectedExecutive.name || '',
-            designation: selectedExecutive.designation || '',
-            email: selectedExecutive.email || '',
-            phone: selectedExecutive.phone || '',
-            office_address: selectedExecutive.office_address || '',
+            name: selectedExecutive.name || "",
+            designation: selectedExecutive.designation || "",
+            email: selectedExecutive.email || "",
+            phone: selectedExecutive.phone || "",
+            office_address: selectedExecutive.office_address || "",
           }
         : undefined;
 
@@ -241,10 +247,10 @@ export const draftLetterUtils = {
       );
       // Backend returns ComplaintLetterResponse and auto-saves
       const letterData = response?.letter || response;
-      toast.success('Letter drafted successfully');
+      toast.success("Letter drafted successfully");
       return letterData;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to draft letter');
+      toast.error(error.message || "Failed to draft letter");
       throw error;
     }
   },
@@ -252,21 +258,25 @@ export const draftLetterUtils = {
   /**
    * Save edited letter
    */
-  async saveLetter(complaintId: string, letter: any, editedBody: string): Promise<any> {
+  async saveLetter(
+    complaintId: string,
+    letter: any,
+    editedBody: string
+  ): Promise<any> {
     try {
       const updatedLetter = {
         ...letter,
         body: editedBody,
       };
-      
+
       await complaintsService.updateComplaintStage1Data(complaintId, {
         drafted_letter: updatedLetter,
       });
-      
-      toast.success('Letter saved successfully');
+
+      toast.success("Letter saved successfully");
       return updatedLetter;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to save letter');
+      toast.error(error.message || "Failed to save letter");
       throw error;
     }
   },
@@ -305,10 +315,10 @@ export const actionsUtils = {
       const response = await aiService.generateComplaintActions(complaintId);
       // Backend returns ComplaintActionsResponse { actions: ComplaintAction[] }
       const actionsData = response?.actions || response;
-      toast.success('Action plan generated successfully');
+      toast.success("Action plan generated successfully");
       return actionsData;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to generate actions');
+      toast.error(error.message || "Failed to generate actions");
       throw error;
     }
   },
@@ -317,14 +327,34 @@ export const actionsUtils = {
    * Load saved actions from AI resolution steps
    */
   loadSavedActions(complaint: any): any[] {
-    if (complaint?.aiResolution?.steps && complaint.aiResolution.steps.length > 0) {
+    if (
+      complaint?.aiResolution?.steps &&
+      complaint.aiResolution.steps.length > 0
+    ) {
       return complaint.aiResolution.steps.map((step: any) => ({
-        type: step.action_type || 'email',
+        type: step.action_type || "email",
         to: step.action_details?.recipient || step.title,
         details: step.description,
       }));
     }
     return [];
+  },
+
+  /**
+   * Send email with drafted letter
+   */
+  async sendEmail(complaintId: string, recipientEmail?: string): Promise<any> {
+    try {
+      const result = await complaintsService.sendComplaintEmail(
+        complaintId,
+        recipientEmail
+      );
+      toast.success("Email sent successfully");
+      return result;
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send email");
+      throw error;
+    }
   },
 };
 
@@ -341,10 +371,10 @@ export const detailsUtils = {
       const updated = await complaintsService.updateComplaint(complaintId, {
         status: newStatus as any,
       });
-      toast.success('Status updated successfully');
+      toast.success("Status updated successfully");
       return updated;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update status');
+      toast.error(error.message || "Failed to update status");
       throw error;
     }
   },
@@ -357,10 +387,10 @@ export const detailsUtils = {
       const updated = await complaintsService.updateComplaint(complaintId, {
         priority: newPriority as any,
       });
-      toast.success('Priority updated successfully');
+      toast.success("Priority updated successfully");
       return updated;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update priority');
+      toast.error(error.message || "Failed to update priority");
       throw error;
     }
   },
@@ -371,11 +401,10 @@ export const detailsUtils = {
   async deleteComplaint(complaintId: string): Promise<void> {
     try {
       await complaintsService.deleteComplaint(complaintId);
-      toast.success('Complaint deleted successfully');
+      toast.success("Complaint deleted successfully");
     } catch (error: any) {
-      toast.error(error.message || 'Failed to delete complaint');
+      toast.error(error.message || "Failed to delete complaint");
       throw error;
     }
   },
 };
-
