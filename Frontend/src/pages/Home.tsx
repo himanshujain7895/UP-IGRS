@@ -167,53 +167,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Statistics Section */}
-      <section className="bg-white py-16 md:py-20">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
-            {statistics.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div
-                  key={index}
-                  className="group relative bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 md:p-10 shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-200/50 hover:border-[#ff791a]/30 overflow-hidden"
-                >
-                  {/* Subtle background accent */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#ff791a]/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                  <div className="relative flex flex-col items-center text-center">
-                    {/* Icon with background circle */}
-                    <div
-                      className={`${stat.color} mb-6 p-4 rounded-2xl bg-gradient-to-br from-white to-gray-50 shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-110`}
-                    >
-                      <Icon className="w-10 h-10 md:w-12 md:h-12" />
-                    </div>
-
-                    {/* Number */}
-                    <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-3 tracking-tight">
-                      {stat.number}
-                    </div>
-
-                    {/* Label */}
-                    <div className="text-lg md:text-xl font-semibold text-gray-800 mb-2">
-                      {t(`home.${stat.labelKey}.label`)}
-                    </div>
-
-                    {/* English Label */}
-                    <div className="text-sm md:text-base text-gray-500 font-medium uppercase tracking-wide">
-                      {t(`home.${stat.labelKey}.labelEn`)}
-                    </div>
-                  </div>
-
-                  {/* Bottom accent line */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#ff791a]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* Action Cards Section */}
       <section className="py-12 md:py-16 bg-white">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

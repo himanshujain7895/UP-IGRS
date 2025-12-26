@@ -50,6 +50,19 @@ const ComplaintsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [districtFilter, setDistrictFilter] = useState("all");
+  const [subDistrictFilter, setSubDistrictFilter] = useState("all");
+
+  // District to Sub-district mapping
+  const districtSubDistrictMap: Record<string, string[]> = {
+    Budaun: ["Bisauli", "Bilsi", "Sahaswan", "Badaun", "Dataganj"],
+  };
+
+  // Get available sub-districts based on selected district
+  const availableSubDistricts =
+    districtFilter !== "all" && districtSubDistrictMap[districtFilter]
+      ? districtSubDistrictMap[districtFilter]
+      : [];
 
   // Initialize filters from URL
   useEffect(() => {
@@ -82,6 +95,13 @@ const ComplaintsPage: React.FC = () => {
       }
     }
   }, [location.pathname, params.category]);
+
+  // Reset sub-district when district changes
+  useEffect(() => {
+    if (districtFilter === "all") {
+      setSubDistrictFilter("all");
+    }
+  }, [districtFilter]);
 
   useEffect(() => {
     if (isMyComplaintsPage && isOfficer) {
@@ -225,8 +245,30 @@ const ComplaintsPage: React.FC = () => {
         categoryFilter === "all" ||
         (complaint.category &&
           complaint.category.toLowerCase() === categoryFilter.toLowerCase());
+      // District matching (case-insensitive)
+      const complaintDistrict =
+        (complaint as any).district_name || complaint.districtName || "";
+      const matchesDistrict =
+        districtFilter === "all" ||
+        (complaintDistrict &&
+          complaintDistrict.toLowerCase() === districtFilter.toLowerCase());
+      // Sub-district matching (case-insensitive)
+      const complaintSubDistrict =
+        (complaint as any).subdistrict_name ||
+        complaint.subdistrictName ||
+        "";
+      const matchesSubDistrict =
+        subDistrictFilter === "all" ||
+        (complaintSubDistrict &&
+          complaintSubDistrict.toLowerCase() ===
+            subDistrictFilter.toLowerCase());
       return (
-        matchesSearch && matchesStatus && matchesPriority && matchesCategory
+        matchesSearch &&
+        matchesStatus &&
+        matchesPriority &&
+        matchesCategory &&
+        matchesDistrict &&
+        matchesSubDistrict
       );
     }) || [];
 
@@ -274,7 +316,7 @@ const ComplaintsPage: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -353,6 +395,45 @@ const ComplaintsPage: React.FC = () => {
                 </SelectItem>
                 <SelectItem value="health">Health Services</SelectItem>
                 <SelectItem value="education">Education</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={districtFilter}
+              onValueChange={(value) => {
+                setDistrictFilter(value);
+                // Reset sub-district when district changes
+                setSubDistrictFilter("all");
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="District" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Districts</SelectItem>
+                <SelectItem value="Budaun">Budaun</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={subDistrictFilter}
+              onValueChange={setSubDistrictFilter}
+              disabled={districtFilter === "all" || availableSubDistricts.length === 0}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    districtFilter === "all"
+                      ? "Select District First"
+                      : "Sub-District"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sub-Districts</SelectItem>
+                {availableSubDistricts.map((subDistrict) => (
+                  <SelectItem key={subDistrict} value={subDistrict}>
+                    {subDistrict}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

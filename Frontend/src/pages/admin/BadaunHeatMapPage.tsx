@@ -130,10 +130,7 @@ const BadaunHeatMapPage: React.FC = () => {
         ...prev,
         subdistrict: urlSubdistrict,
       }));
-      // Auto-enable all layers when subdistrict is selected
-      setShowVillages(true);
-      setShowTowns(true);
-      setShowWards(true);
+      // All layers remain unchecked by default - user must manually enable them
     } else if (urlSubdistrict === null && filters.subdistrict) {
       // Clear subdistrict filter when URL param is removed
       setFilters((prev) => ({
@@ -1700,7 +1697,7 @@ const BadaunHeatMapPage: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate("/admin/dashboard")}
-              className="hover:bg-orange-50"
+              className="bg-orange-50 text-black "
             >
               <Home className="w-4 h-4 mr-2" />
               Back to UP Map

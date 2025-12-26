@@ -3,8 +3,8 @@
  * All backend API calls go through this client
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
-import { API_BASE_URL, STORAGE_KEYS } from './constants';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios";
+import { API_BASE_URL, STORAGE_KEYS } from "./constants";
 
 class ApiClient {
   private client: AxiosInstance;
@@ -12,9 +12,9 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
-      timeout: 30000,
+      timeout: 0, // No timeout - allows API calls to complete regardless of response time
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -40,28 +40,28 @@ class ApiClient {
           // Unauthorized - Clear token
           localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
           localStorage.removeItem(STORAGE_KEYS.USER);
-          
+
           // Only redirect if not already on admin login page
           // This prevents redirecting away from admin login form
-          if (!window.location.pathname.startsWith('/admin')) {
-            window.location.href = '/';
+          if (!window.location.pathname.startsWith("/admin")) {
+            window.location.href = "/";
           }
         }
-        
+
         // Handle rate limiting (429)
         if (error.response?.status === 429) {
-          const errorMessage = 
-            (error.response.data as any)?.message || 
+          const errorMessage =
+            (error.response.data as any)?.message ||
             (error.response.data as any)?.error?.message ||
-            'Too many requests. Please wait a few minutes before trying again.';
-          
+            "Too many requests. Please wait a few minutes before trying again.";
+
           // Create a more informative error
           const rateLimitError = new Error(errorMessage);
           (rateLimitError as any).status = 429;
           (rateLimitError as any).response = error.response;
           return Promise.reject(rateLimitError);
         }
-        
+
         return Promise.reject(error);
       }
     );
@@ -74,19 +74,31 @@ class ApiClient {
   }
 
   // Generic POST request
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async post<T>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response = await this.client.post<T>(url, data, config);
     return response.data as T;
   }
 
   // Generic PUT request
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async put<T>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response = await this.client.put<T>(url, data, config);
     return response.data as T;
   }
 
   // Generic PATCH request
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async patch<T>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response = await this.client.patch<T>(url, data, config);
     return response.data as T;
   }
@@ -98,12 +110,16 @@ class ApiClient {
   }
 
   // File upload with FormData
-  async upload<T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> {
+  async upload<T>(
+    url: string,
+    formData: FormData,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response = await this.client.post<T>(url, formData, {
       ...config,
       headers: {
         ...config?.headers,
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
     return response.data as T;
@@ -118,4 +134,3 @@ class ApiClient {
 // Export singleton instance
 export const apiClient = new ApiClient();
 export default apiClient;
-

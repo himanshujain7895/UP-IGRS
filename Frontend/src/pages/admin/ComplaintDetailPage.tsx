@@ -134,6 +134,12 @@ const ComplaintDetailPage: React.FC = () => {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [stage3Loading, setStage3Loading] = useState(false);
 
+  // Assignment Officers Scroll
+  const assignmentOfficersScrollRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeftAssignment, setCanScrollLeftAssignment] = useState(false);
+  const [canScrollRightAssignment, setCanScrollRightAssignment] =
+    useState(true);
+
   // Actions
   const [actions, setActions] = useState<any>(null);
   const [sendingEmail, setSendingEmail] = useState<{ [key: number]: boolean }>(
@@ -365,6 +371,41 @@ const ComplaintDetailPage: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [executives, checkScrollButtons]);
+
+  const checkAssignmentScrollButtons = useCallback(() => {
+    if (!assignmentOfficersScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } =
+      assignmentOfficersScrollRef.current;
+    setCanScrollLeftAssignment(scrollLeft > 0);
+    setCanScrollRightAssignment(scrollLeft < scrollWidth - clientWidth - 10);
+  }, []);
+
+  const scrollAssignmentOfficers = useCallback(
+    (direction: "left" | "right") => {
+      if (!assignmentOfficersScrollRef.current) return;
+      const scrollAmount = 400; // Scroll by 400px
+      const currentScroll = assignmentOfficersScrollRef.current.scrollLeft;
+      const newScroll =
+        direction === "left"
+          ? currentScroll - scrollAmount
+          : currentScroll + scrollAmount;
+      assignmentOfficersScrollRef.current.scrollTo({
+        left: newScroll,
+        behavior: "smooth",
+      });
+    },
+    []
+  );
+
+  // Check scroll buttons when assignment executives change or component mounts
+  useEffect(() => {
+    if (assignmentExecutives.length > 0) {
+      const timer = setTimeout(() => {
+        checkAssignmentScrollButtons();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [assignmentExecutives, checkAssignmentScrollButtons]);
 
   const handleDraftLetter = async () => {
     if (!id || executives.length === 0) return;
@@ -2598,65 +2639,99 @@ const ComplaintDetailPage: React.FC = () => {
                       Select Officer to Assign ({assignmentExecutives.length}{" "}
                       available):
                     </Label>
-                    <RadioGroup
-                      value={selectedAssignmentExecutiveIndex.toString()}
-                      onValueChange={(value) =>
-                        setSelectedAssignmentExecutiveIndex(parseInt(value))
-                      }
-                      className="space-y-3"
-                    >
-                      {assignmentExecutives.map((exec, index) => (
-                        <div key={index}>
-                          <RadioGroupItem
-                            value={index.toString()}
-                            id={`assign-executive-${index}`}
-                            className="peer sr-only"
-                          />
-                          <Label
-                            htmlFor={`assign-executive-${index}`}
-                            className="flex flex-col p-4 border-2 rounded-xl cursor-pointer hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-4 peer-data-[state=checked]:ring-primary/20 peer-data-[state=checked]:bg-gradient-to-br peer-data-[state=checked]:from-primary/5 peer-data-[state=checked]:to-orange-50"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                                {index + 1}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="font-bold text-base text-foreground mb-1">
-                                  {exec.name || "Unknown"}
-                                </div>
-                                <div className="text-sm font-medium text-muted-foreground mb-2">
-                                  {exec.designation} - {exec.district}
-                                </div>
-                                <div className="space-y-1.5 text-sm">
-                                  {exec.email && (
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                      <Mail className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                                      <span className="truncate">
-                                        {exec.email}
-                                      </span>
+                    <div className="relative">
+                      {/* Left Scroll Button */}
+                      {canScrollLeftAssignment && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg "
+                          onClick={() => scrollAssignmentOfficers("left")}
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </Button>
+                      )}
+                      {/* Right Scroll Button */}
+                      {canScrollRightAssignment && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg "
+                          onClick={() => scrollAssignmentOfficers("right")}
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </Button>
+                      )}
+                      {/* Scrollable Container */}
+                      <div
+                        ref={assignmentOfficersScrollRef}
+                        onScroll={checkAssignmentScrollButtons}
+                        className="overflow-x-auto scrollbar-hide pb-4"
+                      >
+                        <RadioGroup
+                          value={selectedAssignmentExecutiveIndex.toString()}
+                          onValueChange={(value) =>
+                            setSelectedAssignmentExecutiveIndex(parseInt(value))
+                          }
+                          className="flex gap-4"
+                        >
+                          {assignmentExecutives.map((exec, index) => (
+                            <div
+                              key={index}
+                              className="w-[320px] flex-shrink-0"
+                            >
+                              <RadioGroupItem
+                                value={index.toString()}
+                                id={`assign-executive-${index}`}
+                                className="peer sr-only"
+                              />
+                              <Label
+                                htmlFor={`assign-executive-${index}`}
+                                className="flex flex-col p-4 border-2 rounded-xl cursor-pointer hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-4 peer-data-[state=checked]:ring-primary/20 peer-data-[state=checked]:bg-gradient-to-br peer-data-[state=checked]:from-primary/5 peer-data-[state=checked]:to-orange-50 h-full"
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                    {index + 1}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-bold text-base text-foreground mb-1">
+                                      {exec.name || "Unknown"}
                                     </div>
-                                  )}
-                                  {exec.phone && (
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                      <Phone className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                                      <span>{exec.phone}</span>
+                                    <div className="text-sm font-medium text-muted-foreground mb-2">
+                                      {exec.designation} - {exec.district}
                                     </div>
-                                  )}
-                                  {exec.office_address && (
-                                    <div className="flex items-start gap-2 text-muted-foreground">
-                                      <MapPin className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
-                                      <span className="text-xs">
-                                        {exec.office_address}
-                                      </span>
+                                    <div className="space-y-1.5 text-sm">
+                                      {exec.email && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                          <Mail className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                                          <span className="truncate">
+                                            {exec.email}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {exec.phone && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                          <Phone className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                                          <span>{exec.phone}</span>
+                                        </div>
+                                      )}
+                                      {exec.office_address && (
+                                        <div className="flex items-start gap-2 text-muted-foreground">
+                                          <MapPin className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
+                                          <span className="text-xs">
+                                            {exec.office_address}
+                                          </span>
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
+                                  </div>
                                 </div>
-                              </div>
+                              </Label>
                             </div>
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
+                          ))}
+                        </RadioGroup>
+                      </div>
+                    </div>
                   </div>
                   <Button
                     onClick={handleAssignOfficer}
