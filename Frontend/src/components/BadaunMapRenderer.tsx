@@ -9,6 +9,8 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import Map, { Source, Layer, MapRef } from "react-map-gl/maplibre";
 import type { FeatureCollection } from "geojson";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { SubdistrictHoverTooltip } from "./SubdistrictHoverTooltip";
+import { geoService, SubdistrictHoverData } from "@/services/geo.service";
 
 // Badaun district center coordinates (adjusted for sidebar on left)
 const BADAUN_CENTER: [number, number] = [28.0, 79.15]; // [lat, lng] - shifted right to account for sidebar
@@ -58,6 +60,20 @@ interface BadaunMapRendererProps {
   showHeatmap?: boolean;
   heatmapColorScheme?: "complaints" | "population" | "custom";
   selectedSubdistrict?: string | null;
+  
+  // Layer visibility controls
+  layerToggles?: {
+    showVillages: boolean;
+    showTowns: boolean;
+    showWards: boolean;
+    showAdhq: boolean;
+    showIndiaAssets: boolean;
+    onToggleVillages: () => void;
+    onToggleTowns: () => void;
+    onToggleWards: () => void;
+    onToggleAdhq: () => void;
+    onToggleIndiaAssets: () => void;
+  };
 }
 
 const BadaunMapRenderer: React.FC<BadaunMapRendererProps> = ({
@@ -67,12 +83,19 @@ const BadaunMapRenderer: React.FC<BadaunMapRendererProps> = ({
   showHeatmap = false,
   heatmapColorScheme = "complaints",
   selectedSubdistrict = null,
+  layerToggles,
 }) => {
   const mapRef = useRef<MapRef>(null);
   const [isLegendExpanded, setIsLegendExpanded] = useState(false);
   const [hoveredSubdistrict, setHoveredSubdistrict] = useState<string | null>(
     null
   );
+  
+  // Hover tooltip state
+  const [hoverTooltipData, setHoverTooltipData] = useState<SubdistrictHoverData | null>(null);
+  const [hoverTooltipPosition, setHoverTooltipPosition] = useState<{ x: number; y: number } | null>(null);
+  const [loadingHoverData, setLoadingHoverData] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Adjust map bounds when subdistrict is selected
   useEffect(() => {
@@ -250,17 +273,57 @@ const BadaunMapRenderer: React.FC<BadaunMapRendererProps> = ({
           if (hoveredSubdistrict !== subdistrictName) {
             setHoveredSubdistrict(subdistrictName);
             mapRef.current.getCanvas().style.cursor = "pointer";
+            
+            // Set tooltip position
+            setHoverTooltipPosition({ x: event.point.x, y: event.point.y });
+            
+            // Clear any existing timeout
+            if (hoverTimeoutRef.current) {
+              clearTimeout(hoverTimeoutRef.current);
+            }
+            
+            // Debounce API call - only fetch after 300ms of hovering
+            hoverTimeoutRef.current = setTimeout(async () => {
+              setLoadingHoverData(true);
+              try {
+                const subdistrictCode = feature.properties?.subdt_lgd || subdistrictName;
+                const hoverData = await geoService.getSubdistrictHoverData(subdistrictCode);
+                setHoverTooltipData(hoverData);
+              } catch (error) {
+                console.error("Failed to fetch subdistrict hover data:", error);
+                setHoverTooltipData(null);
+              } finally {
+                setLoadingHoverData(false);
+              }
+            }, 300);
+          } else {
+            // Update position while hovering over same subdistrict
+            setHoverTooltipPosition({ x: event.point.x, y: event.point.y });
           }
         } else {
+          // Clear hover state
           if (hoveredSubdistrict !== null) {
             setHoveredSubdistrict(null);
+            setHoverTooltipData(null);
+            setHoverTooltipPosition(null);
             mapRef.current.getCanvas().style.cursor = "";
+            
+            if (hoverTimeoutRef.current) {
+              clearTimeout(hoverTimeoutRef.current);
+            }
           }
         }
       } else {
+        // Clear hover state
         if (hoveredSubdistrict !== null) {
           setHoveredSubdistrict(null);
+          setHoverTooltipData(null);
+          setHoverTooltipPosition(null);
           mapRef.current.getCanvas().style.cursor = "";
+          
+          if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+          }
         }
       }
     },
@@ -757,73 +820,157 @@ const BadaunMapRenderer: React.FC<BadaunMapRendererProps> = ({
 
         {isLegendExpanded && (
           <div className="p-3 space-y-2 max-h-[70vh] overflow-y-auto">
-            <div className="font-semibold mb-2">
+            <div className="font-semibold mb-2 text-sm">
               Sub-districts (by complaints)
             </div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-4 bg-green-500 rounded"></div>
-              <span>Zero</span>
+              <span className="text-xs">Zero</span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="w-6 h-4 rounded"
                 style={{ background: "#FCA5A5" }}
               ></div>
-              <span>Low</span>
+              <span className="text-xs">Low</span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="w-6 h-4 rounded"
                 style={{ background: "#F87171" }}
               ></div>
-              <span>Medium-Low</span>
+              <span className="text-xs">Medium-Low</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-4 bg-red-500 rounded"></div>
-              <span>Medium-High</span>
+              <span className="text-xs">Medium-High</span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="w-6 h-4 rounded"
                 style={{ background: "#991B1B" }}
               ></div>
-              <span>High</span>
+              <span className="text-xs">High</span>
             </div>
 
-            <div className="border-t pt-2 mt-3 font-semibold">Boundaries</div>
+            {/* INTERACTIVE LAYER TOGGLES */}
+            {layerToggles && (
+              <>
+                <div className="border-t pt-2 mt-3 font-semibold text-sm flex items-center justify-between">
+                  <span>Map Layers</span>
+                  <span className="text-xs font-normal text-gray-500">
+                    Click to toggle
+                  </span>
+                </div>
+                
+                {/* Villages Layer */}
+                <label 
+                  className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer transition-colors border border-gray-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    layerToggles.onToggleVillages();
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={layerToggles.showVillages}
+                    onChange={() => {}}
+                    className="rounded w-3.5 h-3.5"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                  <span className="text-sm">Villages (1,785)</span>
+                </label>
+
+                {/* Towns Layer */}
+                <label 
+                  className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer transition-colors border border-gray-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    layerToggles.onToggleTowns();
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={layerToggles.showTowns}
+                    onChange={() => {}}
+                    className="rounded w-3.5 h-3.5"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="w-4 h-4 rounded-full bg-cyan-500 border border-cyan-700"></div>
+                  <span className="text-sm">Towns (23)</span>
+                </label>
+
+                {/* Wards Layer */}
+                <label 
+                  className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer transition-colors border border-gray-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    layerToggles.onToggleWards();
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={layerToggles.showWards}
+                    onChange={() => {}}
+                    className="rounded w-3.5 h-3.5"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500 border border-yellow-700"></div>
+                  <span className="text-sm">Wards (354)</span>
+                </label>
+
+                {/* Admin HQ Layer */}
+                <label 
+                  className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer transition-colors border border-gray-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    layerToggles.onToggleAdhq();
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={layerToggles.showAdhq}
+                    onChange={() => {}}
+                    className="rounded w-3.5 h-3.5"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                  <span className="text-sm">Admin HQ</span>
+                </label>
+
+                {/* India Assets Layer */}
+                <label 
+                  className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer transition-colors border border-gray-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    layerToggles.onToggleIndiaAssets();
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={layerToggles.showIndiaAssets}
+                    onChange={() => {}}
+                    className="rounded w-3.5 h-3.5"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="w-4 h-4 rounded-full bg-purple-500"></div>
+                  <span className="text-sm">Schools/Hospitals</span>
+                </label>
+              </>
+            )}
+
+            {/* Static Information Sections */}
+            <div className="border-t pt-2 mt-3 font-semibold text-sm">Boundaries</div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-4 bg-orange-300 border-2 border-orange-600 rounded"></div>
-              <span className="text-sm">Sub-districts (6)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-4 bg-gray-200 border border-gray-600 rounded"></div>
-              <span className="text-sm">Villages (1,785)</span>
+              <span className="text-xs">Sub-districts (6)</span>
             </div>
 
-            <div className="border-t pt-2 mt-3 font-semibold">Markers</div>
+            <div className="border-t pt-2 mt-3 font-semibold text-sm">Markers</div>
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-white border-2 border-black"></div>
-              <span className="font-medium">Complaints</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-              <span className="text-sm">Village Centers</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-cyan-500 border border-cyan-700"></div>
-              <span className="text-sm">Towns (23)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-yellow-500 border border-yellow-700"></div>
-              <span className="text-sm">Wards (354)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-red-500"></div>
-              <span className="text-sm">Admin HQ</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-purple-500"></div>
-              <span className="text-sm">Schools/Hospitals</span>
+              <span className="text-xs font-medium">Complaints</span>
             </div>
           </div>
         )}
@@ -856,6 +1003,16 @@ const BadaunMapRenderer: React.FC<BadaunMapRendererProps> = ({
           <span className="text-2xl font-bold leading-none">−</span>
         </button>
       </div>
+      
+      {/* Hover Tooltip */}
+      {hoveredSubdistrict && hoverTooltipPosition && (
+        <SubdistrictHoverTooltip
+          subdistrictName={hoveredSubdistrict}
+          position={hoverTooltipPosition}
+          data={hoverTooltipData}
+          loading={loadingHoverData}
+        />
+      )}
     </div>
   );
 };

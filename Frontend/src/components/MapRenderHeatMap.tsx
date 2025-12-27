@@ -34,6 +34,8 @@ import React, {
 import Map, { Source, Layer, Popup, MapRef } from "react-map-gl/maplibre";
 import type { FeatureCollection, Feature } from "geojson";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { DistrictHoverTooltip } from "./DistrictHoverTooltip";
+import { geoService, DistrictHoverData } from "@/services/geo.service";
 
 // Uttar Pradesh center coordinates
 const UP_CENTER: [number, number] = [26.8, 80.0];
@@ -212,6 +214,12 @@ const MapRenderHeatMap: React.FC<MapRenderHeatMapProps> = ({
   >(null);
   const [hoveredDistrict, setHoveredDistrict] = useState<string | null>(null);
   const [hasInitialFit, setHasInitialFit] = useState(false);
+  
+  // Hover tooltip state
+  const [hoverTooltipData, setHoverTooltipData] = useState<DistrictHoverData | null>(null);
+  const [hoverTooltipPosition, setHoverTooltipPosition] = useState<{ x: number; y: number } | null>(null);
+  const [loadingHoverData, setLoadingHoverData] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-zoom to fit all features when geoData changes (only once)
   useEffect(() => {
@@ -976,17 +984,57 @@ const MapRenderHeatMap: React.FC<MapRenderHeatMapProps> = ({
           if (hoveredDistrict !== districtName) {
             setHoveredDistrict(districtName);
             mapRef.current.getCanvas().style.cursor = "pointer";
+            
+            // Set tooltip position
+            setHoverTooltipPosition({ x: event.point.x, y: event.point.y });
+            
+            // Clear any existing timeout
+            if (hoverTimeoutRef.current) {
+              clearTimeout(hoverTimeoutRef.current);
+            }
+            
+            // Debounce API call - only fetch after 300ms of hovering
+            hoverTimeoutRef.current = setTimeout(async () => {
+              setLoadingHoverData(true);
+              try {
+                const districtCode = feature.properties?.districtCode || districtName;
+                const hoverData = await geoService.getDistrictHoverData(districtCode);
+                setHoverTooltipData(hoverData);
+              } catch (error) {
+                console.error("Failed to fetch hover data:", error);
+                setHoverTooltipData(null);
+              } finally {
+                setLoadingHoverData(false);
+              }
+            }, 300);
+          } else {
+            // Update position while hovering over same district
+            setHoverTooltipPosition({ x: event.point.x, y: event.point.y });
           }
         } else {
+          // Clear hover state
           if (hoveredDistrict !== null) {
             setHoveredDistrict(null);
+            setHoverTooltipData(null);
+            setHoverTooltipPosition(null);
             mapRef.current.getCanvas().style.cursor = "";
+            
+            if (hoverTimeoutRef.current) {
+              clearTimeout(hoverTimeoutRef.current);
+            }
           }
         }
       } else {
+        // Clear hover state
         if (hoveredDistrict !== null) {
           setHoveredDistrict(null);
+          setHoverTooltipData(null);
+          setHoverTooltipPosition(null);
           mapRef.current.getCanvas().style.cursor = "";
+          
+          if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+          }
         }
       }
     },
@@ -1239,6 +1287,16 @@ const MapRenderHeatMap: React.FC<MapRenderHeatMapProps> = ({
           </Popup>
         )}
       </Map>
+      
+      {/* Hover Tooltip */}
+      {hoveredDistrict && hoverTooltipPosition && (
+        <DistrictHoverTooltip
+          districtName={hoveredDistrict}
+          position={hoverTooltipPosition}
+          data={hoverTooltipData}
+          loading={loadingHoverData}
+        />
+      )}
     </div>
   );
 };

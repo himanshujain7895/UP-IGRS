@@ -103,6 +103,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
       label: "Dashboard",
     },
     {
+      type: "item",
+      path: "/admin/india-map",
+      icon: MapPin,
+      label: "India Map",
+    },
+    {
       type: "group",
       label: "Complaints",
       icon: FileText,
@@ -551,6 +557,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
               {location.pathname === "/admin" && "Dashboard"}
               {location.pathname === "/admin/dashboard" &&
                 "Mission 2027 Uttar Pradesh HeatMap"}
+              {location.pathname === "/admin/india-map" && "India Map"}
               {location.pathname === "/admin/complaints/heatmap" &&
                 "Complaints Heat Map"}
               {location.pathname.startsWith("/admin/complaints") &&

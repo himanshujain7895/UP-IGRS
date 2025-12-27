@@ -98,6 +98,63 @@ export interface SubdistrictDemographics {
   };
 }
 
+// District Hover Data Interface (for hover tooltip)
+export interface DistrictHoverData {
+  districtName: string;
+  districtCode: string;
+  mlcName?: string;
+  mpName?: string;
+  zilaPanchayatHead?: string;
+  pendingComplaints: number;
+  inProgressComplaints: number;
+  resolvedComplaints: number;
+  iasName?: string;
+  population: number;
+  hinduPopulation?: number;
+  muslimPopulation?: number;
+}
+
+// Subdistrict Hover Data Interface
+export interface SubdistrictHoverData {
+  subdistrictName: string;
+  subdistrictCode: string;
+  bdoName?: string;
+  blockPramukh?: string;
+  pendingComplaints: number;
+  inProgressComplaints: number;
+  resolvedComplaints: number;
+  population: number;
+  hinduPopulation?: number;
+  muslimPopulation?: number;
+}
+
+// Village Hover Data Interface
+export interface VillageHoverData {
+  villageName: string;
+  villageCode: string;
+  sarpanch?: string;
+  gramPradhan?: string;
+  pendingComplaints: number;
+  inProgressComplaints: number;
+  resolvedComplaints: number;
+  population: number;
+  hinduPopulation?: number;
+  muslimPopulation?: number;
+}
+
+// Town Hover Data Interface
+export interface TownHoverData {
+  townName: string;
+  townCode: string;
+  municipalChairman?: string;
+  pendingComplaints: number;
+  inProgressComplaints: number;
+  resolvedComplaints: number;
+  population: number;
+  hinduPopulation?: number;
+  muslimPopulation?: number;
+}
+
 export const geoService = {
   /**
    * Get Uttar Pradesh GeoJSON data
@@ -430,5 +487,176 @@ export const geoService = {
     }
 
     return 0;
+  },
+
+  /**
+   * Get district hover summary data (lightweight data for hover tooltip)
+   * GET /api/v1/geo/districts/:districtCode/hover-summary
+   */
+  async getDistrictHoverData(
+    districtCode: string
+  ): Promise<DistrictHoverData> {
+    const response = await apiClient.get<ApiResponse<DistrictHoverData>>(
+      `/geo/districts/${encodeURIComponent(districtCode)}/hover-summary`
+    );
+
+    if (response.success && response.data) {
+      return response.data;
+    }
+
+    throw new Error(
+      response.error?.message || "Failed to fetch district hover data"
+    );
+  },
+
+  /**
+   * Get subdistrict hover summary data (lightweight data for hover tooltip)
+   * GET /api/v1/geo/subdistricts/:subdistrictCode/hover-summary
+   */
+  async getSubdistrictHoverData(
+    subdistrictCode: string
+  ): Promise<SubdistrictHoverData> {
+    const response = await apiClient.get<ApiResponse<SubdistrictHoverData>>(
+      `/geo/subdistricts/${encodeURIComponent(subdistrictCode)}/hover-summary`
+    );
+
+    if (response.success && response.data) {
+      return response.data;
+    }
+
+    throw new Error(
+      response.error?.message || "Failed to fetch subdistrict hover data"
+    );
+  },
+
+  /**
+   * Get village hover summary data (lightweight data for hover tooltip)
+   * GET /api/v1/geo/villages/:villageCode/hover-summary
+   */
+  async getVillageHoverData(
+    villageCode: string
+  ): Promise<VillageHoverData> {
+    const response = await apiClient.get<ApiResponse<VillageHoverData>>(
+      `/geo/villages/${encodeURIComponent(villageCode)}/hover-summary`
+    );
+
+    if (response.success && response.data) {
+      return response.data;
+    }
+
+    throw new Error(
+      response.error?.message || "Failed to fetch village hover data"
+    );
+  },
+
+  /**
+   * Get town hover summary data (lightweight data for hover tooltip)
+   * GET /api/v1/geo/towns/:townCode/hover-summary
+   */
+  async getTownHoverData(
+    townCode: string
+  ): Promise<TownHoverData> {
+    const response = await apiClient.get<ApiResponse<TownHoverData>>(
+      `/geo/towns/${encodeURIComponent(townCode)}/hover-summary`
+    );
+
+    if (response.success && response.data) {
+      return response.data;
+    }
+
+    throw new Error(
+      response.error?.message || "Failed to fetch town hover data"
+    );
+  },
+
+  /**
+   * Get India states GeoJSON data
+   * GET /api/v1/geo/india/states
+   */
+  async getIndiaStatesGeoJson(): Promise<FeatureCollection> {
+    const response = await apiClient.get<ApiResponse<FeatureCollection>>(
+      "/geo/india/states"
+    );
+
+    if (response.success && response.data) {
+      if (response.data.type !== "FeatureCollection") {
+        throw new Error("Invalid GeoJSON data: expected FeatureCollection");
+      }
+      return response.data;
+    }
+
+    throw new Error(
+      response.error?.message || "Failed to fetch India states GeoJSON"
+    );
+  },
+
+  /**
+   * Get districts for a specific state
+   * GET /api/v1/geo/state/:stateCode/districts
+   */
+  async getStateDistrictsGeoJson(stateCode: string): Promise<FeatureCollection> {
+    const response = await apiClient.get<ApiResponse<FeatureCollection>>(
+      `/geo/state/${encodeURIComponent(stateCode)}/districts`
+    );
+
+    if (response.success && response.data) {
+      if (response.data.type !== "FeatureCollection") {
+        throw new Error("Invalid GeoJSON data: expected FeatureCollection");
+      }
+      return response.data;
+    }
+
+    throw new Error(
+      response.error?.message ||
+        `Failed to fetch districts for state ${stateCode}`
+    );
+  },
+
+  /**
+   * Get sub-districts for a specific district
+   * GET /api/v1/geo/district/:districtCode/subdistricts
+   */
+  async getDistrictSubdistrictsGeoJson(
+    districtCode: string
+  ): Promise<FeatureCollection> {
+    const response = await apiClient.get<ApiResponse<FeatureCollection>>(
+      `/geo/district/${encodeURIComponent(districtCode)}/subdistricts`
+    );
+
+    if (response.success && response.data) {
+      if (response.data.type !== "FeatureCollection") {
+        throw new Error("Invalid GeoJSON data: expected FeatureCollection");
+      }
+      return response.data;
+    }
+
+    throw new Error(
+      response.error?.message ||
+        `Failed to fetch sub-districts for district ${districtCode}`
+    );
+  },
+
+  /**
+   * Get villages for a specific sub-district
+   * GET /api/v1/geo/subdistrict/:subdistrictCode/villages
+   */
+  async getSubdistrictVillagesGeoJson(
+    subdistrictCode: string
+  ): Promise<FeatureCollection> {
+    const response = await apiClient.get<ApiResponse<FeatureCollection>>(
+      `/geo/subdistrict/${encodeURIComponent(subdistrictCode)}/villages`
+    );
+
+    if (response.success && response.data) {
+      if (response.data.type !== "FeatureCollection") {
+        throw new Error("Invalid GeoJSON data: expected FeatureCollection");
+      }
+      return response.data;
+    }
+
+    throw new Error(
+      response.error?.message ||
+        `Failed to fetch villages for sub-district ${subdistrictCode}`
+    );
   },
 };

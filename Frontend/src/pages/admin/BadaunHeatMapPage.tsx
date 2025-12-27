@@ -2071,80 +2071,7 @@ const BadaunHeatMapPage: React.FC = () => {
                 )}
               </Card>
 
-              <Card>
-                <CardHeader
-                  className="pb-2 cursor-pointer hover:bg-gray-50/50 transition-colors"
-                  onClick={() => toggleCard("mapLayers")}
-                >
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xs font-semibold">
-                      Map Layers
-                    </CardTitle>
-                    {cardCollapsed.mapLayers ? (
-                      <ChevronDown className="w-4 h-4 text-gray-500" />
-                    ) : (
-                      <ChevronUp className="w-4 h-4 text-gray-500" />
-                    )}
-                  </div>
-                </CardHeader>
-                {!cardCollapsed.mapLayers && (
-                  <CardContent className="space-y-1.5 pt-2">
-                    <label className="flex items-center space-x-2 cursor-pointer text-xs">
-                      <input
-                        type="checkbox"
-                        checked={showVillages}
-                        onChange={(e) => setShowVillages(e.target.checked)}
-                        className="rounded w-3 h-3"
-                      />
-                      <Users className="w-3 h-3" />
-                      <span>Villages (1,785)</span>
-                      {loadingVillages && (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      )}
-                    </label>
-                    <label className="flex items-center space-x-2 cursor-pointer text-xs">
-                      <input
-                        type="checkbox"
-                        checked={showTowns}
-                        onChange={(e) => setShowTowns(e.target.checked)}
-                        className="rounded w-3 h-3"
-                      />
-                      <Building2 className="w-3 h-3 text-cyan-600" />
-                      <span>Towns (23)</span>
-                    </label>
-                    <label className="flex items-center space-x-2 cursor-pointer text-xs">
-                      <input
-                        type="checkbox"
-                        checked={showWards}
-                        onChange={(e) => setShowWards(e.target.checked)}
-                        className="rounded w-3 h-3"
-                      />
-                      <MapPin className="w-3 h-3 text-yellow-600" />
-                      <span>Wards (354)</span>
-                    </label>
-                    <label className="flex items-center space-x-2 cursor-pointer text-xs">
-                      <input
-                        type="checkbox"
-                        checked={showAdhq}
-                        onChange={(e) => setShowAdhq(e.target.checked)}
-                        className="rounded w-3 h-3"
-                      />
-                      <Building2 className="w-3 h-3 text-red-600" />
-                      <span>Admin HQ</span>
-                    </label>
-                    <label className="flex items-center space-x-2 cursor-pointer text-xs">
-                      <input
-                        type="checkbox"
-                        checked={showIndiaAssets}
-                        onChange={(e) => setShowIndiaAssets(e.target.checked)}
-                        className="rounded w-3 h-3"
-                      />
-                      <Building2 className="w-3 h-3 text-purple-600" />
-                      <span>Schools/Hospitals</span>
-                    </label>
-                  </CardContent>
-                )}
-              </Card>
+{/* Map Layers card removed - now integrated into Map Legend */}
 
               {/* Heatmap Controls */}
               <Card className="border-orange-200 bg-orange-50/30">
@@ -2415,6 +2342,18 @@ const BadaunHeatMapPage: React.FC = () => {
                   showHeatmap={showComplaintHeatmap || showPopulationHeatmap}
                   heatmapColorScheme={heatmapColorScheme}
                   selectedSubdistrict={filters.subdistrict || null}
+                  layerToggles={{
+                    showVillages,
+                    showTowns,
+                    showWards,
+                    showAdhq,
+                    showIndiaAssets,
+                    onToggleVillages: () => setShowVillages(!showVillages),
+                    onToggleTowns: () => setShowTowns(!showTowns),
+                    onToggleWards: () => setShowWards(!showWards),
+                    onToggleAdhq: () => setShowAdhq(!showAdhq),
+                    onToggleIndiaAssets: () => setShowIndiaAssets(!showIndiaAssets),
+                  }}
                 />
               </div>
             ) : (

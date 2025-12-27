@@ -42,6 +42,7 @@ import UserManagementPage from "@/pages/admin/UserManagementPage";
 import BadaunMapTestPage from "./pages/admin/BadaunMapTestPage";
 import BadaunHeatMapPage from "./pages/admin/BadaunHeatMapPage";
 import HierarchicalDataUploadPage from "./pages/admin/HierarchicalDataUploadPage";
+import IndiaMapPage from "./pages/admin/IndiaMapPage";
 import MyComplaintsPage from "./pages/officer/MyComplaintsPage";
 import OfficerComplaintDetailPage from "./pages/officer/OfficerComplaintDetailPage";
 
@@ -110,6 +111,10 @@ const AppContent: React.FC = () => {
                             <Route
                               path="badaun"
                               element={<BadaunMapTestPage />}
+                            />
+                            <Route
+                              path="india-map"
+                              element={<IndiaMapPage />}
                             />
                             <Route
                               path="data-upload"
