@@ -102,19 +102,19 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
       icon: LayoutDashboard,
       label: "Dashboard",
     },
-    {
-      type: "item",
-      path: "/admin/india-map",
-      icon: MapPin,
-      label: "India Map",
-    },
+    // {
+    //   type: "item",
+    //   path: "/admin/india-map",
+    //   icon: MapPin,
+    //   label: "India Map",
+    // },
     {
       type: "group",
       label: "Complaints",
       icon: FileText,
       items: [
         { path: "/admin/complaints", label: "All Complaints", icon: FileText },
-        { path: "/admin/complaints/heatmap", label: "Heat Map", icon: MapPin },
+        // { path: "/admin/complaints/heatmap", label: "Heat Map", icon: MapPin },
         { path: "/admin/complaints/pending", label: "Pending", icon: Clock },
         {
           path: "/admin/complaints/in-progress",

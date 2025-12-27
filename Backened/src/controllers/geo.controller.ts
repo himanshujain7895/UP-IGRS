@@ -99,7 +99,9 @@ export const getAllDistrictsHeatMap = async (
 
     // Check if Badaun/Budaun exists in heat map data
     const badaunInHeatMap = districtsData.find(
-      (d) => d.districtCode.toLowerCase() === "badaun" || d.districtCode.toLowerCase() === "budaun"
+      (d) =>
+        d.districtCode.toLowerCase() === "badaun" ||
+        d.districtCode.toLowerCase() === "budaun"
     );
 
     // If Badaun is not in heat map, calculate from complaints
@@ -108,10 +110,7 @@ export const getAllDistrictsHeatMap = async (
         const { Complaint } = await import("../models/Complaint");
         // Count all complaints for Badaun district (handles both spellings)
         const badaunComplaintCount = await Complaint.countDocuments({
-          $or: [
-            { district_name: "Badaun" },
-            { district_name: "Budaun" },
-          ],
+          $or: [{ district_name: "Badaun" }, { district_name: "Budaun" }],
         });
 
         // Add Badaun to the districts data
@@ -141,23 +140,26 @@ export const getAllDistrictsHeatMap = async (
       }
     } else {
       // If Badaun exists but totalComplaints is 0 or missing, recalculate
-      if (!badaunInHeatMap.totalComplaints || badaunInHeatMap.totalComplaints === 0) {
+      if (
+        !badaunInHeatMap.totalComplaints ||
+        badaunInHeatMap.totalComplaints === 0
+      ) {
         try {
           const { Complaint } = await import("../models/Complaint");
           const badaunComplaintCount = await Complaint.countDocuments({
-            $or: [
-              { district_name: "Badaun" },
-              { district_name: "Budaun" },
-            ],
+            $or: [{ district_name: "Badaun" }, { district_name: "Budaun" }],
           });
 
           // Update the existing entry
           const badaunIndex = districtsData.findIndex(
-            (d) => d.districtCode.toLowerCase() === "badaun" || d.districtCode.toLowerCase() === "budaun"
+            (d) =>
+              d.districtCode.toLowerCase() === "badaun" ||
+              d.districtCode.toLowerCase() === "budaun"
           );
           if (badaunIndex !== -1) {
             districtsData[badaunIndex].totalComplaints = badaunComplaintCount;
-            districtsData[badaunIndex].heatValue = badaunComplaintCount || districtsData[badaunIndex].heatValue;
+            districtsData[badaunIndex].heatValue =
+              badaunComplaintCount || districtsData[badaunIndex].heatValue;
           }
 
           logger.info(
@@ -227,7 +229,10 @@ export const getDistrictHeatMapById = async (
  */
 const convertEsriJsonToGeoJson = (esriJsonData: any): any => {
   // If it's already a FeatureCollection, return it directly
-  if (esriJsonData.type === 'FeatureCollection' && Array.isArray(esriJsonData.features)) {
+  if (
+    esriJsonData.type === "FeatureCollection" &&
+    Array.isArray(esriJsonData.features)
+  ) {
     return esriJsonData;
   }
 
@@ -237,7 +242,11 @@ const convertEsriJsonToGeoJson = (esriJsonData: any): any => {
   if (Array.isArray(esriJsonData)) {
     esriJsonData.forEach((outerItem: any) => {
       // Handle case where outer array contains FeatureCollection directly
-      if (outerItem && outerItem.type === 'FeatureCollection' && Array.isArray(outerItem.features)) {
+      if (
+        outerItem &&
+        outerItem.type === "FeatureCollection" &&
+        Array.isArray(outerItem.features)
+      ) {
         features.push(...outerItem.features);
         return;
       }
@@ -246,23 +255,31 @@ const convertEsriJsonToGeoJson = (esriJsonData: any): any => {
       if (Array.isArray(outerItem)) {
         outerItem.forEach((item: any) => {
           // Handle nested FeatureCollection
-          if (item && item.type === 'FeatureCollection' && Array.isArray(item.features)) {
+          if (
+            item &&
+            item.type === "FeatureCollection" &&
+            Array.isArray(item.features)
+          ) {
             features.push(...item.features);
             return;
           }
 
           // Handle Elasticsearch _source format
           const source = item._source || item;
-          
+
           if (source) {
             // Handle GeoJSON feature
-            if (source.type === 'Feature' && source.geometry) {
+            if (source.type === "Feature" && source.geometry) {
               features.push({
-                type: 'Feature',
+                type: "Feature",
                 geometry: source.geometry,
                 properties: {
                   ...source.properties,
-                  name: source.properties?.Asset_Name || source.properties?.name || source.properties?.NAME || null,
+                  name:
+                    source.properties?.Asset_Name ||
+                    source.properties?.name ||
+                    source.properties?.NAME ||
+                    null,
                   Asset_Name: source.properties?.Asset_Name || null,
                   poiType: source.properties?.Type || null,
                   Type: source.properties?.Type || null,
@@ -274,7 +291,7 @@ const convertEsriJsonToGeoJson = (esriJsonData: any): any => {
             // Handle direct geometry with coordinates
             if (source.geometry || (source.lat && source.long)) {
               const geometry = source.geometry || {
-                type: 'Point',
+                type: "Point",
                 coordinates: [source.long, source.lat],
               };
 
@@ -285,11 +302,15 @@ const convertEsriJsonToGeoJson = (esriJsonData: any): any => {
                 delete properties.long;
 
                 features.push({
-                  type: 'Feature',
+                  type: "Feature",
                   geometry,
                   properties: {
                     ...properties,
-                    name: properties.Asset_Name || properties.name || properties.NAME || null,
+                    name:
+                      properties.Asset_Name ||
+                      properties.name ||
+                      properties.NAME ||
+                      null,
                     Asset_Name: properties.Asset_Name || null,
                     poiType: properties.Type || null,
                     Type: properties.Type || null,
@@ -305,21 +326,25 @@ const convertEsriJsonToGeoJson = (esriJsonData: any): any => {
         const source = outerItem._source;
         if (source.geometry || (source.lat && source.long)) {
           const geometry = source.geometry || {
-            type: 'Point',
+            type: "Point",
             coordinates: [source.long, source.lat],
           };
-          
+
           const properties = { ...source };
           delete properties.geometry;
           delete properties.lat;
           delete properties.long;
 
           features.push({
-            type: 'Feature',
+            type: "Feature",
             geometry,
             properties: {
               ...properties,
-              name: properties.Asset_Name || properties.name || properties.NAME || null,
+              name:
+                properties.Asset_Name ||
+                properties.name ||
+                properties.NAME ||
+                null,
               Asset_Name: properties.Asset_Name || null,
               poiType: properties.Type || null,
               Type: properties.Type || null,
@@ -331,7 +356,7 @@ const convertEsriJsonToGeoJson = (esriJsonData: any): any => {
   }
 
   return {
-    type: 'FeatureCollection',
+    type: "FeatureCollection",
     features: features,
   };
 };
@@ -339,10 +364,10 @@ const convertEsriJsonToGeoJson = (esriJsonData: any): any => {
 /**
  * GET /api/v1/geo/:district/:poi
  * Get Points of Interest (POI) data for a specific district
- * 
+ *
  * @param district - District name (e.g., "badaun")
  * @param poi - POI type (e.g., "adhq" or "india-assets")
- * 
+ *
  * Returns GeoJSON FeatureCollection of POI locations
  */
 export const getDistrictPOI = async (
@@ -387,9 +412,7 @@ export const getDistrictPOI = async (
     );
 
     if (!fs.existsSync(filePath)) {
-      throw new NotFoundError(
-        `POI data file for ${district}/${poi}`
-      );
+      throw new NotFoundError(`POI data file for ${district}/${poi}`);
     }
 
     // Read and parse EsriJSON file
@@ -427,26 +450,35 @@ export const getDistrictHoverSummary = async (
 
     // Normalize district code (handle Badaun/Budaun variations)
     const normalizedCode = districtCode.toLowerCase();
-    const districtName = normalizedCode === "badaun" || normalizedCode === "budaun" 
-      ? "Budaun" 
-      : districtCode;
+    const districtName =
+      normalizedCode === "badaun" || normalizedCode === "budaun"
+        ? "Budaun"
+        : districtCode;
 
     // Fetch district info
     const district = await District.findOne({
       $or: [
         { districtName: new RegExp(`^${districtName}$`, "i") },
-        { districtLgd: !isNaN(Number(districtCode)) ? Number(districtCode) : -1 }
-      ]
+        {
+          districtLgd: !isNaN(Number(districtCode)) ? Number(districtCode) : -1,
+        },
+      ],
     }).lean();
 
     // Fetch complaint statistics
     const complaints = await Complaint.find({
-      district_name: new RegExp(`^${districtName}$`, "i")
+      district_name: new RegExp(`^${districtName}$`, "i"),
     }).lean();
 
-    const pendingComplaints = complaints.filter(c => c.status === "pending").length;
-    const inProgressComplaints = complaints.filter(c => c.status === "in_progress").length;
-    const resolvedComplaints = complaints.filter(c => c.status === "resolved").length;
+    const pendingComplaints = complaints.filter(
+      (c) => c.status === "pending"
+    ).length;
+    const inProgressComplaints = complaints.filter(
+      (c) => c.status === "in_progress"
+    ).length;
+    const resolvedComplaints = complaints.filter(
+      (c) => c.status === "resolved"
+    ).length;
 
     // Fetch administrative heads
     let mlcName: string | undefined;
@@ -456,28 +488,40 @@ export const getDistrictHoverSummary = async (
 
     if (district) {
       const adminHead = await DistrictAdministrativeHead.findOne({
-        district: district._id
+        district: district._id,
       }).lean();
 
       if (adminHead) {
         // Extract MLC name
-        if (adminHead.legislative_authorities?.member_of_legislative_council_MLC?.[0]) {
-          mlcName = adminHead.legislative_authorities.member_of_legislative_council_MLC[0].name;
+        if (
+          adminHead.legislative_authorities
+            ?.member_of_legislative_council_MLC?.[0]
+        ) {
+          mlcName =
+            adminHead.legislative_authorities
+              .member_of_legislative_council_MLC[0].name;
         }
 
         // Extract MP name (first MLA as representative)
-        if (adminHead.legislative_authorities?.members_of_legislative_assembly_MLA?.[0]) {
-          mpName = adminHead.legislative_authorities.members_of_legislative_assembly_MLA[0].name;
+        if (
+          adminHead.legislative_authorities
+            ?.members_of_legislative_assembly_MLA?.[0]
+        ) {
+          mpName =
+            adminHead.legislative_authorities
+              .members_of_legislative_assembly_MLA[0].name;
         }
 
         // Extract Zila Panchayat head
         if (adminHead.legislative_authorities?.local_body_heads?.[0]) {
-          zilaPanchayatHead = adminHead.legislative_authorities.local_body_heads[0].name;
+          zilaPanchayatHead =
+            adminHead.legislative_authorities.local_body_heads[0].name;
         }
 
         // Extract IAS/DM name
         if (adminHead.executive_authorities?.general_administration?.[0]) {
-          iasName = adminHead.executive_authorities.general_administration[0].name;
+          iasName =
+            adminHead.executive_authorities.general_administration[0].name;
         }
       }
     }
@@ -489,13 +533,16 @@ export const getDistrictHoverSummary = async (
 
     if (district) {
       const demographics = await DemographicReligion.findOne({
-        district: district._id
+        district: district._id,
       }).lean();
 
       if (demographics?.district_stats?.Total) {
-        population = demographics.district_stats.Total.population?.persons || population;
-        hinduPopulation = demographics.district_stats.Total.religion?.hindu?.persons;
-        muslimPopulation = demographics.district_stats.Total.religion?.muslim?.persons;
+        population =
+          demographics.district_stats.Total.population?.persons || population;
+        hinduPopulation =
+          demographics.district_stats.Total.religion?.hindu?.persons;
+        muslimPopulation =
+          demographics.district_stats.Total.religion?.muslim?.persons;
       }
     }
 
@@ -537,15 +584,6 @@ export const getSubdistrictHoverSummary = async (
       throw new NotFoundError("Subdistrict code");
     }
 
-    // Fetch complaints for this subdistrict
-    const complaints = await Complaint.find({
-      subdistrict_name: new RegExp(`^${subdistrictCode}$`, "i")
-    }).lean();
-
-    const pendingComplaints = complaints.filter(c => c.status === "pending").length;
-    const inProgressComplaints = complaints.filter(c => c.status === "in_progress").length;
-    const resolvedComplaints = complaints.filter(c => c.status === "resolved").length;
-
     // Map subdistrict names to LGD codes (for Badaun district)
     const subdistrictLgdMap: { [key: string]: number } = {
       Bilsi: 780,
@@ -557,21 +595,73 @@ export const getSubdistrictHoverSummary = async (
       Gunnaur: 778,
     };
 
+    // Reverse map: LGD code -> name (for when input is numeric code)
+    const subdistrictNameMap: { [key: number]: string } = {
+      780: "Bilsi",
+      779: "Bisauli",
+      782: "Budaun",
+      783: "Dataganj",
+      781: "Sahaswan",
+      778: "Gunnaur",
+    };
+
+    // Normalize input: determine if it's a name or LGD code, and get both
+    let subdistrictName: string;
+    let subdistrictLgd: number;
+
+    // Check if input is a known name (case-insensitive)
+    const normalizedInput = subdistrictCode.trim();
+    const matchingName = Object.keys(subdistrictLgdMap).find(
+      (name) => name.toLowerCase() === normalizedInput.toLowerCase()
+    );
+
+    if (matchingName) {
+      // Input is a name
+      subdistrictName = matchingName;
+      subdistrictLgd = subdistrictLgdMap[matchingName];
+    } else {
+      // Input might be a numeric LGD code
+      const parsedLgd = parseInt(normalizedInput);
+      if (!isNaN(parsedLgd) && subdistrictNameMap[parsedLgd]) {
+        // Valid numeric LGD code - get the name from reverse map
+        subdistrictName = subdistrictNameMap[parsedLgd];
+        subdistrictLgd = parsedLgd;
+      } else {
+        // Unknown input - use as-is for name, try to parse as LGD
+        subdistrictName = normalizedInput;
+        subdistrictLgd = parsedLgd;
+      }
+    }
+
+    // Fetch complaints using the SUBDISTRICT NAME (not code)
+    // Complaints are stored with subdistrict_name field containing names like "Sahaswan"
+    const complaints = await Complaint.find({
+      subdistrict_name: new RegExp(`^${subdistrictName}$`, "i"),
+    }).lean();
+
+    const pendingComplaints = complaints.filter(
+      (c) => c.status === "pending"
+    ).length;
+    const inProgressComplaints = complaints.filter(
+      (c) => c.status === "in_progress"
+    ).length;
+    const resolvedComplaints = complaints.filter(
+      (c) => c.status === "resolved"
+    ).length;
+
     let population = 0;
     let hinduPopulation: number | undefined;
     let muslimPopulation: number | undefined;
     let bdoName: string | undefined;
     let blockPramukh: string | undefined;
 
-    // Try to get LGD code from name, fallback to parsing as number
-    const subdistrictLgd = subdistrictLgdMap[subdistrictCode] || parseInt(subdistrictCode);
-
-    if (!isNaN(subdistrictLgd)) {
+    // Only proceed if we have a valid LGD code
+    if (!isNaN(subdistrictLgd) && subdistrictLgd > 0) {
       // Fetch basic demographics (total population)
       const demographics = await Demographics.findOne({
         level: "subdistrict",
         subdistrictLgd: subdistrictLgd,
-        residence: "total"
+        residence: "total",
       }).lean();
 
       if (demographics) {
@@ -581,29 +671,61 @@ export const getSubdistrictHoverSummary = async (
       // Fetch religion-based demographics for Hindu/Muslim population
       // First, get the District document to access its _id (just like district-level does)
       const districtLgd = 134; // Budaun district LGD
-      
-      const district = await District.findOne({ districtLgd: districtLgd }).lean();
+
+      const district = await District.findOne({
+        districtLgd: districtLgd,
+      }).lean();
 
       if (district) {
         const religionData = await DemographicReligion.findOne({
-          district: district._id  // ✅ Use ObjectId reference (same as district-level)
+          district: district._id, // ✅ Use ObjectId reference (same as district-level)
         }).lean();
 
         if (religionData && religionData.sub_districts) {
           // Find the matching subdistrict in the religion data
-          const subdistrictData = religionData.sub_districts.find(
-            (sd: any) => 
-              sd.code === subdistrictLgd.toString() || 
-              sd.name?.toLowerCase() === subdistrictCode.toLowerCase()
-          );
+          // Codes in religion data are zero-padded strings like "00779", "00781", etc.
+          // We need to handle this properly
+          const subdistrictData = religionData.sub_districts.find((sd: any) => {
+            // Match by name (case-insensitive)
+            if (
+              sd.name &&
+              sd.name.toLowerCase() === subdistrictName.toLowerCase()
+            ) {
+              return true;
+            }
+
+            // Match by code - handle zero-padded format
+            if (sd.code) {
+              // Remove leading zeros and compare
+              const sdCodeNum = parseInt(sd.code);
+              if (!isNaN(sdCodeNum) && sdCodeNum === subdistrictLgd) {
+                return true;
+              }
+              // Also try direct string comparison with zero-padded format
+              const zeroPaddedLgd = subdistrictLgd.toString().padStart(5, "0");
+              if (sd.code === zeroPaddedLgd) {
+                return true;
+              }
+            }
+
+            return false;
+          });
 
           if (subdistrictData && subdistrictData.stats?.Total) {
-            hinduPopulation = subdistrictData.stats.Total.religion?.hindu?.persons;
-            muslimPopulation = subdistrictData.stats.Total.religion?.muslim?.persons;
-            
-            logger.info(`Found religion data for ${subdistrictCode}: Hindu=${hinduPopulation}, Muslim=${muslimPopulation}`);
+            hinduPopulation =
+              subdistrictData.stats.Total.religion?.hindu?.persons;
+            muslimPopulation =
+              subdistrictData.stats.Total.religion?.muslim?.persons;
+
+            logger.info(
+              `Found religion data for ${subdistrictName} (LGD: ${subdistrictLgd}): Hindu=${hinduPopulation}, Muslim=${muslimPopulation}`
+            );
           } else {
-            logger.warn(`Subdistrict ${subdistrictCode} not found in religion data`);
+            logger.warn(
+              `Subdistrict ${subdistrictName} (LGD: ${subdistrictLgd}) not found in religion data. Available codes: ${religionData.sub_districts
+                .map((sd: any) => `${sd.name}(${sd.code})`)
+                .join(", ")}`
+            );
           }
         } else {
           logger.warn(`No religion data found for district ${districtLgd}`);
@@ -611,11 +733,13 @@ export const getSubdistrictHoverSummary = async (
       } else {
         logger.warn(`District with LGD ${districtLgd} not found`);
       }
+    } else {
+      logger.warn(`Invalid subdistrict LGD code: ${subdistrictCode}`);
     }
 
     const hoverData = {
-      subdistrictName: subdistrictCode,
-      subdistrictCode: subdistrictCode,
+      subdistrictName: subdistrictName, // Return the proper name, not the input code
+      subdistrictCode: subdistrictLgd.toString(), // Return the LGD code as string
       bdoName, // TODO: Add BDO data source when available
       blockPramukh, // TODO: Add Block Pramukh data source when available
       pendingComplaints,
@@ -626,7 +750,9 @@ export const getSubdistrictHoverSummary = async (
       muslimPopulation,
     };
 
-    logger.info(`Returned hover summary for subdistrict: ${subdistrictCode} (LGD: ${subdistrictLgd})`);
+    logger.info(
+      `Returned hover summary for subdistrict: ${subdistrictName} (LGD: ${subdistrictLgd})`
+    );
     sendSuccess(res, hoverData);
   } catch (error) {
     next(error);
@@ -651,24 +777,31 @@ export const getVillageHoverSummary = async (
 
     // Fetch complaints for this village
     const complaints = await Complaint.find({
-      village_lgd: villageCode
+      village_lgd: villageCode,
     }).lean();
 
-    const pendingComplaints = complaints.filter(c => c.status === "pending").length;
-    const inProgressComplaints = complaints.filter(c => c.status === "in_progress").length;
-    const resolvedComplaints = complaints.filter(c => c.status === "resolved").length;
+    const pendingComplaints = complaints.filter(
+      (c) => c.status === "pending"
+    ).length;
+    const inProgressComplaints = complaints.filter(
+      (c) => c.status === "in_progress"
+    ).length;
+    const resolvedComplaints = complaints.filter(
+      (c) => c.status === "resolved"
+    ).length;
 
     // Fetch demographics
     const demographics = await Demographics.findOne({
       level: "village",
       villageLgd: villageCode,
-      residence: "total"
+      residence: "total",
     }).lean();
 
     const population = demographics?.totalPopulation || 0;
 
     const hoverData = {
-      villageName: demographics?.areaName || demographics?.townVillageWard || villageCode,
+      villageName:
+        demographics?.areaName || demographics?.townVillageWard || villageCode,
       villageCode: villageCode,
       sarpanch: undefined, // TODO: Add Sarpanch data source
       gramPradhan: undefined, // TODO: Add Gram Pradhan data source
@@ -705,24 +838,31 @@ export const getTownHoverSummary = async (
 
     // Fetch complaints for this town
     const complaints = await Complaint.find({
-      village_name: new RegExp(`^${townCode}$`, "i") // Towns might be stored as villages
+      village_name: new RegExp(`^${townCode}$`, "i"), // Towns might be stored as villages
     }).lean();
 
-    const pendingComplaints = complaints.filter(c => c.status === "pending").length;
-    const inProgressComplaints = complaints.filter(c => c.status === "in_progress").length;
-    const resolvedComplaints = complaints.filter(c => c.status === "resolved").length;
+    const pendingComplaints = complaints.filter(
+      (c) => c.status === "pending"
+    ).length;
+    const inProgressComplaints = complaints.filter(
+      (c) => c.status === "in_progress"
+    ).length;
+    const resolvedComplaints = complaints.filter(
+      (c) => c.status === "resolved"
+    ).length;
 
     // Fetch demographics
     const demographics = await Demographics.findOne({
       level: "town",
       townLgd: townCode,
-      residence: "total"
+      residence: "total",
     }).lean();
 
     const population = demographics?.totalPopulation || 0;
 
     const hoverData = {
-      townName: demographics?.areaName || demographics?.townVillageWard || townCode,
+      townName:
+        demographics?.areaName || demographics?.townVillageWard || townCode,
       townCode: townCode,
       municipalChairman: undefined, // TODO: Add Municipal Chairman data source
       pendingComplaints,
@@ -780,8 +920,14 @@ export const getStateDistricts = async (
     const { stateCode } = req.params;
 
     // For now, if state is Uttar Pradesh, return UP districts
-    if (stateCode.toLowerCase() === "uttar pradesh" || stateCode.toLowerCase() === "up") {
-      const filePath = path.join(__dirname, "../../assets/UttarPradesh.geo.json");
+    if (
+      stateCode.toLowerCase() === "uttar pradesh" ||
+      stateCode.toLowerCase() === "up"
+    ) {
+      const filePath = path.join(
+        __dirname,
+        "../../assets/UttarPradesh.geo.json"
+      );
 
       if (!fs.existsSync(filePath)) {
         throw new Error("State districts GeoJSON file not found");
@@ -824,10 +970,15 @@ export const getDistrictSubdistricts = async (
 
     // For Badaun, return the existing Badaun subdistricts data
     if (districtCode.toLowerCase() === "badaun") {
-      const filePath = path.join(__dirname, "../../assets/districts/badaun/Badaun.geo.json");
+      const filePath = path.join(
+        __dirname,
+        "../../assets/districts/badaun/Badaun.geo.json"
+      );
 
       if (!fs.existsSync(filePath)) {
-        throw new NotFoundError(`Sub-districts data for district: ${districtCode}`);
+        throw new NotFoundError(
+          `Sub-districts data for district: ${districtCode}`
+        );
       }
 
       const geoData = JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -841,7 +992,9 @@ export const getDistrictSubdistricts = async (
       );
 
       if (!fs.existsSync(filePath)) {
-        throw new NotFoundError(`Sub-districts data for district: ${districtCode}`);
+        throw new NotFoundError(
+          `Sub-districts data for district: ${districtCode}`
+        );
       }
 
       const geoData = JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -873,10 +1026,12 @@ export const getSubdistrictVillages = async (
 
     if (!fs.existsSync(filePath)) {
       // Return empty FeatureCollection if file not found
-      logger.warn(`Villages data not found for sub-district: ${subdistrictCode}`);
+      logger.warn(
+        `Villages data not found for sub-district: ${subdistrictCode}`
+      );
       const emptyGeoJson = {
         type: "FeatureCollection",
-        features: []
+        features: [],
       };
       sendSuccess(res, emptyGeoJson);
       return;
