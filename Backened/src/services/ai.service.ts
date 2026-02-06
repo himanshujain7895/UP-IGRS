@@ -768,6 +768,37 @@ ${contextBlock}${userPromptBlock}
 };
 
 /**
+ * Short summary of a single attachment for WhatsApp Option A intake.
+ * Used to reply immediately when user sends a document/image in COLLECT_FREE_FORM.
+ * Returns 2-4 sentences; same language as document. Safe to truncate for reply.
+ */
+export const summarizeSingleAttachmentForIntake = async (
+  url: string
+): Promise<string> => {
+  if (!url?.trim()) return "";
+  const resolved = await resolveDocumentUrlsToAccessible([url]);
+  if (resolved.length === 0) return "";
+  const inputs = toDocumentSummaryInputs(resolved);
+  const systemPrompt = `You are a grievance intake assistant for UP government. Summarize this document or image in 2-4 short sentences for complaint intake. Extract: main issue, location if visible, names/contacts if visible. Use the SAME language as the document (Hindi/English/Mixed). Plain text only. If unclear, state what is visible.`;
+  const userPrompt = `Summarize the attached document/image for complaint intake in 2-4 sentences.`;
+  try {
+    const response = await callDocumentSummaryBatch(
+      inputs,
+      userPrompt,
+      systemPrompt,
+      { model: DOC_SUMMARIZE_MODEL, maxTokens: 300, temperature: 0.2 }
+    );
+    const text = (response || "").trim();
+    return text.length > 500 ? text.slice(0, 497) + "…" : text;
+  } catch (err) {
+    logger.warn("summarizeSingleAttachmentForIntake failed", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return "";
+  }
+};
+
+/**
  * Generate document summary, persist to ComplaintDocumentSummary, and append timeline event.
  * Use this when the caller wants both storage and timeline audit. Timeline only (no notification).
  */

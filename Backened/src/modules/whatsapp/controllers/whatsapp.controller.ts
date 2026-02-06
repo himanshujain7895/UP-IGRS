@@ -39,6 +39,11 @@ const normalizeMessage = (raw: any): WhatsAppInboundMessage => {
     base.mediaId = raw.document?.id;
     base.mimeType = raw.document?.mime_type;
     base.fileName = raw.document?.filename;
+  } else if (raw.type === "audio" || raw.type === "voice") {
+    const audio = raw.audio || raw.voice;
+    base.mediaId = audio?.id;
+    base.mimeType = audio?.mime_type || "audio/ogg";
+    base.fileName = audio?.filename;
   }
   return base;
 };
@@ -145,18 +150,19 @@ const processMessage = async (
       if (out.endSession) {
         await sessionStore.clearSession(message.from);
       }
-      if (
-        out.saveSession &&
-        out.session.intent === "file" &&
-        out.session.state === "COLLECT_BASICS" &&
-        !out.session.data.contact_name
-      ) {
-        try {
-          await sendFlowMessage(message.from);
-        } catch {
-          // Fallback to chat
-        }
-      }
+      // Flow not live yet: bypass flow, chat is first responder (re-enable when flow is live)
+      // if (
+      //   out.saveSession &&
+      //   out.session.intent === "file" &&
+      //   out.session.state === "COLLECT_BASICS" &&
+      //   !out.session.data.contact_name
+      // ) {
+      //   try {
+      //     await sendFlowMessage(message.from);
+      //   } catch {
+      //     // Fallback to chat
+      //   }
+      // }
       for (const reply of out.replies) {
         try {
           await sendTextMessage(message.from, reply);

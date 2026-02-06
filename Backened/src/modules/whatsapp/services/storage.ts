@@ -1,6 +1,8 @@
 import {
+  ALLOWED_AUDIO_TYPES,
   ALLOWED_DOCUMENT_TYPES,
   ALLOWED_IMAGE_TYPES,
+  MAX_AUDIO_SIZE,
   MAX_DOCUMENT_SIZE,
   MAX_IMAGE_SIZE,
   uploadToS3,
@@ -15,8 +17,12 @@ function normalizeMimeType(mime: string): string {
   return normalized[mime] || mime;
 }
 
-/** Allowed for complaint attachments: images (jpg, jpeg, png) + docs (Word, PDF, Excel). */
-const ALLOWED_MIME_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_DOCUMENT_TYPES];
+/** Allowed for complaint attachments: images + docs + audio (WhatsApp voice). */
+const ALLOWED_MIME_TYPES = [
+  ...ALLOWED_IMAGE_TYPES,
+  ...ALLOWED_DOCUMENT_TYPES,
+  ...ALLOWED_AUDIO_TYPES,
+];
 
 export const persistMedia = async (
   media: MediaDownloadResult,
@@ -24,15 +30,22 @@ export const persistMedia = async (
 ): Promise<{ url: string; fileName: string }> => {
   const mimeType = normalizeMimeType(media.mimeType);
   const isImage = ALLOWED_IMAGE_TYPES.includes(mimeType);
-  const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_DOCUMENT_SIZE;
+  const isAudio = ALLOWED_AUDIO_TYPES.includes(mimeType);
+  const maxSize = isImage
+    ? MAX_IMAGE_SIZE
+    : isAudio
+    ? MAX_AUDIO_SIZE
+    : MAX_DOCUMENT_SIZE;
 
   if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
     throw new Error(
-      `Unsupported media type: ${media.mimeType}. Allowed: images (jpg, jpeg, png), Word, PDF, Excel.`
+      `Unsupported media type: ${media.mimeType}. Allowed: images, Word, PDF, Excel, audio.`
     );
   }
   if (media.fileSize > maxSize) {
-    throw new Error(`File too large (max ${isImage ? "10MB" : "50MB"}).`);
+    throw new Error(
+      `File too large (max ${isImage ? "10MB" : isAudio ? "25MB" : "50MB"}).`
+    );
   }
 
   const uploaded = await uploadToS3({

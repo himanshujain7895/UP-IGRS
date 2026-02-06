@@ -5,6 +5,7 @@
  */
 
 import logger from "../../../config/logger";
+import { generateDocumentSummary } from "../../../services/ai.service";
 import { sessionStore } from "./sessionStore";
 import { sendTextMessage } from "./metaClient";
 import {
@@ -78,9 +79,33 @@ export async function runAiParseJob(userId: string): Promise<void> {
   }
 
   const text = (session.freeFormTextBuffer ?? "").trim();
+  const imageUrls =
+    session.data.images?.map((i) => i.url).filter((u): u is string => !!u) ?? [];
+  const docUrls =
+    session.data.documents
+      ?.map((d) => d.url)
+      .filter((u): u is string => !!u && u.startsWith("http")) ?? [];
+  const allAttachmentUrls = [...imageUrls, ...docUrls];
+  let documentSummaries: string[] | undefined;
+  if (allAttachmentUrls.length > 0) {
+    try {
+      const combinedSummary = await generateDocumentSummary({
+        documentUrls: allAttachmentUrls,
+        useComplaintContext: false,
+      });
+      if (combinedSummary?.trim()) {
+        documentSummaries = [combinedSummary.trim()];
+      }
+    } catch (err) {
+      logger.warn("AiParseJob: document summary failed, continuing without", {
+        userId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
   try {
     const { partial, missingFields } = await parseComplaintFromFreeForm(text, {
-      documentSummaries: undefined,
+      documentSummaries,
     });
 
     Object.assign(session.data, partial);
@@ -94,7 +119,7 @@ export async function runAiParseJob(userId: string): Promise<void> {
       session.pendingMissingFields = undefined;
       const msg = `${templates.confirm(
         summary(session.data as CollectedComplaintData)
-      )}\nReply YES to submit or EDIT <field> to change.`;
+      )}\nReply *YES* to submit, *EDIT <field>* to change, or *ADD* to attach more documents.`;
       await sessionStore.saveSession(session);
       await sendTextMessage(userId, msg);
       return;

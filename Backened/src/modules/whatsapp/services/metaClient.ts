@@ -258,6 +258,10 @@ const mimeToExtension: Record<string, string> = {
   "application/vnd.ms-excel": "xls",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
   "text/plain": "txt",
+  "audio/ogg": "ogg",
+  "audio/mpeg": "mp3",
+  "audio/mp4": "m4a",
+  "audio/webm": "webm",
 };
 
 export const downloadMedia = async (

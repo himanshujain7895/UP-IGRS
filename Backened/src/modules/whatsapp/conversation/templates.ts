@@ -42,7 +42,11 @@ export const templates = {
   askDoneConfirm:
     "Are you done providing supporting docs? If yes, please forward *done*.",
   confirm: (summary: string) =>
-    `Here’s what I captured:\n${summary}\n\nReply YES to submit or EDIT <field> to change.`,
+    `Here’s what I captured:\n${summary}\n\nDo you want to attach more documents? Reply *ADD* to add more, or *YES* to submit.\n\nReply *YES* to submit, *EDIT <field>* to change, or *ADD* to attach more documents.`,
+  addMoreDocsPrompt:
+    "Send photos/documents to attach. Reply *DONE* when finished to return to confirmation.",
+  addMoreDocsReceived:
+    "Document received. Send more or reply *DONE* to return to confirmation.",
   submitted: (complaintId: string) =>
     `Your complaint is submitted. ID: ${complaintId}. We’ll keep you posted.`,
   missingFields: "I still need these required fields: ",

@@ -10,12 +10,14 @@ import { templates, STALE_SESSION_MS } from "../conversation/templates";
 import { downloadMedia } from "./metaClient";
 import { persistMedia } from "./storage";
 import { sessionStore } from "./sessionStore";
+import { transcribeAudio } from "./transcribe.service";
 import {
   ConversationIntent,
   WhatsAppInboundMessage,
   WhatsAppSession,
   ComplaintCreateResult,
 } from "../types";
+import { whatsappConfig } from "../config";
 import { runAiParseJob } from "./aiParseJob";
 
 /** Result from session manager: what to send and whether to persist. */
@@ -62,9 +64,10 @@ function isCancelKeyword(text: string | undefined): boolean {
   return CANCEL_KEYWORDS.has(text.trim().toLowerCase());
 }
 
-/** Per-user rate limit: in-memory, window 1 min, max 15 messages. */
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const RATE_LIMIT_MAX = 15;
+/** Per-user rate limit: in-memory; configurable via WHATSAPP_RATE_LIMIT_PER_USER_* env. */
+const RATE_LIMIT_WINDOW_MS =
+  whatsappConfig.rateLimitPerUserWindowMs ?? 60 * 1000;
+const RATE_LIMIT_MAX = whatsappConfig.rateLimitPerUserMax ?? 15;
 const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
 
 function isRateLimited(user: string): boolean {
@@ -345,6 +348,55 @@ export async function handleIncomingMessage(
               err.message.includes("AWS S3 is not configured")
             ? "File upload is not configured. Please contact support."
             : "We could not process that file. Please try again or send a smaller file.";
+        return {
+          replies: [msg],
+          session,
+          saveSession: false,
+          endSession: false,
+        };
+      }
+    }
+
+    if (
+      (message.type === "audio" || message.type === "voice") &&
+      message.mediaId
+    ) {
+      try {
+        const media = await downloadMedia(message.mediaId);
+        const stored = await persistMedia(media, "complaints");
+        session.data.documents = session.data.documents || [];
+        session.data.documents.push({
+          url: stored.url,
+          fileName: media.fileName,
+          mimeType: media.mimeType,
+        });
+        const transcript = await transcribeAudio(
+          media.buffer,
+          media.mimeType,
+          media.fileName
+        );
+        if (transcript) {
+          const buf = session.freeFormTextBuffer ?? "";
+          session.freeFormTextBuffer = buf ? `${buf}\n${transcript}` : transcript;
+          session.lastAudioTranscript = transcript;
+        }
+      } catch (err) {
+        logger.error("Audio processing error in session manager", {
+          service: "grievance-aid-backend",
+          messageId: message.id,
+          mediaId: message.mediaId,
+          from: message.from,
+          ...serializeErrorForLog(err),
+        });
+        const msg =
+          err instanceof Error && err.message.includes("Unsupported")
+            ? "That audio type isn’t supported. Please send voice (OGG/MP3) or type your message."
+            : err instanceof Error && err.message.includes("too large")
+            ? "Audio is too large (max 25MB)."
+            : err instanceof Error &&
+              err.message.includes("AWS S3 is not configured")
+            ? "File upload is not configured. Please contact support."
+            : "We could not process that voice message. Please try again or type your message.";
         return {
           replies: [msg],
           session,

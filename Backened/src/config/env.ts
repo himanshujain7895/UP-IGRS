@@ -31,6 +31,10 @@ interface EnvConfig {
   WHATSAPP_WEBHOOK_PATH?: string;
   /** App Secret for Meta app; required for appsecret_proof on server-side Graph API calls. */
   WHATSAPP_APP_SECRET?: string;
+  /** Per-user rate limit: max messages per window (default 15). */
+  WHATSAPP_RATE_LIMIT_PER_USER_MAX?: number;
+  /** Per-user rate limit: window in ms (default 60000). */
+  WHATSAPP_RATE_LIMIT_PER_USER_WINDOW_MS?: number;
   // Redis (optional, for session store)
   REDIS_URL?: string;
   // SMTP Email Configuration
@@ -145,6 +149,14 @@ const validateEnv = (): EnvConfig => {
     WHATSAPP_WEBHOOK_PATH:
       process.env.WHATSAPP_WEBHOOK_PATH || "/api/v1/whatsapp/webhook",
     WHATSAPP_APP_SECRET: process.env.WHATSAPP_APP_SECRET,
+    WHATSAPP_RATE_LIMIT_PER_USER_MAX: process.env
+      .WHATSAPP_RATE_LIMIT_PER_USER_MAX
+      ? parseInt(process.env.WHATSAPP_RATE_LIMIT_PER_USER_MAX, 10)
+      : undefined,
+    WHATSAPP_RATE_LIMIT_PER_USER_WINDOW_MS: process.env
+      .WHATSAPP_RATE_LIMIT_PER_USER_WINDOW_MS
+      ? parseInt(process.env.WHATSAPP_RATE_LIMIT_PER_USER_WINDOW_MS, 10)
+      : undefined,
     REDIS_URL: process.env.REDIS_URL,
     // SMTP Email Configuration
     SMTP_HOST: process.env.SMTP_HOST,

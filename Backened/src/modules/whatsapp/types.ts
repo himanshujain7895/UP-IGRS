@@ -17,6 +17,7 @@ export type ConversationState =
   | "AI_PROCESSING"
   | "FILL_MISSING"
   | "CONFIRM"
+  | "COLLECT_ADDITIONAL_MEDIA"
   | "EDIT_FIELD"
   | "SUBMIT"
   | "TRACK_START"
@@ -63,6 +64,8 @@ export interface WhatsAppSession {
   pendingDescriptionBuffer?: string;
   /** In COLLECT_FREE_FORM: text to send to AI until user says "done". */
   freeFormTextBuffer?: string;
+  /** Last voice transcript (set by session manager for audio reply). */
+  lastAudioTranscript?: string;
   /** When AI_PROCESSING was set (for timeout). */
   aiRequestedAt?: number;
   /** In FILL_MISSING: ordered list of missing field keys to ask for. */
@@ -98,6 +101,7 @@ export interface WhatsAppInboundMessage {
     | "image"
     | "document"
     | "audio"
+    | "voice"
     | "video"
     | "location"
     | "unknown";

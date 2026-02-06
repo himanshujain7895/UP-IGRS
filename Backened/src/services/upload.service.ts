@@ -282,6 +282,16 @@ export const ALLOWED_DOCUMENT_TYPES = [
   "text/plain",
 ];
 
+/** WhatsApp voice/audio messages (stored in S3, transcribed for Option A). */
+export const ALLOWED_AUDIO_TYPES = [
+  "audio/ogg",
+  "audio/mpeg",
+  "audio/mp4",
+  "audio/mp3",
+  "audio/webm",
+  "audio/x-m4a",
+];
+
 export const ALLOWED_VIDEO_TYPES = [
   "video/mp4",
   "video/quicktime",
@@ -293,6 +303,7 @@ export const ALLOWED_VIDEO_TYPES = [
  */
 export const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 export const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024; // 50MB
+export const MAX_AUDIO_SIZE = 25 * 1024 * 1024; // 25MB (WhatsApp voice)
 export const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
 
 export default {

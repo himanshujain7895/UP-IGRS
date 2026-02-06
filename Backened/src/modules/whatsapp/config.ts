@@ -14,6 +14,10 @@ export interface WhatsAppConfig {
   appSecret?: string;
   /** Model for AI-assisted free-form complaint parsing (WHATSAPP_CONVERSATION_MODEL). */
   conversationModel?: string;
+  /** Per-user rate limit: max messages per window (default 15). */
+  rateLimitPerUserMax?: number;
+  /** Per-user rate limit: window in ms (default 60_000). */
+  rateLimitPerUserWindowMs?: number;
 }
 
 export const whatsappConfig: WhatsAppConfig = {
@@ -28,6 +32,8 @@ export const whatsappConfig: WhatsAppConfig = {
   redisUrl: env.REDIS_URL,
   appSecret: env.WHATSAPP_APP_SECRET,
   conversationModel: env.WHATSAPP_CONVERSATION_MODEL,
+  rateLimitPerUserMax: env.WHATSAPP_RATE_LIMIT_PER_USER_MAX,
+  rateLimitPerUserWindowMs: env.WHATSAPP_RATE_LIMIT_PER_USER_WINDOW_MS,
 };
 
 export const isWhatsAppConfigured = (): boolean =>

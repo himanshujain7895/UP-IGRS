@@ -1,6 +1,8 @@
 import logger from "../../../config/logger";
 import { Complaint } from "../../../models/Complaint";
+import { summarizeSingleAttachmentForIntake } from "../../../services/ai.service";
 import { mapToComplaintCreate } from "../mappers/complaintMapper";
+import { getConversationalReply } from "../services/conversationalReply.service";
 import { templates } from "./templates";
 import { validateComplaintData } from "../validators/complaintValidator";
 import {
@@ -488,7 +490,21 @@ const handleConfirm = async (
       replies: [getPromptForField(fieldKey)],
     };
   }
-  return { replies: ["Please reply YES to submit or EDIT <field> to change."] };
+  if (
+    lower === "add" ||
+    lower === "attach" ||
+    lower === "more" ||
+    lower === "more documents" ||
+    lower === "documents"
+  ) {
+    session.state = "COLLECT_ADDITIONAL_MEDIA";
+    return { replies: [templates.addMoreDocsPrompt] };
+  }
+  return {
+    replies: [
+      "Please reply *YES* to submit, *EDIT <field>* to change, or *ADD* to attach more documents.",
+    ],
+  };
 };
 
 export const processChatMessage = async (
@@ -515,6 +531,24 @@ export const processChatMessage = async (
   // Handle location pins at any step (sets latitude, longitude, location when user shares pin)
   replies.push(...handleLocationMessage(incoming, current));
 
+  // After CONFIRM: user can add more docs (upload to S3, attach to images[]); no AI analysis
+  if (current.state === "COLLECT_ADDITIONAL_MEDIA") {
+    if (incoming.type === "image" || incoming.type === "document") {
+      replies.push(templates.addMoreDocsReceived);
+      return { replies, session: current };
+    }
+    const addText = (incoming.text || "").trim().toLowerCase();
+    if (addText === "done") {
+      current.state = "CONFIRM";
+      replies.push(templates.confirm(summary(current.data)));
+      return { replies, session: current };
+    }
+    replies.push(
+      "Reply *DONE* to return to confirmation or send more documents."
+    );
+    return { replies, session: current };
+  }
+
   if (current.state === "COLLECT_FREE_FORM") {
     const text = (incoming.text || "").trim();
     if (text.toLowerCase() === "done") {
@@ -530,11 +564,59 @@ export const processChatMessage = async (
         );
       } else {
         current.freeFormTextBuffer = next;
-        replies.push(templates.freeFormAdded);
+        const conversationalReply = await getConversationalReply(current, text);
+        replies.push(conversationalReply);
       }
     } else {
-      // Media-only message (image/document): acknowledge so user gets a reply
-      replies.push(templates.freeFormAdded);
+      // Audio: reply with AI response from transcript (session manager already appended to buffer)
+      if (incoming.type === "audio" || incoming.type === "voice") {
+        const transcript = current.lastAudioTranscript;
+        if (transcript) {
+          try {
+            const conversationalReply = await getConversationalReply(
+              current,
+              transcript
+            );
+            replies.push(conversationalReply);
+          } catch {
+            replies.push(templates.freeFormAdded);
+          }
+          delete current.lastAudioTranscript;
+        } else {
+          replies.push(
+            "Voice received. You can also type your issue or reply *done* when finished."
+          );
+        }
+        return { replies, session: current };
+      }
+      // Media-only (image/document): AI analyze and reply with summary (bypassed in COLLECT_ADDITIONAL_MEDIA)
+      const lastImage = current.data.images?.length
+        ? current.data.images[current.data.images.length - 1]?.url
+        : undefined;
+      const lastDoc = current.data.documents?.length
+        ? current.data.documents[current.data.documents.length - 1]?.url
+        : undefined;
+      const url =
+        incoming.type === "image" ? lastImage : incoming.type === "document" ? lastDoc : undefined;
+      if (url) {
+        try {
+          const summary = await summarizeSingleAttachmentForIntake(url);
+          if (summary) {
+            replies.push(
+              `${summary}\n\nSend more or reply *done* when finished.`
+            );
+          } else {
+            replies.push(templates.freeFormAdded);
+          }
+        } catch (err) {
+          logger.warn("Document/image summary failed, using fallback", {
+            error: err instanceof Error ? err.message : String(err),
+          });
+          replies.push(templates.freeFormAdded);
+        }
+      } else {
+        replies.push(templates.freeFormAdded);
+      }
     }
     return { replies, session: current };
   }
@@ -562,7 +644,9 @@ export const processChatMessage = async (
         if (current.pendingMissingFields.length === 0) {
           current.state = "CONFIRM";
           replies.push(templates.confirm(summary(current.data)));
-          replies.push("Reply YES to submit or EDIT <field> to change.");
+          replies.push(
+            "Reply *YES* to submit, *EDIT <field>* to change, or *ADD* to attach more documents."
+          );
         } else {
           replies.push(getPromptForField(current.pendingMissingFields[0]));
         }
@@ -586,7 +670,6 @@ export const processChatMessage = async (
           if (current.pendingMissingFields.length === 0) {
             current.state = "CONFIRM";
             replies.push(templates.confirm(summary(current.data)));
-            replies.push("Reply YES to submit or EDIT <field> to change.");
           } else {
             replies.push(getPromptForField(current.pendingMissingFields[0]));
           }
@@ -607,7 +690,9 @@ export const processChatMessage = async (
         if (current.pendingMissingFields.length === 0) {
           current.state = "CONFIRM";
           replies.push(templates.confirm(summary(current.data)));
-          replies.push("Reply YES to submit or EDIT <field> to change.");
+          replies.push(
+            "Reply *YES* to submit, *EDIT <field>* to change, or *ADD* to attach more documents."
+          );
         } else {
           replies.push(getPromptForField(current.pendingMissingFields[0]));
         }
@@ -650,13 +735,15 @@ export const processChatMessage = async (
       current.state = "CONFIRM";
       replies.push("Location updated.");
       replies.push(templates.confirm(summary(current.data)));
-      replies.push("Reply YES to submit or EDIT <field> to change.");
+      replies.push(
+        "Reply *YES* to submit, *EDIT <field>* to change, or *ADD* to attach more documents."
+      );
     } else if (key === "description") {
       const reply = handleDescription(current, incoming.text || "", {
         afterDoneState: "CONFIRM",
         afterDoneReply: `Updated.\n${templates.confirm(
           summary(current.data)
-        )}\nReply YES to submit or EDIT <field> to change.`,
+        )}\nReply *YES* to submit, *EDIT <field>* to change, or *ADD* to attach more documents.`,
         pendingEditFieldToClear: true,
       });
       replies.push(reply);
@@ -671,7 +758,9 @@ export const processChatMessage = async (
         current.state = "CONFIRM";
         replies.push("Updated.");
         replies.push(templates.confirm(summary(current.data)));
-        replies.push("Reply YES to submit or EDIT <field> to change.");
+        replies.push(
+          "Reply *YES* to submit, *EDIT <field>* to change, or *ADD* to attach more documents."
+        );
       }
     }
   } else if (current.state === "DONE") {
