@@ -10,6 +10,8 @@ export interface WhatsAppConfig {
   apiBaseUrl: string;
   appBaseUrl?: string;
   redisUrl?: string;
+  /** App Secret for Meta app; used to compute appsecret_proof for server-side Graph API calls. */
+  appSecret?: string;
   /** Model for AI-assisted free-form complaint parsing (WHATSAPP_CONVERSATION_MODEL). */
   conversationModel?: string;
 }
@@ -24,6 +26,7 @@ export const whatsappConfig: WhatsAppConfig = {
   apiBaseUrl: "https://graph.facebook.com/v19.0",
   appBaseUrl: env.FRONTEND_URL || "http://localhost:8080",
   redisUrl: env.REDIS_URL,
+  appSecret: env.WHATSAPP_APP_SECRET,
   conversationModel: env.WHATSAPP_CONVERSATION_MODEL,
 };
 

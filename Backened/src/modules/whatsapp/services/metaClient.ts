@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import axios from "axios";
 import logger from "../../../config/logger";
 import { serializeErrorForLog } from "../../../utils/errors";
@@ -13,6 +14,18 @@ const authHeaders = () => ({
   Authorization: `Bearer ${whatsappConfig.accessToken}`,
   "Content-Type": "application/json",
 });
+
+/**
+ * Meta requires appsecret_proof for server-side API calls when using certain tokens.
+ * Proof = HMAC-SHA256(access_token, app_secret) as hex. Only added when appSecret is set.
+ */
+function getAppSecretProofParams(): Record<string, string> {
+  const secret = whatsappConfig.appSecret;
+  const token = whatsappConfig.accessToken;
+  if (!secret || !token) return {};
+  const proof = crypto.createHmac("sha256", secret).update(token).digest("hex");
+  return { appsecret_proof: proof };
+}
 
 /** Transient network errors that are worth retrying. */
 const RETRYABLE_CODES = new Set([
@@ -76,7 +89,7 @@ export const sendTextMessage = async (to: string, body: string) => {
             type: "text",
             text: { preview_url: false, body },
           },
-          { headers: authHeaders() }
+          { headers: authHeaders(), params: getAppSecretProofParams() }
         ),
       "Meta API: send text message"
     );
@@ -123,7 +136,7 @@ export const sendListMessage = async (
               },
             },
           },
-          { headers: authHeaders() }
+          { headers: authHeaders(), params: getAppSecretProofParams() }
         ),
       "Meta API: send list message"
     );
@@ -202,7 +215,7 @@ export const sendFlowMessage = async (
               },
             },
           },
-          { headers: authHeaders() }
+          { headers: authHeaders(), params: getAppSecretProofParams() }
         ),
       "Meta API: send Flow message"
     );
@@ -219,7 +232,10 @@ export const sendFlowMessage = async (
 export const fetchMediaUrl = async (
   mediaId: string
 ): Promise<{ url: string; mimeType: string }> => {
-  const response = await graph.get(`/${mediaId}`, { headers: authHeaders() });
+  const response = await graph.get(`/${mediaId}`, {
+    headers: authHeaders(),
+    params: getAppSecretProofParams(),
+  });
   const url = response.data?.url;
   const mimeType = response.data?.mime_type || "application/octet-stream";
   if (!url) {
@@ -272,7 +288,7 @@ export const markMessageRead = async (messageId: string) => {
         status: "read",
         message_id: messageId,
       },
-      { headers: authHeaders() }
+      { headers: authHeaders(), params: getAppSecretProofParams() }
     );
   } catch (err) {
     logger.warn(

@@ -29,6 +29,8 @@ interface EnvConfig {
   WHATSAPP_FLOW_ID?: string;
   WHATSAPP_FLOW_TOKEN?: string;
   WHATSAPP_WEBHOOK_PATH?: string;
+  /** App Secret for Meta app; required for appsecret_proof on server-side Graph API calls. */
+  WHATSAPP_APP_SECRET?: string;
   // Redis (optional, for session store)
   REDIS_URL?: string;
   // SMTP Email Configuration
@@ -142,6 +144,7 @@ const validateEnv = (): EnvConfig => {
     WHATSAPP_FLOW_TOKEN: process.env.WHATSAPP_FLOW_TOKEN,
     WHATSAPP_WEBHOOK_PATH:
       process.env.WHATSAPP_WEBHOOK_PATH || "/api/v1/whatsapp/webhook",
+    WHATSAPP_APP_SECRET: process.env.WHATSAPP_APP_SECRET,
     REDIS_URL: process.env.REDIS_URL,
     // SMTP Email Configuration
     SMTP_HOST: process.env.SMTP_HOST,
