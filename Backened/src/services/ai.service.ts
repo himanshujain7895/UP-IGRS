@@ -56,7 +56,8 @@ interface OpenRouterRequest {
           };
           file?: {
             filename?: string;
-            fileData?: string; // URL or data:application/pdf;base64,...
+            /** OpenRouter expects snake_case in JSON (direct URL or data:application/pdf;base64,...) */
+            file_data?: string;
           };
         }>;
   }>;
@@ -217,14 +218,7 @@ export const callVisionLLM = async (
     detail?: "low" | "high" | "auto";
   }
 ): Promise<string> => {
-  const primaryModel = options?.model || DEFAULT_VISION_MODEL;
-  const fallbackModels = [
-    "openai/gpt-4o",
-    "openai/gpt-4-vision-preview",
-    "google/gemini-pro-vision",
-    "anthropic/claude-3-opus",
-  ].filter((m) => m !== primaryModel);
-
+  const model = options?.model || DEFAULT_VISION_MODEL;
   const messages: OpenRouterRequest["messages"] = [];
 
   if (systemPrompt) {
@@ -252,41 +246,14 @@ export const callVisionLLM = async (
   });
 
   const request: OpenRouterRequest = {
-    model: primaryModel,
+    model,
     messages,
     max_tokens: options?.maxTokens || 4000,
     temperature: options?.temperature ?? 0.1,
   };
 
-  // Try primary model first
-  try {
-    const response = await callOpenRouter(request);
-    return response.choices[0]?.message?.content || "";
-  } catch (error: any) {
-    logger.warn(
-      `Primary vision model ${primaryModel} failed: ${error.message}`
-    );
-
-    // Try fallback models
-    for (const fallbackModel of fallbackModels) {
-      try {
-        logger.info(`Attempting fallback vision model: ${fallbackModel}`);
-        request.model = fallbackModel;
-        const response = await callOpenRouter(request);
-        logger.info(`Fallback model ${fallbackModel} succeeded`);
-        return response.choices[0]?.message?.content || "";
-      } catch (fallbackError: any) {
-        logger.warn(
-          `Fallback vision model ${fallbackModel} also failed: ${fallbackError.message}`
-        );
-      }
-    }
-
-    // If all models fail, throw the original error
-    throw new Error(
-      `All vision models failed. Last error: ${error.message}. Please check OpenRouter API key and model availability.`
-    );
-  }
+  const response = await callOpenRouter(request);
+  return response.choices[0]?.message?.content || "";
 };
 
 /**
@@ -303,14 +270,7 @@ export const callVisionLLMBatch = async (
     detail?: "low" | "high" | "auto";
   }
 ): Promise<string> => {
-  const primaryModel = options?.model || DEFAULT_VISION_MODEL;
-  const fallbackModels = [
-    "openai/gpt-4o",
-    "openai/gpt-4-vision-preview",
-    "google/gemini-pro-vision",
-    "anthropic/claude-3-opus",
-  ].filter((m) => m !== primaryModel);
-
+  const model = options?.model || DEFAULT_VISION_MODEL;
   const messages: OpenRouterRequest["messages"] = [];
 
   if (systemPrompt) {
@@ -327,7 +287,6 @@ export const callVisionLLMBatch = async (
     },
   ];
 
-  // Add all images
   imageDataUrls.forEach((imageUrl) => {
     content.push({
       type: "image_url",
@@ -344,43 +303,14 @@ export const callVisionLLMBatch = async (
   });
 
   const request: OpenRouterRequest = {
-    model: primaryModel,
+    model,
     messages,
     max_tokens: options?.maxTokens || 6000,
     temperature: options?.temperature ?? 0.1,
   };
 
-  // Try primary model first
-  try {
-    const response = await callOpenRouter(request);
-    return response.choices[0]?.message?.content || "";
-  } catch (error: any) {
-    logger.warn(
-      `Primary vision model ${primaryModel} failed for batch: ${error.message}`
-    );
-
-    // Try fallback models
-    for (const fallbackModel of fallbackModels) {
-      try {
-        logger.info(
-          `Attempting fallback vision model for batch: ${fallbackModel}`
-        );
-        request.model = fallbackModel;
-        const response = await callOpenRouter(request);
-        logger.info(`Fallback model ${fallbackModel} succeeded for batch`);
-        return response.choices[0]?.message?.content || "";
-      } catch (fallbackError: any) {
-        logger.warn(
-          `Fallback vision model ${fallbackModel} also failed for batch: ${fallbackError.message}`
-        );
-      }
-    }
-
-    // If all models fail, throw the original error
-    throw new Error(
-      `All vision models failed for batch processing. Last error: ${error.message}. Please check OpenRouter API key and model availability.`
-    );
-  }
+  const response = await callOpenRouter(request);
+  return response.choices[0]?.message?.content || "";
 };
 
 /**
@@ -466,7 +396,6 @@ function toDocumentSummaryInputs(
 /**
  * Document-summary batch call supporting both images (image_url) and PDFs (file).
  * OpenRouter requires PDFs to be sent as type "file" with optional plugins; images as "image_url".
- * Uses current OpenRouter model IDs for fallbacks.
  */
 const callDocumentSummaryBatch = async (
   inputs: DocumentSummaryInput[],
@@ -479,12 +408,8 @@ const callDocumentSummaryBatch = async (
     detail?: "low" | "high" | "auto";
   }
 ): Promise<string> => {
-  const primaryModel =
+  const model =
     options?.model || DOC_SUMMARIZE_MODEL || DEFAULT_VISION_MODEL;
-  const fallbackModels = [
-    "openai/gpt-4o",
-    "anthropic/claude-3.5-sonnet",
-  ].filter((m) => m !== primaryModel);
 
   const content: OpenRouterRequest["messages"][0]["content"] = [
     { type: "text", text: prompt },
@@ -504,7 +429,7 @@ const callDocumentSummaryBatch = async (
         type: "file",
         file: {
           filename: input.filename || "document.pdf",
-          fileData: input.url,
+          file_data: input.url,
         },
       });
     }
@@ -512,7 +437,7 @@ const callDocumentSummaryBatch = async (
 
   const hasPdf = inputs.some((i) => i.type === "pdf");
   const request: OpenRouterRequest = {
-    model: primaryModel,
+    model,
     messages: [
       ...(systemPrompt
         ? [{ role: "system" as const, content: systemPrompt }]
@@ -526,34 +451,8 @@ const callDocumentSummaryBatch = async (
     }),
   };
 
-  try {
-    const response = await callOpenRouter(request);
-    return response.choices[0]?.message?.content?.trim() || "";
-  } catch (error: any) {
-    logger.warn(
-      `Primary document-summary model ${primaryModel} failed: ${error?.message}`
-    );
-    for (const fallbackModel of fallbackModels) {
-      try {
-        logger.info(
-          `Attempting fallback document-summary model: ${fallbackModel}`
-        );
-        request.model = fallbackModel;
-        const response = await callOpenRouter(request);
-        logger.info(
-          `Fallback document-summary model ${fallbackModel} succeeded`
-        );
-        return response.choices[0]?.message?.content?.trim() || "";
-      } catch (fallbackError: any) {
-        logger.warn(
-          `Fallback document-summary model ${fallbackModel} failed: ${fallbackError?.message}`
-        );
-      }
-    }
-    throw new Error(
-      `All document-summary models failed. Last error: ${error?.message}. Check OpenRouter API key and model availability.`
-    );
-  }
+  const response = await callOpenRouter(request);
+  return response.choices[0]?.message?.content?.trim() || "";
 };
 
 /** Complaint context passed when useComplaintContext is true */
@@ -572,15 +471,17 @@ export interface DocumentSummaryComplaintContext {
 
 /**
  * Generate a comprehensive summary from complaint attachment documents (images[]).
- * Uses DOC_SUMMARIZE_MODEL. When useComplaintContext is true, summary is tied to the complaint.
+ * When model is provided (e.g. by WhatsApp) it is used; otherwise DOC_SUMMARIZE_MODEL.
  */
 export const generateDocumentSummary = async (options: {
   documentUrls: string[];
   useComplaintContext: boolean;
   complaintContext?: DocumentSummaryComplaintContext;
   userPrompt?: string;
+  /** Override model (e.g. WHATSAPP_CONVERSATION_MODEL when called from WhatsApp). */
+  model?: string;
 }): Promise<string> => {
-  const { documentUrls, useComplaintContext, complaintContext, userPrompt } =
+  const { documentUrls, useComplaintContext, complaintContext, userPrompt, model: modelOverride } =
     options;
 
   if (!documentUrls || documentUrls.length === 0) {
@@ -748,8 +649,9 @@ ${contextBlock}${userPromptBlock}
   const inputs = toDocumentSummaryInputs(accessibleUrls);
   const pdfCount = inputs.filter((i) => i.type === "pdf").length;
   const imageCount = inputs.length - pdfCount;
+  const model = modelOverride || DOC_SUMMARIZE_MODEL;
   logger.info(
-    `Generating document summary with DOC_SUMMARIZE_MODEL=${DOC_SUMMARIZE_MODEL}, useComplaintContext=${useComplaintContext}, documents=${inputs.length} (images=${imageCount}, pdfs=${pdfCount})`
+    `Generating document summary with model=${model}, useComplaintContext=${useComplaintContext}, documents=${inputs.length} (images=${imageCount}, pdfs=${pdfCount})`
   );
 
   const response = await callDocumentSummaryBatch(
@@ -757,7 +659,7 @@ ${contextBlock}${userPromptBlock}
     promptToModel,
     systemPrompt,
     {
-      model: DOC_SUMMARIZE_MODEL,
+      model,
       maxTokens: 4000,
       temperature: 0.2,
       detail: "high",
@@ -771,14 +673,17 @@ ${contextBlock}${userPromptBlock}
  * Short summary of a single attachment for WhatsApp Option A intake.
  * Used to reply immediately when user sends a document/image in COLLECT_FREE_FORM.
  * Returns 2-4 sentences; same language as document. Safe to truncate for reply.
+ * When model is provided (e.g. WHATSAPP_CONVERSATION_MODEL) it is used; otherwise DOC_SUMMARIZE_MODEL.
  */
 export const summarizeSingleAttachmentForIntake = async (
-  url: string
+  url: string,
+  modelOverride?: string
 ): Promise<string> => {
   if (!url?.trim()) return "";
   const resolved = await resolveDocumentUrlsToAccessible([url]);
   if (resolved.length === 0) return "";
   const inputs = toDocumentSummaryInputs(resolved);
+  const model = modelOverride || DOC_SUMMARIZE_MODEL;
   const systemPrompt = `You are a grievance intake assistant for UP government. Summarize this document or image in 2-4 short sentences for complaint intake. Extract: main issue, location if visible, names/contacts if visible. Use the SAME language as the document (Hindi/English/Mixed). Plain text only. If unclear, state what is visible.`;
   const userPrompt = `Summarize the attached document/image for complaint intake in 2-4 sentences.`;
   try {
@@ -786,7 +691,7 @@ export const summarizeSingleAttachmentForIntake = async (
       inputs,
       userPrompt,
       systemPrompt,
-      { model: DOC_SUMMARIZE_MODEL, maxTokens: 300, temperature: 0.2 }
+      { model, maxTokens: 300, temperature: 0.2 }
     );
     const text = (response || "").trim();
     return text.length > 500 ? text.slice(0, 497) + "…" : text;

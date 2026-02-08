@@ -17,6 +17,8 @@ interface EnvConfig {
   OPENROUTER_API_KEY?: string;
   OPENROUTER_MODEL?: string;
   OPENROUTER_VISION_MODEL?: string;
+  /** Model for audio transcription (input_audio). Must support audio, e.g. google/gemini-2.5-flash. */
+  OPENROUTER_AUDIO_MODEL?: string;
   DOC_SUMMARIZE_MODEL?: string;
   WHATSAPP_CONVERSATION_MODEL?: string; // WhatsApp AI-assisted complaint parsing
   LOCATIONIQ_API_KEY?: string;
@@ -132,6 +134,7 @@ const validateEnv = (): EnvConfig => {
     OPENROUTER_MODEL: process.env.OPENROUTER_MODEL || "openai/gpt-4o",
     OPENROUTER_VISION_MODEL:
       process.env.OPENROUTER_VISION_MODEL || "openai/gpt-4o",
+    OPENROUTER_AUDIO_MODEL: process.env.OPENROUTER_AUDIO_MODEL,
     DOC_SUMMARIZE_MODEL:
       process.env.DOC_SUMMARIZE_MODEL || "google/gemini-3-flash-preview",
     WHATSAPP_CONVERSATION_MODEL:

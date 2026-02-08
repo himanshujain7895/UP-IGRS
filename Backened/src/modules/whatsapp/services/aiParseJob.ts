@@ -6,6 +6,7 @@
 
 import logger from "../../../config/logger";
 import { generateDocumentSummary } from "../../../services/ai.service";
+import { whatsappConfig } from "../config";
 import { sessionStore } from "./sessionStore";
 import { sendTextMessage } from "./metaClient";
 import {
@@ -85,13 +86,17 @@ export async function runAiParseJob(userId: string): Promise<void> {
     session.data.documents
       ?.map((d) => d.url)
       .filter((u): u is string => !!u && u.startsWith("http")) ?? [];
-  const allAttachmentUrls = [...imageUrls, ...docUrls];
+  const audioExtensions = /\.(ogg|mp3|m4a|webm|wav)(\?|$)/i;
+  const isNotAudio = (url: string) => !audioExtensions.test(url);
+  const allAttachmentUrls = [...imageUrls, ...docUrls].filter(isNotAudio);
   let documentSummaries: string[] | undefined;
-  if (allAttachmentUrls.length > 0) {
+  const conversationModel = whatsappConfig.conversationModel;
+  if (allAttachmentUrls.length > 0 && conversationModel) {
     try {
       const combinedSummary = await generateDocumentSummary({
         documentUrls: allAttachmentUrls,
         useComplaintContext: false,
+        model: conversationModel,
       });
       if (combinedSummary?.trim()) {
         documentSummaries = [combinedSummary.trim()];
@@ -102,6 +107,8 @@ export async function runAiParseJob(userId: string): Promise<void> {
         error: err instanceof Error ? err.message : String(err),
       });
     }
+  } else if (allAttachmentUrls.length > 0 && !conversationModel) {
+    logger.warn("AiParseJob: WHATSAPP_CONVERSATION_MODEL not set, skipping document summary");
   }
   try {
     const { partial, missingFields } = await parseComplaintFromFreeForm(text, {

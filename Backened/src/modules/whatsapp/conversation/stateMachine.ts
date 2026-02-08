@@ -1,6 +1,7 @@
 import logger from "../../../config/logger";
 import { Complaint } from "../../../models/Complaint";
 import { summarizeSingleAttachmentForIntake } from "../../../services/ai.service";
+import { whatsappConfig } from "../config";
 import { mapToComplaintCreate } from "../mappers/complaintMapper";
 import { getConversationalReply } from "../services/conversationalReply.service";
 import { templates } from "./templates";
@@ -600,7 +601,10 @@ export const processChatMessage = async (
         incoming.type === "image" ? lastImage : incoming.type === "document" ? lastDoc : undefined;
       if (url) {
         try {
-          const summary = await summarizeSingleAttachmentForIntake(url);
+          const summary = await summarizeSingleAttachmentForIntake(
+            url,
+            whatsappConfig.conversationModel
+          );
           if (summary) {
             replies.push(
               `${summary}\n\nSend more or reply *done* when finished.`

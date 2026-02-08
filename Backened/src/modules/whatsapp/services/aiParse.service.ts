@@ -234,10 +234,10 @@ export async function parseComplaintFromFreeForm(
     model?: string;
   }
 ): Promise<ParseComplaintResult> {
-  const model =
-    options?.model ||
-    whatsappConfig.conversationModel ||
-    "google/gemini-3-flash-preview";
+  const model = options?.model ?? whatsappConfig.conversationModel;
+  if (!model) {
+    throw new Error("WHATSAPP_CONVERSATION_MODEL is required for parseComplaintFromFreeForm. Set it in .env.");
+  }
   const trimmedText = (text || "").trim();
   const userPrompt = buildUserPrompt(trimmedText, options?.documentSummaries);
 

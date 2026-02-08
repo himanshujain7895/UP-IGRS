@@ -47,8 +47,11 @@ export async function getConversationalReply(
   session: WhatsAppSession,
   currentMessage: string
 ): Promise<string> {
-  const model =
-    whatsappConfig.conversationModel || "google/gemini-2.0-flash-001";
+  const model = whatsappConfig.conversationModel;
+  if (!model) {
+    logger.warn("WHATSAPP_CONVERSATION_MODEL not set, using fallback message");
+    return templates.freeFormAdded;
+  }
   const userPrompt = buildSessionContext(session, currentMessage);
 
   const timeoutPromise = new Promise<never>((_, reject) =>
