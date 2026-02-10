@@ -305,7 +305,7 @@ const InventoryPage: React.FC = () => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredInventory.map((item) => (
-              <Card key={item._id} className="border-orange-200 hover:shadow-md transition-shadow">
+              <Card key={item._id} className="border-orange-200 dark:border-border hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">

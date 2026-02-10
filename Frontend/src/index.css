@@ -49,43 +49,43 @@
     --sidebar-ring: 19 100% 50%;
   }
 
+  /* Dark theme: generic dark grey (not too dark), easy on the eyes */
   .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 0 0% 98%;
+    --background: 220 13% 10%;
+    --foreground: 210 20% 96%;
 
-    --card: 20 14.3% 4.1%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 13% 13%;
+    --card-foreground: 210 20% 96%;
 
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 13% 13%;
+    --popover-foreground: 210 20% 96%;
 
-    /* Primary - New Orange (lighter for dark mode) */
-    --primary: 19 100% 61%;
-    --primary-foreground: 20 14.3% 4.1%;
+    --primary: 19 100% 58%;
+    --primary-foreground: 220 13% 10%;
 
-    --secondary: 19 20% 17.5%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 12% 18%;
+    --secondary-foreground: 210 20% 96%;
 
-    --muted: 19 20% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 220 12% 18%;
+    --muted-foreground: 215 18% 62%;
 
-    --accent: 19 100% 55%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 19 100% 52%;
+    --accent-foreground: 210 20% 96%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 55% 38%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 19 20% 17.5%;
-    --input: 19 20% 17.5%;
+    --border: 220 12% 22%;
+    --input: 220 12% 22%;
     --ring: 19 100% 55%;
 
-    --sidebar-background: 20 20% 10%;
-    --sidebar-foreground: 0 0% 98%;
+    --sidebar-background: 220 14% 8%;
+    --sidebar-foreground: 210 20% 96%;
     --sidebar-primary: 19 100% 55%;
-    --sidebar-primary-foreground: 20 14.3% 4.1%;
-    --sidebar-accent: 19 20% 15%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 19 20% 17.5%;
+    --sidebar-primary-foreground: 220 14% 8%;
+    --sidebar-accent: 220 12% 15%;
+    --sidebar-accent-foreground: 210 20% 96%;
+    --sidebar-border: 220 12% 20%;
     --sidebar-ring: 19 100% 55%;
   }
 }
@@ -157,16 +157,16 @@
     background: hsl(19 20% 65%);
   }
   .dark .scrollbar-visible {
-    scrollbar-color: hsl(19 20% 35%) hsl(19 20% 18%);
+    scrollbar-color: hsl(220 12% 28%) hsl(220 13% 13%);
   }
   .dark .scrollbar-visible::-webkit-scrollbar-track {
-    background: hsl(19 20% 18%);
+    background: hsl(220 13% 13%);
   }
   .dark .scrollbar-visible::-webkit-scrollbar-thumb {
-    background: hsl(19 20% 35%);
+    background: hsl(220 12% 28%);
   }
   .dark .scrollbar-visible::-webkit-scrollbar-thumb:hover {
-    background: hsl(19 20% 45%);
+    background: hsl(220 12% 38%);
   }
 
   /* Visible horizontal scrollbar for officer cards (larger, with border for touch/desktop) */

@@ -42,5 +42,6 @@ export const USER_ROLES = {
 export const STORAGE_KEYS = {
   AUTH_TOKEN: 'auth_token',
   USER: 'user',
+  THEME: 'app_theme', // 'light' | 'dark' | 'system' - per device, shared by admin & officer
 } as const;
 

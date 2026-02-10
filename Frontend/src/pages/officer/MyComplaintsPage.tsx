@@ -241,73 +241,73 @@ const MyComplaintsPage: React.FC = () => {
       <div className="space-y-6">
         {/* Statistics Cards - compact on small screens */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 min-w-0">
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-slate-50 to-white min-w-0 overflow-hidden">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-slate-50 to-white dark:from-card dark:to-muted min-w-0 overflow-hidden">
             <CardContent className="p-3 sm:p-5">
               <div className="flex items-center justify-between gap-2 min-w-0">
                 <div className="min-w-0">
-                  <p className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
+                  <p className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
                     Total Cases
                   </p>
-                  <p className="text-lg sm:text-2xl font-bold text-slate-900 tabular-nums">
+                  <p className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-foreground tabular-nums">
                     {stats.total}
                   </p>
                 </div>
-                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-                  <FileText className="w-4 h-4 sm:w-6 sm:h-6 text-slate-600" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-slate-100 dark:bg-muted flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4 sm:w-6 sm:h-6 text-slate-600 dark:text-slate-300" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-amber-50 to-white min-w-0 overflow-hidden">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-amber-50 to-white dark:from-card dark:to-muted min-w-0 overflow-hidden">
             <CardContent className="p-3 sm:p-5">
               <div className="flex items-center justify-between gap-2 min-w-0">
                 <div className="min-w-0">
-                  <p className="text-[10px] sm:text-xs font-medium text-amber-600 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
+                  <p className="text-[10px] sm:text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
                     Pending
                   </p>
-                  <p className="text-lg sm:text-2xl font-bold text-amber-700 tabular-nums">
+                  <p className="text-lg sm:text-2xl font-bold text-amber-700 dark:text-amber-300 tabular-nums">
                     {stats.pending}
                   </p>
                 </div>
-                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-                  <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600 dark:text-amber-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-white min-w-0 overflow-hidden">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-white dark:from-card dark:to-muted min-w-0 overflow-hidden">
             <CardContent className="p-3 sm:p-5">
               <div className="flex items-center justify-between gap-2 min-w-0">
                 <div className="min-w-0">
-                  <p className="text-[10px] sm:text-xs font-medium text-blue-600 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
+                  <p className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
                     In Progress
                   </p>
-                  <p className="text-lg sm:text-2xl font-bold text-blue-700 tabular-nums">
+                  <p className="text-lg sm:text-2xl font-bold text-blue-700 dark:text-blue-300 tabular-nums">
                     {stats.inProgress}
                   </p>
                 </div>
-                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
-                  <AlertCircle className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-blue-100 dark:bg-blue-950/40 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-red-50 to-white min-w-0 overflow-hidden">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-red-50 to-white dark:from-card dark:to-muted min-w-0 overflow-hidden">
             <CardContent className="p-3 sm:p-5">
               <div className="flex items-center justify-between gap-2 min-w-0">
                 <div className="min-w-0">
-                  <p className="text-[10px] sm:text-xs font-medium text-red-600 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
+                  <p className="text-[10px] sm:text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
                     Overdue
                   </p>
-                  <p className="text-lg sm:text-2xl font-bold text-red-700 tabular-nums">
+                  <p className="text-lg sm:text-2xl font-bold text-red-700 dark:text-red-300 tabular-nums">
                     {stats.overdue}
                   </p>
                 </div>
-                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
-                  <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-red-600" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-red-100 dark:bg-red-950/40 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
                 </div>
               </div>
             </CardContent>
@@ -316,7 +316,7 @@ const MyComplaintsPage: React.FC = () => {
       </div>
 
       {/* Filter & Search - collapsible, default closed */}
-      <Card className="border-0 shadow-sm bg-white min-w-0 overflow-hidden">
+      <Card className="border-0 shadow-sm bg-white dark:bg-card min-w-0 overflow-hidden">
         <CardHeader
           role="button"
           tabIndex={0}
@@ -328,17 +328,17 @@ const MyComplaintsPage: React.FC = () => {
               setFiltersOpen((o) => !o);
             }
           }}
-          className="py-3 sm:py-4 px-4 sm:px-6 border-b border-slate-100 cursor-pointer hover:bg-slate-50/50 transition-colors"
+          className="py-3 sm:py-4 px-4 sm:px-6 border-b border-slate-100 dark:border-border cursor-pointer hover:bg-slate-50/50 dark:hover:bg-muted transition-colors"
           onClick={() => setFiltersOpen((o) => !o)}
         >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <Filter className="w-4 h-4 text-slate-600 shrink-0" />
-              <CardTitle className="text-sm sm:text-base font-semibold text-slate-900">
+              <Filter className="w-4 h-4 text-slate-600 dark:text-slate-300 shrink-0" />
+              <CardTitle className="text-sm sm:text-base font-semibold text-slate-900 dark:text-foreground">
                 Filter & Search
               </CardTitle>
               {(!filtersOpen && (searchTerm || statusFilter !== "all" || priorityFilter !== "all" || categoryFilter !== "all")) && (
-                <span className="text-xs text-slate-500 truncate">
+                <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
                   (filters active)
                 </span>
               )}
@@ -437,13 +437,13 @@ const MyComplaintsPage: React.FC = () => {
       ) : complaints.length === 0 ? (
         <Card className="border-0 shadow-sm">
           <CardContent className="p-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-muted flex items-center justify-center mx-auto mb-4">
               <FileText className="w-8 h-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-foreground mb-2">
               No Complaints Found
             </h3>
-            <p className="text-sm text-slate-600 max-w-md mx-auto">
+            <p className="text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto">
               {searchTerm || statusFilter !== "all" || categoryFilter !== "all"
                 ? "No complaints match your current filters. Try adjusting your search criteria."
                 : "You don't have any assigned complaints at this time."}
@@ -455,10 +455,10 @@ const MyComplaintsPage: React.FC = () => {
           {/* Results Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">
                 Assigned Cases
               </h2>
-              <p className="text-sm text-slate-500 mt-0.5">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                 {total} {total === 1 ? "case" : "cases"} found
               </p>
             </div>
@@ -482,30 +482,29 @@ const MyComplaintsPage: React.FC = () => {
               return (
                 <Card
                   key={complaintId}
-                  className="group border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 cursor-pointer overflow-hidden"
+                  className="group border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm hover:shadow-lg hover:border-slate-300 dark:hover:border-border transition-all duration-300 cursor-pointer overflow-hidden"
                   onClick={() => handleViewComplaint(complaintId || "")}
                 >
                   <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6 pt-4 sm:pt-6 space-y-2">
                     {/* Top Row: ID, Status, Priority - tighter gap */}
                     <div className="flex items-center gap-2 flex-wrap min-w-0">
                       {complaint.complaint_id && (
-                        <span className="text-[11px] sm:text-xs font-mono font-medium text-slate-500 bg-slate-50 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md shrink-0">
+                        <span className="text-[11px] sm:text-xs font-mono font-medium text-slate-500 dark:text-muted-foreground bg-slate-50 dark:bg-muted px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md shrink-0">
                           {complaint.complaint_id}
                         </span>
                       )}
                       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                        {getStatusBadge(complaint.status)}
                         {getPriorityBadge(complaint.priority)}
                       </div>
                     </div>
 
                     {/* Title */}
-                    <CardTitle className="text-sm sm:text-base font-semibold text-slate-900 leading-snug group-hover:text-primary transition-colors line-clamp-2 mt-0.5">
+                    <CardTitle className="text-sm sm:text-base font-semibold text-slate-900 dark:text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2 mt-0.5">
                       {complaint.title}
                     </CardTitle>
 
                     {/* Description (MLC's message text) - smaller font */}
-                    <CardDescription className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                    <CardDescription className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
                       {complaint.description}
                     </CardDescription>
                   </CardHeader>
@@ -514,10 +513,10 @@ const MyComplaintsPage: React.FC = () => {
                     {/* Progress Section */}
                     <div className="space-y-1.5 sm:space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] sm:text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                           Case Progress
                         </span>
-                        <span className="text-[10px] sm:text-xs font-semibold text-slate-900 shrink-0">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-900 dark:text-foreground shrink-0">
                           {(() => {
                             const steps = [
                               complaint.createdAt ? 1 : 0,
@@ -546,7 +545,7 @@ const MyComplaintsPage: React.FC = () => {
                           Steps Completed
                         </span>
                       </div>
-                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-2 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-blue-500 via-blue-600 to-emerald-500 rounded-full transition-all duration-700"
                           style={{
@@ -584,12 +583,12 @@ const MyComplaintsPage: React.FC = () => {
                     </div>
 
                     {/* Category */}
-                    <div className="flex items-center gap-2 py-1.5 border-y border-slate-100">
-                      <span className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    <div className="flex items-center gap-2 py-1.5 border-y border-slate-100 dark:border-border">
+                      <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wide">
                         Category
                       </span>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-[10px] sm:text-xs font-semibold text-slate-700 capitalize">
+                      <span className="text-slate-300 dark:text-slate-500">•</span>
+                      <span className="text-[10px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 capitalize">
                         {complaint.category}
                       </span>
                     </div>
@@ -597,10 +596,10 @@ const MyComplaintsPage: React.FC = () => {
                     {/* Timeline Information */}
                     <div className="space-y-1.5 sm:space-y-2 pt-0.5">
                       <div className="flex items-center justify-between text-[10px] sm:text-xs gap-2">
-                        <span className="text-slate-500 font-medium shrink-0">
+                        <span className="text-slate-500 dark:text-slate-300 font-medium shrink-0">
                           Arrived
                         </span>
-                        <span className="text-slate-900 font-semibold text-right truncate min-w-0">
+                        <span className="text-slate-900 dark:text-foreground font-semibold text-right truncate min-w-0">
                           {arrivalTime
                             ? new Date(arrivalTime).toLocaleDateString(
                                 "en-IN",
@@ -615,10 +614,10 @@ const MyComplaintsPage: React.FC = () => {
                       </div>
                       {assignedTime && assignedTime !== arrivalTime && (
                         <div className="flex items-center justify-between text-[10px] sm:text-xs gap-2">
-                          <span className="text-slate-500 font-medium shrink-0">
+                          <span className="text-slate-500 dark:text-slate-300 font-medium shrink-0">
                             Assigned
                           </span>
-                          <span className="text-slate-900 font-semibold text-right truncate min-w-0">
+                          <span className="text-slate-900 dark:text-foreground font-semibold text-right truncate min-w-0">
                             {new Date(assignedTime).toLocaleDateString(
                               "en-IN",
                               {
@@ -633,16 +632,16 @@ const MyComplaintsPage: React.FC = () => {
                       {/* Deadline Date */}
                       {remainingTime && (
                         <div className="flex items-center justify-between text-[10px] sm:text-xs gap-2">
-                          <span className="text-slate-500 font-medium shrink-0">
+                          <span className="text-slate-500 dark:text-slate-300 font-medium shrink-0">
                             Deadline
                           </span>
                           <span
                             className={`font-semibold ${
                               remainingTime.isOverdue
-                                ? "text-red-600"
+                                ? "text-red-600 dark:text-red-400"
                                 : remainingTime.remainingDays <= 3
-                                  ? "text-orange-600"
-                                  : "text-slate-900"
+                                  ? "text-orange-600 dark:text-orange-400"
+                                  : "text-slate-900 dark:text-foreground"
                             }`}
                           >
                             {remainingTime.deadline.toLocaleDateString(
@@ -661,12 +660,12 @@ const MyComplaintsPage: React.FC = () => {
                       )}
                       {remainingTime && (
                         <div
-                          className={`flex items-center justify-between text-[10px] sm:text-xs font-semibold pt-1 border-t border-slate-100 ${
+                          className={`flex items-center justify-between text-[10px] sm:text-xs font-semibold pt-1 border-t border-slate-100 dark:border-border ${
                             remainingTime.isOverdue
-                              ? "text-red-600"
+                              ? "text-red-600 dark:text-red-400"
                               : remainingTime.remainingDays <= 3
-                                ? "text-orange-600"
-                                : "text-slate-700"
+                                ? "text-orange-600 dark:text-orange-400"
+                                : "text-slate-700 dark:text-slate-200"
                           }`}
                         >
                           <span>

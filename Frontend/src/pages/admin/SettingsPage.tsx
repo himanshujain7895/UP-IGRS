@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/contexts/ThemeContext";
+import type { ThemeMode } from "@/contexts/ThemeContext";
 import { Settings, User, Bell, Shield, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { authService } from "@/services/auth.service";
@@ -42,6 +44,7 @@ const PASSWORD_MIN_LENGTH = 6;
 
 const SettingsPage: React.FC = () => {
   const { user, isAdmin, getMe } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [notificationSettings, setNotificationSettings] = useState<
     NotificationSettingsItem[]
   >([]);
@@ -100,7 +103,7 @@ const SettingsPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Profile Settings */}
-        <Card className="border-orange-200">
+        <Card className="border-orange-200 dark:border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5 text-primary" />
@@ -159,7 +162,7 @@ const SettingsPage: React.FC = () => {
         </Card>
 
         {/* Security Settings */}
-        <Card className="border-orange-200">
+        <Card className="border-orange-200 dark:border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
@@ -335,7 +338,7 @@ const SettingsPage: React.FC = () => {
 
         {/* Notification Control Panel (admin only) */}
         {isAdmin && (
-          <Card className="border-orange-200 lg:col-span-2">
+          <Card className="border-orange-200 dark:border-border lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="w-5 h-5 text-primary" />
@@ -408,7 +411,7 @@ const SettingsPage: React.FC = () => {
                           }}
                         >
                           <span
-                            className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform ${
+                            className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white dark:bg-card shadow ring-0 transition-transform ${
                               s.enabled ? "translate-x-5" : "translate-x-0.5"
                             }`}
                           />
@@ -422,8 +425,8 @@ const SettingsPage: React.FC = () => {
           </Card>
         )}
 
-        {/* System Settings */}
-        <Card className="border-orange-200">
+        {/* System Settings - Theme applies to admin & officer dashboards only, stored per device */}
+        <Card className="border-orange-200 dark:border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="w-5 h-5 text-primary" />
@@ -434,21 +437,19 @@ const SettingsPage: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Theme</Label>
-              <select className="w-full p-2 border rounded-md">
-                <option>Light</option>
-                <option>Dark</option>
-                <option>System</option>
+              <select
+                className="w-full p-2 border rounded-md bg-background text-foreground border-input"
+                value={theme}
+                onChange={(e) => setTheme((e.target.value as ThemeMode))}
+              >
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="system">System default</option>
               </select>
+              <p className="text-xs text-muted-foreground">
+                Applies to this device; shared across admin and officer panels.
+              </p>
             </div>
-            <div className="space-y-2">
-              <Label>Language</Label>
-              <select className="w-full p-2 border rounded-md">
-                <option>English</option>
-                <option>Hindi</option>
-                <option>Marathi</option>
-              </select>
-            </div>
-            <Button>Save Settings</Button>
           </CardContent>
         </Card>
       </div>

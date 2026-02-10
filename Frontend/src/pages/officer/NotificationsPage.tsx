@@ -136,13 +136,13 @@ const NotificationsPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <Card className="border-orange-200">
+        <Card className="border-orange-200 dark:border-border">
           <CardContent className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </CardContent>
         </Card>
       ) : notifications.length === 0 ? (
-        <Card className="border-orange-200">
+        <Card className="border-orange-200 dark:border-border">
           <CardContent className="py-12 text-center text-muted-foreground">
             <Bell className="w-12 h-12 mx-auto mb-3 opacity-50" />
             <p>No notifications yet.</p>
@@ -153,7 +153,7 @@ const NotificationsPage: React.FC = () => {
           {Object.entries(groupedByComplaint).map(([complaintId, items]) => (
             <Card
               key={complaintId}
-              className="border-orange-200 overflow-hidden transition-shadow hover:shadow-md"
+              className="border-orange-200 dark:border-border overflow-hidden transition-shadow hover:shadow-md"
             >
               <CardHeader className="pb-2">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
@@ -181,7 +181,7 @@ const NotificationsPage: React.FC = () => {
                     key={n.id}
                     className={cn(
                       "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 rounded-lg p-3 border bg-card",
-                      !n.read_at && "bg-orange-50/50 border-orange-200"
+                      !n.read_at && "bg-orange-50/50 dark:bg-muted border-orange-200 dark:border-border"
                     )}
                   >
                     <div className="min-w-0 flex-1">

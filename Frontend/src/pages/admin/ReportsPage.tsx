@@ -48,7 +48,7 @@ const ReportsPage: React.FC = () => {
           return (
             <Card
               key={report.title}
-              className="border-orange-200 hover:shadow-md transition-shadow cursor-pointer"
+              className="border-orange-200 dark:border-border hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => window.location.href = report.path}
             >
               <CardHeader>

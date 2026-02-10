@@ -1641,9 +1641,9 @@ const BadaunHeatMapPage: React.FC = () => {
           scrollbar-color: #94a3b8 #f1f5f9;
         }
       `}</style>
-      <div className="h-screen flex flex-col bg-gradient-to-br from-orange-50 to-white overflow-hidden">
+      <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Header with back button */}
-        <header className="bg-white border-b border-orange-200 shadow-sm h-16 flex items-center px-4 shrink-0">
+        <header className="bg-background border-b border-border shadow-sm h-16 flex items-center px-4 shrink-0">
           <div className="flex items-center gap-4 w-full">
             <Button
               variant="ghost"
@@ -1705,7 +1705,7 @@ const BadaunHeatMapPage: React.FC = () => {
           {/* Collapse/Expand Button */}
           <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-full bg-white border border-gray-300  shadow-md hover:bg-gray-50 transition-all duration-200 flex items-center justify-center ${
+            className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-full bg-background dark:bg-card border border-border shadow-md hover:bg-muted transition-all duration-200 flex items-center justify-center ${
               isSidebarCollapsed ? "ml-0" : "ml-72"
             }`}
             aria-label={
@@ -1721,7 +1721,7 @@ const BadaunHeatMapPage: React.FC = () => {
 
           {/* Sidebar Controls */}
           <div
-            className={`bg-white border-r overflow-y-auto transition-all duration-300 custom-scrollbar ${
+            className={`bg-background dark:bg-card border-r border-border overflow-y-auto transition-all duration-300 custom-scrollbar ${
               isSidebarCollapsed ? "w-0 opacity-0" : "w-72 opacity-100"
             }`}
             style={{

@@ -209,7 +209,7 @@ function UserSubmittedDocCard({
 
   return (
     <div className="aspect-square border border-[#011a60]/30 rounded-lg overflow-hidden flex flex-col bg-gradient-to-br from-white to-orange-50/30 p-3">
-      <div className="p-2 rounded-lg bg-gray-100 flex-1 flex items-center justify-center min-h-0">
+      <div className="p-2 rounded-lg bg-gray-100 dark:bg-muted flex-1 flex items-center justify-center min-h-0">
         <FileText className="w-10 h-10 text-muted-foreground" />
       </div>
       <p className="text-xs font-medium text-foreground truncate mt-2 text-center">
@@ -1360,7 +1360,7 @@ const ComplaintDetailPage: React.FC = () => {
             <Select value={activeTab} onValueChange={setActiveTab}>
               <SelectTrigger
                 id="complaint-tab-select"
-                className="w-full h-11 sm:h-9 bg-white border-[#011a60]/20 text-base sm:text-sm"
+                className="w-full h-11 sm:h-9 bg-white dark:bg-card border-[#011a60]/20 dark:border-border text-base sm:text-sm"
               >
               <SelectValue />
             </SelectTrigger>
@@ -1376,7 +1376,7 @@ const ComplaintDetailPage: React.FC = () => {
         </div>
 
         {/* Horizontal tab bar: only on screens >= 900px */}
-        <TabsList className="hidden min-[900px]:flex w-full justify-stretch rounded-lg bg-white border border-[#011a60]/20 p-1 mb-4 h-auto gap-1">
+        <TabsList className="hidden min-[900px]:flex w-full justify-stretch rounded-lg bg-white dark:bg-card border border-[#011a60]/20 dark:border-border p-1 mb-4 h-auto gap-1">
           <TabsTrigger
             value="details"
             className="flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium data-[state=active]:bg-[#1f3162] data-[state=active]:text-white data-[state=inactive]:text-foreground data-[state=inactive]:bg-transparent"
@@ -1451,7 +1451,7 @@ const ComplaintDetailPage: React.FC = () => {
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <Label className="text-xs text-muted-foreground">
+                          <Label className="text-xs text-muted-foreground dark:text-slate-300">
                             Description
                           </Label>
                           <p className="text-foreground mt-1">
@@ -1459,7 +1459,7 @@ const ComplaintDetailPage: React.FC = () => {
                           </p>
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">
+                          <Label className="text-xs text-muted-foreground dark:text-slate-300">
                             Category
                           </Label>
                           <p className="text-foreground mt-1 capitalize">
@@ -1478,7 +1478,7 @@ const ComplaintDetailPage: React.FC = () => {
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <Label className="text-xs text-muted-foreground">
+                          <Label className="text-xs text-muted-foreground dark:text-slate-300">
                             Contact Name
                           </Label>
                           <p className="text-foreground mt-1">
@@ -1487,7 +1487,7 @@ const ComplaintDetailPage: React.FC = () => {
                           </p>
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">
+                          <Label className="text-xs text-muted-foreground dark:text-slate-300">
                             Phone
                           </Label>
                           <p className="text-foreground mt-1">
@@ -1496,7 +1496,7 @@ const ComplaintDetailPage: React.FC = () => {
                           </p>
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">
+                          <Label className="text-xs text-muted-foreground dark:text-slate-300">
                             Email
                           </Label>
                           <p className="text-foreground mt-1">
@@ -1507,7 +1507,7 @@ const ComplaintDetailPage: React.FC = () => {
                         </div>
                         {complaint.voterId && (
                           <div>
-                            <Label className="text-xs text-muted-foreground">
+                            <Label className="text-xs text-muted-foreground dark:text-slate-300">
                               Voter ID
                             </Label>
                             <p className="text-foreground mt-1">
@@ -1526,7 +1526,7 @@ const ComplaintDetailPage: React.FC = () => {
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                         {(complaint as any).village_name && (
                           <div>
-                            <Label className="text-xs text-muted-foreground">
+                            <Label className="text-xs text-muted-foreground dark:text-slate-300">
                               Village
                             </Label>
                             <p className="text-foreground mt-1">
@@ -1536,7 +1536,7 @@ const ComplaintDetailPage: React.FC = () => {
                         )}
                         {(complaint as any).subdistrict_name && (
                           <div>
-                            <Label className="text-xs text-muted-foreground">
+                            <Label className="text-xs text-muted-foreground dark:text-slate-300">
                               Sub-District
                             </Label>
                             <p className="text-foreground mt-1">
@@ -1546,7 +1546,7 @@ const ComplaintDetailPage: React.FC = () => {
                         )}
                         {(complaint as any).district_name && (
                           <div>
-                            <Label className="text-xs text-muted-foreground">
+                            <Label className="text-xs text-muted-foreground dark:text-slate-300">
                               District
                             </Label>
                             <p className="text-foreground mt-1">
@@ -1556,7 +1556,7 @@ const ComplaintDetailPage: React.FC = () => {
                         )}
                         {complaint.latitude && complaint.longitude && (
                           <div>
-                            <Label className="text-xs text-muted-foreground">
+                            <Label className="text-xs text-muted-foreground dark:text-slate-300">
                               Coordinates
                             </Label>
                             <p className="text-foreground mt-1 text-xs">
@@ -1576,7 +1576,7 @@ const ComplaintDetailPage: React.FC = () => {
                       </div>
                       {typeof complaint.location === "string" && (
                         <div className="text-sm">
-                          <Label className="text-xs text-muted-foreground">
+                          <Label className="text-xs text-muted-foreground dark:text-slate-300">
                             Location
                           </Label>
                           <p className="text-foreground mt-1">
@@ -1593,7 +1593,7 @@ const ComplaintDetailPage: React.FC = () => {
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <Label className="text-xs text-muted-foreground">
+                          <Label className="text-xs text-muted-foreground dark:text-slate-300">
                             Created At
                           </Label>
                           <p className="text-foreground mt-1">
@@ -1608,7 +1608,7 @@ const ComplaintDetailPage: React.FC = () => {
                         </div>
                         {(complaint as any).updated_at && (
                           <div>
-                            <Label className="text-xs text-muted-foreground">
+                            <Label className="text-xs text-muted-foreground dark:text-slate-300">
                               Updated At
                             </Label>
                             <p className="text-foreground mt-1">
@@ -1620,7 +1620,7 @@ const ComplaintDetailPage: React.FC = () => {
                         )}
                         {(complaint as any).arrivalTime && (
                           <div>
-                            <Label className="text-xs text-muted-foreground">
+                            <Label className="text-xs text-muted-foreground dark:text-slate-300">
                               Arrival Time
                             </Label>
                             <p className="text-foreground mt-1">
@@ -1632,7 +1632,7 @@ const ComplaintDetailPage: React.FC = () => {
                         )}
                         {(complaint as any).assignedTime && (
                           <div>
-                            <Label className="text-xs text-muted-foreground">
+                            <Label className="text-xs text-muted-foreground dark:text-slate-300">
                               Assigned Time
                             </Label>
                             <p className="text-foreground mt-1">
@@ -1652,7 +1652,7 @@ const ComplaintDetailPage: React.FC = () => {
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <Label className="text-xs text-muted-foreground">
+                          <Label className="text-xs text-muted-foreground dark:text-slate-300">
                             Officer Assigned
                           </Label>
                           <p className="text-foreground mt-1">
@@ -1663,7 +1663,7 @@ const ComplaintDetailPage: React.FC = () => {
                         </div>
                         {(complaint as any).assignedOfficer && (
                           <div>
-                            <Label className="text-xs text-muted-foreground">
+                            <Label className="text-xs text-muted-foreground dark:text-slate-300">
                               Assigned Officer ID
                             </Label>
                             <p className="text-foreground mt-1 text-xs font-mono">
@@ -1676,7 +1676,7 @@ const ComplaintDetailPage: React.FC = () => {
                           </div>
                         )}
                         <div>
-                          <Label className="text-xs text-muted-foreground">
+                          <Label className="text-xs text-muted-foreground dark:text-slate-300">
                             Created by Admin
                           </Label>
                           <p className="text-foreground mt-1">
@@ -1684,7 +1684,7 @@ const ComplaintDetailPage: React.FC = () => {
                           </p>
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">
+                          <Label className="text-xs text-muted-foreground dark:text-slate-300">
                             Status
                           </Label>
                           <p className="text-foreground mt-1">
@@ -1696,14 +1696,14 @@ const ComplaintDetailPage: React.FC = () => {
 
                       {/* Assigned Officer Details */}
                       {(complaint as any)?.assignedOfficerDetails && (
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2 mb-4">
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-border">
+                          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b border-gray-200 dark:border-border pb-2 mb-4">
                             Assigned Officer Details
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             {(complaint as any).assignedOfficerDetails.name && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Officer Name
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -1717,7 +1717,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .designation && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Designation
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -1731,7 +1731,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .department && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Department
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -1745,7 +1745,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .email && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Email
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -1767,7 +1767,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .phone && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Phone
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -1789,7 +1789,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .districtName && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   District
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -1803,7 +1803,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .officeAddress && (
                               <div className="md:col-span-3">
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Office Address
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -1959,8 +1959,8 @@ const ComplaintDetailPage: React.FC = () => {
         {/* Notes & Documents Tab */}
         <TabsContent value="notes" className="space-y-6">
           {/* Add Note Section - Modern Design */}
-          <Card className="border-orange-200 shadow-md">
-            <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200">
+          <Card className="border-orange-200 dark:border-border shadow-md">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-muted dark:to-muted border-b border-orange-200 dark:border-border">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <MessageCircle className="w-5 h-5 text-primary" />
@@ -2020,8 +2020,8 @@ const ComplaintDetailPage: React.FC = () => {
           </Card>
 
           {/* Notes History - Segregated: Admin (orange) & Officer (navy) */}
-          <Card className="border-orange-200 shadow-md">
-            <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200">
+          <Card className="border-orange-200 dark:border-border shadow-md">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-muted dark:to-muted border-b border-orange-200 dark:border-border">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <FileText className="w-5 h-5 text-primary" />
@@ -2159,8 +2159,8 @@ const ComplaintDetailPage: React.FC = () => {
           </Card>
 
           {/* Upload Document or Image Section - Modern Design */}
-          <Card className="border-orange-200 shadow-md">
-            <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200">
+          <Card className="border-orange-200 dark:border-border shadow-md">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-muted dark:to-muted border-b border-orange-200 dark:border-border">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <FileUp className="w-5 h-5 text-primary" />
@@ -2255,8 +2255,8 @@ const ComplaintDetailPage: React.FC = () => {
           </Card>
 
           {/* Documents History - Segregated: Admin (orange) & Officer (navy) */}
-          <Card className="border-orange-200 shadow-md">
-            <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200">
+          <Card className="border-orange-200 dark:border-border shadow-md">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-muted dark:to-muted border-b border-orange-200 dark:border-border">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <FileDown className="w-5 h-5 text-primary" />
@@ -2314,7 +2314,7 @@ const ComplaintDetailPage: React.FC = () => {
                               <p className="text-sm font-semibold truncate">
                                 {doc.fileName}
                               </p>
-                              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                              <p className="text-xs text-muted-foreground dark:text-slate-300 mt-1 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 {doc.createdAt
                                   ? new Date(doc.createdAt).toLocaleString()
@@ -2405,7 +2405,7 @@ const ComplaintDetailPage: React.FC = () => {
                               <p className="text-sm font-semibold truncate">
                                 {doc.fileName}
                               </p>
-                              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                              <p className="text-xs text-muted-foreground dark:text-slate-300 mt-1 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 {doc.createdAt
                                   ? new Date(doc.createdAt).toLocaleString()
@@ -2452,7 +2452,7 @@ const ComplaintDetailPage: React.FC = () => {
 
         {/* Research Tab */}
         <TabsContent value="research" className="space-y-6">
-          <Card className="border-orange-200 shadow-lg overflow-hidden">
+          <Card className="border-orange-200 dark:border-border shadow-lg overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3 min-w-0">
@@ -2541,7 +2541,7 @@ const ComplaintDetailPage: React.FC = () => {
                                 <p className="font-semibold text-foreground">
                                   Similar Issues
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-muted-foreground dark:text-slate-300">
                                   {researchData.similar_issues.length} related
                                   cases found
                                 </p>
@@ -2554,12 +2554,12 @@ const ComplaintDetailPage: React.FC = () => {
                                 (item: any, i: number) => (
                                   <div
                                     key={i}
-                                    className="p-4 bg-gradient-to-br from-white to-blue-50/30 border-l-4 border-blue-500 rounded-lg hover:shadow-md transition-all"
+                                    className="p-4 bg-gradient-to-br from-white to-blue-50/30 dark:from-card dark:to-muted dark:border-border border-l-4 border-blue-500 rounded-lg hover:shadow-md transition-all"
                                   >
                                     <p className="font-semibold text-foreground mb-2">
                                       {item.title}
                                     </p>
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground dark:text-slate-300 mb-2">
                                       <span className="font-medium">
                                         {item.source}
                                       </span>
@@ -2570,7 +2570,7 @@ const ComplaintDetailPage: React.FC = () => {
                                         </>
                                       )}
                                     </div>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                    <p className="text-sm text-muted-foreground dark:text-slate-300 leading-relaxed">
                                       {item.summary}
                                     </p>
                                   </div>
@@ -2596,17 +2596,17 @@ const ComplaintDetailPage: React.FC = () => {
                               <p className="font-semibold text-foreground">
                                 Budget Information
                               </p>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-muted-foreground dark:text-slate-300">
                                 Department allocation details
                               </p>
                             </div>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="px-4 py-4">
-                          <div className="p-4 bg-gradient-to-br from-white to-green-50/30 border border-green-200 rounded-lg">
+                          <div className="p-4 bg-gradient-to-br from-white to-green-50/30 dark:from-card dark:to-muted dark:border-border border border-green-200 rounded-lg">
                             <div className="space-y-3">
-                              <div className="flex items-start justify-between pb-2 border-b border-green-200">
-                                <span className="text-sm font-medium text-muted-foreground">
+                              <div className="flex items-start justify-between pb-2 border-b border-green-200 dark:border-border">
+                                <span className="text-sm font-medium text-muted-foreground dark:text-slate-300">
                                   Department
                                 </span>
                                 <span className="text-sm font-semibold text-foreground">
@@ -2614,8 +2614,8 @@ const ComplaintDetailPage: React.FC = () => {
                                 </span>
                               </div>
                               {researchData.budget_info.allocation && (
-                                <div className="flex items-start justify-between pb-2 border-b border-green-200">
-                                  <span className="text-sm font-medium text-muted-foreground">
+                                <div className="flex items-start justify-between pb-2 border-b border-green-200 dark:border-border">
+                                  <span className="text-sm font-medium text-muted-foreground dark:text-slate-300">
                                     Allocation
                                   </span>
                                   <span className="text-sm font-semibold text-foreground">
@@ -2624,8 +2624,8 @@ const ComplaintDetailPage: React.FC = () => {
                                 </div>
                               )}
                               {researchData.budget_info.source && (
-                                <div className="flex items-start justify-between pb-2 border-b border-green-200">
-                                  <span className="text-sm font-medium text-muted-foreground">
+                                <div className="flex items-start justify-between pb-2 border-b border-green-200 dark:border-border">
+                                  <span className="text-sm font-medium text-muted-foreground dark:text-slate-300">
                                     Source
                                   </span>
                                   <span className="text-sm font-semibold text-foreground">
@@ -2634,7 +2634,7 @@ const ComplaintDetailPage: React.FC = () => {
                                 </div>
                               )}
                               <div className="pt-2">
-                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                <p className="text-sm text-muted-foreground dark:text-slate-300 leading-relaxed">
                                   {researchData.budget_info.summary}
                                 </p>
                               </div>
@@ -2660,7 +2660,7 @@ const ComplaintDetailPage: React.FC = () => {
                                 <p className="font-semibold text-foreground">
                                   News Articles
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-muted-foreground dark:text-slate-300">
                                   {researchData.news_articles.length} relevant
                                   articles
                                 </p>
@@ -2673,7 +2673,7 @@ const ComplaintDetailPage: React.FC = () => {
                                 (item: any, i: number) => (
                                   <div
                                     key={i}
-                                    className="p-4 bg-gradient-to-br from-white to-purple-50/30 border-l-4 border-purple-500 rounded-lg hover:shadow-md transition-all"
+                                    className="p-4 bg-gradient-to-br from-white to-purple-50/30 dark:from-card dark:to-muted dark:border-border border-l-4 border-purple-500 rounded-lg hover:shadow-md transition-all"
                                   >
                                     {item.url ? (
                                       <a
@@ -2690,10 +2690,10 @@ const ComplaintDetailPage: React.FC = () => {
                                         {item.title}
                                       </p>
                                     )}
-                                    <p className="text-xs text-muted-foreground mb-2">
+                                    <p className="text-xs text-muted-foreground dark:text-slate-300 mb-2">
                                       {item.source}
                                     </p>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                    <p className="text-sm text-muted-foreground dark:text-slate-300 leading-relaxed">
                                       {item.summary}
                                     </p>
                                   </div>
@@ -2720,7 +2720,7 @@ const ComplaintDetailPage: React.FC = () => {
                                 <p className="font-semibold text-foreground">
                                   Key Facts for Letter
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-muted-foreground dark:text-slate-300">
                                   {researchData.key_facts.length} important
                                   points
                                 </p>
@@ -2728,13 +2728,13 @@ const ComplaintDetailPage: React.FC = () => {
                             </div>
                           </AccordionTrigger>
                           <AccordionContent className="px-4 py-4">
-                            <div className="p-4 bg-gradient-to-br from-white to-amber-50/30 border border-amber-200 rounded-lg">
+                            <div className="p-4 bg-gradient-to-br from-white to-amber-50/30 dark:from-card dark:to-muted dark:border-border border border-amber-200 rounded-lg">
                               <div className="space-y-3">
                                 {researchData.key_facts.map(
                                   (fact: string, i: number) => (
                                     <div
                                       key={i}
-                                      className="flex items-start gap-3 p-3 bg-white rounded-lg border border-amber-100 hover:border-amber-300 transition-colors"
+                                      className="flex items-start gap-3 p-3 bg-white dark:bg-card rounded-lg border border-amber-100 dark:border-border hover:border-amber-300 dark:hover:border-border transition-colors"
                                     >
                                       <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center text-xs font-bold">
                                         {i + 1}
@@ -2754,7 +2754,7 @@ const ComplaintDetailPage: React.FC = () => {
 
                   {/* Research Depth Info */}
                   {researchData.research_depth && (
-                    <div className="mt-6 p-4 bg-gradient-to-r from-primary/10 via-orange-100 to-amber-100 border-2 border-primary/20 rounded-xl">
+                    <div className="mt-6 p-4 bg-gradient-to-r from-primary/10 via-orange-100 to-amber-100 dark:from-muted dark:via-muted dark:to-muted border-2 border-primary/20 dark:border-border rounded-xl">
                       <div className="flex items-start gap-3">
                         <div className="p-2 bg-primary/20 rounded-lg">
                           <Sparkles className="w-5 h-5 text-primary" />
@@ -2766,7 +2766,7 @@ const ComplaintDetailPage: React.FC = () => {
                               {researchData.research_depth}
                             </span>
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground dark:text-slate-300">
                             Key facts will be automatically included in the
                             complaint letter.
                           </p>
@@ -2867,7 +2867,7 @@ const ComplaintDetailPage: React.FC = () => {
           </div> */}
 
           {/* Stage 1: Find Officers — stacks on mobile */}
-          <Card className="border-orange-200 shadow-lg overflow-hidden">
+          <Card className="border-orange-200 dark:border-border shadow-lg overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
               <div className="space-y-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -3145,7 +3145,7 @@ const ComplaintDetailPage: React.FC = () => {
 
           {/* Stage 2: Draft Letter — stacks on mobile */}
           {letter && (
-            <Card className="border-orange-200 shadow-lg overflow-hidden">
+            <Card className="border-orange-200 dark:border-border shadow-lg overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-start gap-3 min-w-0">
@@ -3182,7 +3182,7 @@ const ComplaintDetailPage: React.FC = () => {
                       <p className="text-base font-semibold text-foreground sm:text-lg">
                         Drafting letter...
                       </p>
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground dark:text-slate-300 mt-1">
                         AI is generating the complaint letter
                       </p>
                     </div>
@@ -3190,11 +3190,11 @@ const ComplaintDetailPage: React.FC = () => {
                 ) : (
                   <div className="space-y-6">
                     {/* Letter Header Info */}
-                    <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl">
+                    <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-muted dark:to-muted border border-orange-200 dark:border-border rounded-xl">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {letter.from && (
                           <div>
-                            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            <Label className="text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase tracking-wide">
                               From
                             </Label>
                             <p className="text-sm font-semibold text-foreground mt-1">
@@ -3203,7 +3203,7 @@ const ComplaintDetailPage: React.FC = () => {
                           </div>
                         )}
                         <div>
-                          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          <Label className="text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase tracking-wide">
                             To
                           </Label>
                           <p className="text-sm font-semibold text-foreground mt-1">
@@ -3212,7 +3212,7 @@ const ComplaintDetailPage: React.FC = () => {
                         </div>
                         {letter.date && (
                           <div>
-                            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            <Label className="text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase tracking-wide">
                               Date
                             </Label>
                             <p className="text-sm font-semibold text-foreground mt-1">
@@ -3222,7 +3222,7 @@ const ComplaintDetailPage: React.FC = () => {
                         )}
                       </div>
                       <div className="mt-4">
-                        <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        <Label className="text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase tracking-wide">
                           Subject
                         </Label>
                         <p className="text-sm font-semibold text-foreground mt-1">
@@ -3232,11 +3232,11 @@ const ComplaintDetailPage: React.FC = () => {
                     </div>
 
                     {/* Letter Editor */}
-                    <Card className="border-2 border-orange-200 overflow-hidden">
-                      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-200 p-4 flex items-center justify-between">
+                    <Card className="border-2 border-orange-200 dark:border-border overflow-hidden">
+                      <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-muted dark:to-muted border-b border-orange-200 dark:border-border p-4 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <FileText className="w-5 h-5 text-primary" />
-                          <Label className="text-base font-semibold">
+                          <Label className="text-base font-semibold text-foreground">
                             Letter Body
                           </Label>
                         </div>
@@ -3272,13 +3272,13 @@ const ComplaintDetailPage: React.FC = () => {
                           </Button>
                         </div>
                       </div>
-                      <div className="p-6 bg-white">
+                      <div className="p-6 bg-white dark:bg-card">
                         <Textarea
                           value={editableLetterBody}
                           onChange={(e) =>
                             setEditableLetterBody(e.target.value)
                           }
-                          className="min-h-[500px] font-serif text-base leading-relaxed resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+                          className="min-h-[500px] font-serif text-base leading-relaxed resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 bg-transparent text-foreground placeholder:text-muted-foreground"
                           placeholder="Letter body will appear here..."
                         />
                       </div>
@@ -3330,7 +3330,7 @@ const ComplaintDetailPage: React.FC = () => {
               </CardHeader>
               <CardContent className="border-t p-4 sm:p-6">
                 <div className="space-y-3">
-                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
+                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-slate-300 break-words">
                     Continue to the Actions tab to assign officers and manage
                     complaint resolution.
                   </p>
@@ -3351,7 +3351,7 @@ const ComplaintDetailPage: React.FC = () => {
         <TabsContent value="actions" className="space-y-4">
           {/* Check if drafted_letter exists */}
           {!(complaint as any)?.drafted_letter && !letter ? (
-            <Card className="border-orange-200 shadow-lg overflow-hidden">
+            <Card className="border-orange-200 dark:border-border shadow-lg overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm flex-shrink-0">
@@ -3394,7 +3394,7 @@ const ComplaintDetailPage: React.FC = () => {
           ) : (
             <>
               {/* Officer Assignment Section — stacks on mobile */}
-              <Card className="border-orange-200 shadow-lg overflow-hidden">
+              <Card className="border-orange-200 dark:border-border shadow-lg overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
                   <div className="space-y-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -3565,14 +3565,14 @@ const ComplaintDetailPage: React.FC = () => {
                     </div>
                   ) : complaint?.isOfficerAssigned && !assignmentResult ? (
                     <div className="space-y-4">
-                      <div className="p-4 border border-blue-200 rounded-lg bg-blue-50/50">
+                      <div className="p-4 border border-blue-200 dark:border-border rounded-lg bg-blue-50/50 dark:bg-muted">
                         <div className="flex items-center gap-3">
-                          <UserCheck className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                          <UserCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                           <div>
                             <h3 className="text-sm font-semibold text-foreground mb-1">
                               Complaint Already Assigned
                             </h3>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground dark:text-slate-300">
                               This complaint has already been assigned to an
                               officer.
                             </p>
@@ -3582,14 +3582,14 @@ const ComplaintDetailPage: React.FC = () => {
 
                       {/* Assigned Officer Details */}
                       {(complaint as any)?.assignedOfficerDetails && (
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2 mb-4">
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-border">
+                          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b border-gray-200 dark:border-border pb-2 mb-4">
                             Assigned Officer Details
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             {(complaint as any).assignedOfficerDetails.name && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Officer Name
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -3603,7 +3603,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .designation && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Designation
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -3617,7 +3617,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .department && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Department
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -3631,7 +3631,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .email && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Email
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -3653,7 +3653,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .phone && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Phone
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -3675,7 +3675,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .districtName && (
                               <div>
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   District
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -3689,7 +3689,7 @@ const ComplaintDetailPage: React.FC = () => {
                             {(complaint as any).assignedOfficerDetails
                               .officeAddress && (
                               <div className="md:col-span-3">
-                                <Label className="text-xs text-muted-foreground">
+                                <Label className="text-xs text-muted-foreground dark:text-slate-300">
                                   Office Address
                                 </Label>
                                 <p className="text-foreground mt-1">
@@ -3705,7 +3705,7 @@ const ComplaintDetailPage: React.FC = () => {
                       )}
 
                       {/* Unassign & Change officer actions */}
-                      <div className="mt-6 pt-4 border-t border-gray-200 flex flex-wrap gap-3">
+                      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-border flex flex-wrap gap-3">
                         <Button
                           variant="outline"
                           className="border-amber-600 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
@@ -3727,13 +3727,13 @@ const ComplaintDetailPage: React.FC = () => {
                     </div>
                   ) : !(complaint as any)?.selected_officer ? (
                     <div className="text-center py-12">
-                      <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
-                        <UserCheck className="w-10 h-10 text-orange-400" />
+                      <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 dark:from-muted dark:to-muted flex items-center justify-center">
+                        <UserCheck className="w-10 h-10 text-orange-400 dark:text-orange-300" />
                       </div>
                       <p className="text-base font-semibold text-foreground mb-2 sm:text-lg">
                         No Selected Officer
                       </p>
-                      <p className="text-xs sm:text-sm text-muted-foreground mb-6">
+                      <p className="text-xs sm:text-sm text-muted-foreground dark:text-slate-300 mb-6">
                         Please draft a letter first to select an officer for
                         assignment.
                       </p>
@@ -3751,22 +3751,22 @@ const ComplaintDetailPage: React.FC = () => {
                       {assignmentResult.isNewOfficer &&
                       assignmentResult.user &&
                       assignmentResult.user.password ? (
-                        <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl">
+                        <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-card dark:to-muted border-2 border-green-300 dark:border-border rounded-xl">
                           <div className="flex items-start gap-4">
                             <div className="p-3 bg-green-500 rounded-lg">
                               <CheckCircle className="w-6 h-6 text-white" />
                             </div>
                             <div className="flex-1">
-                              <h3 className="text-base font-bold text-green-900 mb-2 sm:text-lg md:text-xl">
+                              <h3 className="text-base font-bold text-green-900 dark:text-foreground mb-2 sm:text-lg md:text-xl">
                                 Officer Assigned Successfully!
                               </h3>
-                              <p className="text-xs sm:text-sm text-green-700 mb-4">
+                              <p className="text-xs sm:text-sm text-green-700 dark:text-slate-300 mb-4">
                                 A new user account has been created for the
                                 officer. Please save the credentials below.
                               </p>
                               <div className="space-y-3">
-                                <div className="p-4 bg-white rounded-lg border border-green-200">
-                                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
+                                <div className="p-4 bg-white dark:bg-muted rounded-lg border border-green-200 dark:border-border">
+                                  <Label className="text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase tracking-wide mb-2 block">
                                     Email
                                   </Label>
                                   <div className="flex items-center gap-2">
@@ -3794,12 +3794,12 @@ const ComplaintDetailPage: React.FC = () => {
                                     )}
                                   </div>
                                 </div>
-                                <div className="p-4 bg-white rounded-lg border border-green-200">
-                                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
+                                <div className="p-4 bg-white dark:bg-muted rounded-lg border border-green-200 dark:border-border">
+                                  <Label className="text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase tracking-wide mb-2 block">
                                     Password
                                   </Label>
                                   <div className="flex items-center gap-2">
-                                    <div className="flex-1 font-mono text-sm font-semibold text-foreground bg-gray-50 px-3 py-2 rounded border">
+                                    <div className="flex-1 font-mono text-sm font-semibold text-foreground bg-gray-50 dark:bg-background px-3 py-2 rounded border dark:border-border">
                                       {assignmentResult.user?.password || "N/A"}
                                     </div>
                                     {assignmentResult.user?.password && (
@@ -3938,9 +3938,9 @@ const ComplaintDetailPage: React.FC = () => {
                         <>
                           {/* Highlighted Selected Officer Card */}
                           {(complaint as any)?.selected_officer && (
-                            <div className="bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 border-2 border-orange-300 rounded-xl p-6 shadow-lg">
+                            <div className="bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 dark:from-card dark:via-muted dark:to-muted border-2 border-orange-300 dark:border-border rounded-xl p-6 shadow-lg">
                               <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-lg sm:text-2xl flex-shrink-0 shadow-lg border-4 border-white">
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-lg sm:text-2xl flex-shrink-0 shadow-lg border-4 border-white dark:border-muted">
                                   {(complaint as any).selected_officer.name
                                     ?.charAt(0)
                                     .toUpperCase() || "O"}
@@ -3956,7 +3956,7 @@ const ComplaintDetailPage: React.FC = () => {
                                       {(complaint as any).selected_officer
                                         .name || "Unknown"}
                                     </h3>
-                                    <p className="text-sm font-semibold text-primary sm:text-base md:text-lg">
+                                    <p className="text-sm font-semibold text-primary dark:text-orange-300 sm:text-base md:text-lg">
                                       {
                                         (complaint as any).selected_officer
                                           .designation
@@ -3966,12 +3966,12 @@ const ComplaintDetailPage: React.FC = () => {
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {(complaint as any).selected_officer
                                       .email && (
-                                      <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-orange-200 shadow-sm">
+                                      <div className="flex items-center gap-3 p-3 bg-white dark:bg-muted rounded-lg border border-orange-200 dark:border-border shadow-sm">
                                         <div className="p-2 bg-blue-500 rounded-lg">
                                           <Mail className="w-4 h-4 text-white" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                                          <p className="text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase tracking-wide mb-1">
                                             Email
                                           </p>
                                           <a
@@ -3979,7 +3979,7 @@ const ComplaintDetailPage: React.FC = () => {
                                               (complaint as any)
                                                 .selected_officer.email
                                             }`}
-                                            className="text-sm font-medium text-foreground hover:text-primary break-all"
+                                            className="text-sm font-medium text-foreground dark:text-slate-100 hover:text-primary dark:hover:text-orange-300 break-all"
                                           >
                                             {
                                               (complaint as any)
@@ -3991,12 +3991,12 @@ const ComplaintDetailPage: React.FC = () => {
                                     )}
                                     {(complaint as any).selected_officer
                                       .phone && (
-                                      <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-orange-200 shadow-sm">
+                                      <div className="flex items-center gap-3 p-3 bg-white dark:bg-muted rounded-lg border border-orange-200 dark:border-border shadow-sm">
                                         <div className="p-2 bg-green-500 rounded-lg">
                                           <Phone className="w-4 h-4 text-white" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                                          <p className="text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase tracking-wide mb-1">
                                             Phone
                                           </p>
                                           <a
@@ -4004,7 +4004,7 @@ const ComplaintDetailPage: React.FC = () => {
                                               (complaint as any)
                                                 .selected_officer.phone
                                             }`}
-                                            className="text-sm font-medium text-foreground hover:text-primary"
+                                            className="text-sm font-medium text-foreground dark:text-slate-100 hover:text-primary dark:hover:text-orange-300"
                                           >
                                             {
                                               (complaint as any)
@@ -4016,15 +4016,15 @@ const ComplaintDetailPage: React.FC = () => {
                                     )}
                                     {(complaint as any).selected_officer
                                       .office_address && (
-                                      <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200 shadow-sm md:col-span-2">
+                                      <div className="flex items-start gap-3 p-3 bg-white dark:bg-muted rounded-lg border border-orange-200 dark:border-border shadow-sm md:col-span-2">
                                         <div className="p-2 bg-purple-500 rounded-lg flex-shrink-0">
                                           <MapPin className="w-4 h-4 text-white" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                                          <p className="text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase tracking-wide mb-1">
                                             Office Address
                                           </p>
-                                          <p className="text-sm font-medium text-foreground">
+                                          <p className="text-sm font-medium text-foreground dark:text-slate-100">
                                             {
                                               (complaint as any)
                                                 .selected_officer.office_address
@@ -4047,7 +4047,7 @@ const ComplaintDetailPage: React.FC = () => {
                                 handleChangeSelectedOfficerBeforeAssignOpen
                               }
                               disabled={assigningOfficer}
-                              className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+                              className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:text-orange-700 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-muted dark:hover:text-orange-300"
                             >
                               <Users className="w-4 h-4 mr-2" />
                               Change selected officer

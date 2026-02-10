@@ -300,7 +300,7 @@ const UserManagementPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <Card className="border-orange-200">
+      <Card className="border-orange-200 dark:border-border">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
@@ -341,7 +341,7 @@ const UserManagementPage: React.FC = () => {
       </Card>
 
       {/* Users Table */}
-      <Card className="border-orange-200">
+      <Card className="border-orange-200 dark:border-border">
         <CardHeader>
           <CardTitle>Users</CardTitle>
           <CardDescription>Manage all system users</CardDescription>

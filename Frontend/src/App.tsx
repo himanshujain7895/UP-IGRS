@@ -15,6 +15,7 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ModalProvider } from "@/contexts/ModalContext";
 import { BadaunDistrictProvider } from "@/contexts/BadaunDistrictContext";
 import { I18nProvider } from "@/contexts/I18nContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Toaster } from "@/components/ui/sonner";
 import AppLayout from "@/components/AppLayout";
 import AdminLayout from "@/components/AdminLayout";
@@ -92,6 +93,7 @@ const AppContent: React.FC = () => {
             <ModalProvider>
               <BadaunDistrictProvider autoFetch={false}>
                 <Router>
+                  <ThemeProvider>
                   <Routes>
                     {/* Standalone Heat Map Routes - No AdminLayout */}
                     <Route
@@ -320,6 +322,7 @@ const AppContent: React.FC = () => {
                       }
                     />
                   </Routes>
+                  </ThemeProvider>
                 </Router>
                 <Toaster />
               </BadaunDistrictProvider>

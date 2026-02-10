@@ -151,7 +151,7 @@ const HierarchicalDataUploadPage: React.FC = () => {
   const allSubDistrictsGeocoded = subDistricts.every(sd => sd.geocoded);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -178,7 +178,7 @@ const HierarchicalDataUploadPage: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex-1 h-1 bg-gray-300 mx-4"></div>
+            <div className="flex-1 h-1 bg-border mx-4"></div>
 
             {/* Step 2: Sub-districts */}
             <div className="flex items-center">
@@ -192,7 +192,7 @@ const HierarchicalDataUploadPage: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex-1 h-1 bg-gray-300 mx-4"></div>
+            <div className="flex-1 h-1 bg-border mx-4"></div>
 
             {/* Step 3: Villages */}
             <div className="flex items-center">
@@ -206,7 +206,7 @@ const HierarchicalDataUploadPage: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex-1 h-1 bg-gray-300 mx-4"></div>
+            <div className="flex-1 h-1 bg-border mx-4"></div>
 
             {/* Step 4: Geocoding */}
             <div className="flex items-center">
@@ -267,7 +267,7 @@ const HierarchicalDataUploadPage: React.FC = () => {
                   {subDistricts.map((subDistrict) => (
                     <div
                       key={subDistrict.lgdCode}
-                      className="p-4 border rounded-lg hover:bg-gray-50"
+                      className="p-4 border rounded-lg hover:bg-muted"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">

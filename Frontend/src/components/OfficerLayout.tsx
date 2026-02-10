@@ -89,7 +89,7 @@ const OfficerLayout: React.FC<OfficerLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-orange-50 to-white overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* Backdrop: only on mobile when sidebar is open (overlay mode) */}
       <div
         className={cn(
@@ -255,7 +255,7 @@ const OfficerLayout: React.FC<OfficerLayoutProps> = ({ children }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="bg-white border-b border-orange-200 shadow-sm h-16 flex items-center px-4">
+        <header className="bg-background border-b border-border shadow-sm h-16 flex items-center px-4">
           <Button
             variant="ghost"
             size="icon"

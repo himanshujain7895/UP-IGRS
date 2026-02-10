@@ -599,7 +599,7 @@ const ComplaintsHeatMapPage: React.FC<ComplaintsHeatMapPageProps> = ({
 
             {/* Loader Overlay - Only over map area */}
             {loadingBadaunGeoJson && (
-              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="absolute inset-0 bg-white/80 dark:bg-background/90 backdrop-blur-sm flex items-center justify-center z-50">
                 <div className="flex flex-col items-center gap-3">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   <p className="text-sm font-medium text-foreground">

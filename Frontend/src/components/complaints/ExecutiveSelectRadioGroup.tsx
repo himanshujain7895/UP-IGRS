@@ -86,7 +86,7 @@ export function ExecutiveSelectRadioGroup({
                   />
                   <Label
                     htmlFor={`${idPrefix}-${index}`}
-                    className="flex flex-col p-3 sm:p-4 border-2 rounded-xl cursor-pointer hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-4 peer-data-[state=checked]:ring-primary/20 peer-data-[state=checked]:bg-gradient-to-br peer-data-[state=checked]:from-primary/5 peer-data-[state=checked]:to-orange-50 h-full"
+                    className="flex flex-col p-3 sm:p-4 border-2 rounded-xl cursor-pointer hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 dark:hover:from-card dark:hover:to-muted transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:ring-4 peer-data-[state=checked]:ring-primary/20 peer-data-[state=checked]:bg-gradient-to-br peer-data-[state=checked]:from-primary/5 peer-data-[state=checked]:to-orange-50 dark:border-border dark:peer-data-[state=checked]:border-primary dark:peer-data-[state=checked]:from-card dark:peer-data-[state=checked]:to-muted h-full"
                   >
                     <div className="flex items-start gap-2 sm:gap-3">
                       <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs sm:text-sm flex-shrink-0">
@@ -96,26 +96,26 @@ export function ExecutiveSelectRadioGroup({
                         <div className="font-bold text-sm sm:text-base text-foreground mb-1">
                           {exec.name || "Unknown"}
                         </div>
-                        <div className="text-xs sm:text-sm font-medium text-muted-foreground mb-1.5 sm:mb-2">
+                        <div className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-slate-300 mb-1.5 sm:mb-2">
                           {exec.designation}
                           {exec.district ? ` - ${exec.district}` : ""}
                         </div>
                         <div className="space-y-1 sm:space-y-1.5 text-xs sm:text-sm">
                           {exec.email && (
-                            <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                              <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary flex-shrink-0" />
+                            <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground dark:text-slate-300">
+                              <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary dark:text-blue-400 flex-shrink-0" />
                               <span className="truncate">{exec.email}</span>
                             </div>
                           )}
                           {exec.phone && (
-                            <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                              <Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary flex-shrink-0" />
+                            <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground dark:text-slate-300">
+                              <Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary dark:text-green-400 flex-shrink-0" />
                               <span>{exec.phone}</span>
                             </div>
                           )}
                           {exec.office_address && (
-                            <div className="flex items-start gap-1.5 sm:gap-2 text-muted-foreground">
-                              <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary mt-0.5 flex-shrink-0" />
+                            <div className="flex items-start gap-1.5 sm:gap-2 text-muted-foreground dark:text-slate-300">
+                              <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary dark:text-slate-400 mt-0.5 flex-shrink-0" />
                               <span className="text-[10px] sm:text-xs">
                                 {exec.office_address}
                               </span>

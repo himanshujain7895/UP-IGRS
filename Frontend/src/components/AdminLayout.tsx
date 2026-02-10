@@ -509,7 +509,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-orange-50 to-white overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* Backdrop: only on mobile (< 1150px) when sidebar is open (overlay mode) */}
       <div
         className={cn(
@@ -627,7 +627,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="bg-white border-b border-orange-200 shadow-sm h-16 flex items-center px-4">
+        <header className="bg-background border-b border-border shadow-sm h-16 flex items-center px-4">
           <Button
             variant="ghost"
             size="icon"
@@ -646,9 +646,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
               title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {sidebarCollapsed ? (
-                <ChevronRight className="w-5 h-5 hover:bg-orange-600 hover:text-white rounded-full" />
+                <ChevronRight className="w-5 h-5 hover:bg-primary hover:text-primary-foreground rounded-full" />
               ) : (
-                <ChevronLeft className="w-5 h-5 hover:bg-orange-600 hover:text-white rounded-full" />
+                <ChevronLeft className="w-5 h-5 hover:bg-primary hover:text-primary-foreground rounded-full" />
               )}
             </Button>
           )}
@@ -679,56 +679,56 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
               {/* Statistics Cards - KPI Tabs */}
               <div className="flex gap-3 overflow-x-auto pb-2 -mx-1">
                 {/* Total Complaints */}
-                <Card className="border-gray-300 min-w-[180px]">
+                <Card className="border-border min-w-[180px] bg-card">
                   <CardContent className="pt-3 pb-3 px-4">
-                    <p className="text-xs text-gray-600 font-medium">Total</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-xs text-muted-foreground font-medium">Total</p>
+                    <p className="text-2xl font-bold text-foreground">
                       {stats.totalComplaints}
                     </p>
                   </CardContent>
                 </Card>
 
                 {/* Pending */}
-                <Card className="border-orange-300 bg-orange-50 min-w-[180px]">
+                <Card className="border-orange-300 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/40 min-w-[180px]">
                   <CardContent className="pt-3 pb-3 px-4">
-                    <p className="text-xs text-orange-700 font-medium">
+                    <p className="text-xs text-orange-700 dark:text-orange-400 font-medium">
                       Pending
                     </p>
-                    <p className="text-2xl font-bold text-orange-600">
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                       {stats.complaintsByStatus.pending || 0}
                     </p>
                   </CardContent>
                 </Card>
 
                 {/* In Progress */}
-                <Card className="border-blue-300 bg-blue-50 min-w-[180px]">
+                <Card className="border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 min-w-[180px]">
                   <CardContent className="pt-3 pb-3 px-4">
-                    <p className="text-xs text-blue-700 font-medium">
+                    <p className="text-xs text-blue-700 dark:text-blue-400 font-medium">
                       In Progress
                     </p>
-                    <p className="text-2xl font-bold text-blue-600">
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {stats.complaintsByStatus.in_progress || 0}
                     </p>
                   </CardContent>
                 </Card>
 
                 {/* Resolved */}
-                <Card className="border-green-300 bg-green-50 min-w-[180px]">
+                <Card className="border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-950/40 min-w-[180px]">
                   <CardContent className="pt-3 pb-3 px-4">
-                    <p className="text-xs text-green-700 font-medium">
+                    <p className="text-xs text-green-700 dark:text-green-400 font-medium">
                       Resolved
                     </p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                       {stats.complaintsByStatus.resolved || 0}
                     </p>
                   </CardContent>
                 </Card>
 
                 {/* Rejected */}
-                <Card className="border-red-300 bg-red-50 min-w-[180px]">
+                <Card className="border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/40 min-w-[180px]">
                   <CardContent className="pt-3 pb-3 px-4">
-                    <p className="text-xs text-red-700 font-medium">Rejected</p>
-                    <p className="text-2xl font-bold text-red-600">
+                    <p className="text-xs text-red-700 dark:text-red-400 font-medium">Rejected</p>
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                       {stats.complaintsByStatus.rejected || 0}
                     </p>
                   </CardContent>

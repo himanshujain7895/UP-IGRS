@@ -32,7 +32,7 @@ const DocumentsPage: React.FC = () => {
       </div>
 
       {/* Search */}
-      <Card className="border-orange-200">
+      <Card className="border-orange-200 dark:border-border">
         <CardContent className="p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -66,7 +66,7 @@ const DocumentsPage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {documents.map((doc) => (
-            <Card key={doc.id} className="border-orange-200 hover:shadow-md transition-shadow">
+            <Card key={doc.id} className="border-orange-200 dark:border-border hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-primary" />
