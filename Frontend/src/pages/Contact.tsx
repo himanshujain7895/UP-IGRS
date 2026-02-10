@@ -49,7 +49,8 @@ const Contact: React.FC = () => {
     },
     {
       title: "Phone Helpline",
-      description: "Call our helpline during business hours for immediate assistance",
+      description:
+        "Call our helpline during business hours for immediate assistance",
       icon: Phone,
       color: "bg-green-50 text-green-700 border-green-100",
       value: "+91 522 432 1111",
@@ -57,7 +58,8 @@ const Contact: React.FC = () => {
     },
     {
       title: "Office Address",
-      description: "Visit our office for in-person support and document submission",
+      description:
+        "Visit our office for in-person support and document submission",
       icon: MapPin,
       color: "bg-amber-50 text-amber-700 border-amber-100",
       value: "Lucknow, Uttar Pradesh",
@@ -95,9 +97,9 @@ const Contact: React.FC = () => {
                   Contact & Support
                 </h1>
                 <p className="text-base sm:text-lg text-white/80 leading-relaxed">
-                  Need help with your grievance? Have questions about the system?
-                  Get in touch with our support team through multiple channels.
-                  We're here to assist you.
+                  Need help with your grievance? Have questions about the
+                  system? Get in touch with our support team through multiple
+                  channels. We're here to assist you.
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg text-sm">
@@ -122,8 +124,8 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm text-white/80">
-                      For faster assistance, please have your grievance reference
-                      number ready when contacting support.
+                      For faster assistance, please have your grievance
+                      reference number ready when contacting support.
                     </p>
                   </div>
                 </div>

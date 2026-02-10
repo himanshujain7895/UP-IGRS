@@ -3,7 +3,7 @@
  * Sidebar-based layout for officer pages with saffron theme
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotificationContext } from "@/contexts/NotificationContext";
@@ -43,12 +43,28 @@ const OfficerLayout: React.FC<OfficerLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  // Mobile (< 768px): start with sidebar closed so content is full width; desktop: keep open
+  useEffect(() => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    if (isMobile) setSidebarOpen(false);
+  }, []);
+
+  // Mobile: close sidebar when user navigates (e.g. clicks a menu link)
+  useEffect(() => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    if (isMobile) setSidebarOpen(false);
+  }, [location.pathname]);
+
   const handleLogout = async () => {
     await logout();
     navigate("/");
   };
 
   const isActive = (path: string) => {
+    // Root "/officer" only active on exact match, so Settings/Notifications don't also highlight My Complaints
+    if (path === "/officer") {
+      return location.pathname === "/officer";
+    }
     return (
       location.pathname === path || location.pathname.startsWith(path + "/")
     );
@@ -74,44 +90,62 @@ const OfficerLayout: React.FC<OfficerLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-orange-50 to-white overflow-hidden">
-      {/* Sidebar */}
+      {/* Backdrop: only on mobile when sidebar is open (overlay mode) */}
       <div
         className={cn(
-          "transition-all duration-300 ease-in-out relative",
-          sidebarOpen ? (sidebarCollapsed ? "w-16" : "w-64") : "w-0"
+          "fixed inset-0 bg-black/50 z-30 transition-opacity duration-300 md:hidden",
+          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={() => setSidebarOpen(false)}
+        onKeyDown={(e) => e.key === "Escape" && setSidebarOpen(false)}
+        aria-hidden={!sidebarOpen}
+      />
+
+      {/* Sidebar spacer: on mobile always 0 width (sidebar overlays); on desktop reserves space */}
+      <div
+        className={cn(
+          "flex-shrink-0 transition-all duration-300 ease-in-out w-0",
+          sidebarOpen && (sidebarCollapsed ? "md:w-16" : "md:w-64")
+        )}
+      />
+
+      {/* Sidebar: fixed, slides in/out; on mobile overlays content when open */}
+      <Sidebar
+        className={cn(
+          "transition-transform duration-300 ease-in-out",
+          "w-64 md:w-64",
+          sidebarCollapsed && "md:w-16",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <Sidebar
-          className={cn(!sidebarOpen && "hidden", sidebarCollapsed && "w-16")}
-        >
-          <SidebarHeader>
-            <div className="flex items-center justify-between">
-              {!sidebarCollapsed && (
-                <div className="flex items-center gap-3 flex-1">
-                  <Home className="w-5 h-5 text-sidebar-foreground" />
-                  <h1 className="text-xl font-semibold text-sidebar-foreground">
-                    Officer Panel
-                  </h1>
-                </div>
-              )}
-              {sidebarCollapsed && (
-                <div className="w-full flex items-center justify-center">
-                  <Home className="w-5 h-5 text-sidebar-foreground" />
-                </div>
-              )}
-              {/* Removed duplicate sidebar toggle buttons - keeping only header toggle */}
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="md:hidden h-8 w-8 hover:bg-sidebar-accent"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <X className="w-5 h-5" />
-                </Button>
+        <SidebarHeader>
+          <div className="flex items-center justify-between">
+            {!sidebarCollapsed && (
+              <div className="flex items-center gap-3 flex-1">
+                <Home className="w-5 h-5 text-sidebar-foreground" />
+                <h1 className="text-xl font-semibold text-sidebar-foreground">
+                  Officer Panel
+                </h1>
               </div>
+            )}
+            {sidebarCollapsed && (
+              <div className="w-full flex items-center justify-center">
+                <Home className="w-5 h-5 text-sidebar-foreground" />
+              </div>
+            )}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden h-8 w-8 hover:bg-sidebar-accent"
+                onClick={() => setSidebarOpen(false)}
+                aria-label="Close sidebar"
+              >
+                <X className="w-5 h-5" />
+              </Button>
             </div>
-          </SidebarHeader>
+          </div>
+        </SidebarHeader>
 
           <SidebarContent>
             <SidebarMenu>
@@ -217,7 +251,6 @@ const OfficerLayout: React.FC<OfficerLayoutProps> = ({ children }) => {
             </div>
           </SidebarFooter>
         </Sidebar>
-      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -226,8 +259,9 @@ const OfficerLayout: React.FC<OfficerLayoutProps> = ({ children }) => {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden mr-2"
+            className={cn("mr-2", sidebarOpen && "md:hidden")}
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle sidebar"
           >
             <Menu className="w-5 h-5" />
           </Button>

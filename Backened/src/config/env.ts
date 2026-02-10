@@ -60,7 +60,7 @@ const validateEnv = (): EnvConfig => {
 
   if (missing.length > 0) {
     throw new Error(
-      `Missing required environment variables: ${missing.join(", ")}`
+      `Missing required environment variables: ${missing.join(", ")}`,
     );
   }
 
@@ -78,14 +78,14 @@ const validateEnv = (): EnvConfig => {
     if (isDev) {
       console.warn(
         `⚠️  Warning: Missing AWS S3 variables: ${missingAws.join(
-          ", "
-        )}. File upload features will not work.`
+          ", ",
+        )}. File upload features will not work.`,
       );
     } else {
       throw new Error(
         `Missing required AWS S3 environment variables: ${missingAws.join(
-          ", "
-        )}`
+          ", ",
+        )}`,
       );
     }
   }
@@ -93,7 +93,7 @@ const validateEnv = (): EnvConfig => {
   // Either OpenAI or OpenRouter key is required for AI features
   if (!process.env.OPENAI_API_KEY && !process.env.OPENROUTER_API_KEY) {
     console.warn(
-      "⚠️  Warning: Neither OPENAI_API_KEY nor OPENROUTER_API_KEY is set. AI features will not work."
+      "⚠️  Warning: Neither OPENAI_API_KEY nor OPENROUTER_API_KEY is set. AI features will not work.",
     );
   }
 
@@ -106,14 +106,14 @@ const validateEnv = (): EnvConfig => {
     if (isDev) {
       console.warn(
         `⚠️  Warning: Missing SMTP variables: ${missingSmtp.join(
-          ", "
-        )}. Email features will not work.`
+          ", ",
+        )}. Email features will not work.`,
       );
     } else {
       console.warn(
         `⚠️  Warning: Missing SMTP variables: ${missingSmtp.join(
-          ", "
-        )}. Email features will not work.`
+          ", ",
+        )}. Email features will not work.`,
       );
     }
   }

@@ -33,6 +33,8 @@ import TermsAndConditions from "@/pages/TermsAndConditions";
 import UserRights from "@/pages/UserRights";
 import Contact from "@/pages/Contact";
 import About from "@/pages/About";
+import Login from "@/pages/Login";
+import ForgotPassword from "@/pages/ForgotPassword";
 import Dashboard from "@/pages/admin/Dashboard";
 import ComplaintsPage from "@/pages/admin/ComplaintsPage";
 import ComplaintsHeatMapPage from "@/pages/admin/ComplaintsHeatMapPage";
@@ -306,6 +308,8 @@ const AppContent: React.FC = () => {
                             />
                             <Route path="/contact" element={<Contact />} />
                             <Route path="/about" element={<About />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route
                               path="/complaints"
                               element={<Complaints />}

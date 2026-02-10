@@ -65,5 +65,81 @@ export const authService = {
     
     throw new Error(response.error?.message || 'Token refresh failed');
   },
+
+  /**
+   * Request password reset OTP
+   * POST /api/v1/auth/forgot-password
+   * Body: { email: string }
+   */
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>('/auth/forgot-password', {
+      email: email.trim().toLowerCase(),
+    });
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error?.message || 'Request failed');
+  },
+
+  /**
+   * Resend password reset OTP
+   * POST /api/v1/auth/resend-password-otp
+   * Body: { email: string }
+   */
+  async resendPasswordOTP(email: string): Promise<{ message: string }> {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>('/auth/resend-password-otp', {
+      email: email.trim().toLowerCase(),
+    });
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error?.message || 'Resend failed');
+  },
+
+  /**
+   * Reset password with OTP
+   * POST /api/v1/auth/reset-password
+   * Body: { email: string, otp: string, newPassword: string }
+   */
+  async resetPassword(email: string, otp: string, newPassword: string): Promise<{ message: string }> {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>('/auth/reset-password', {
+      email: email.trim().toLowerCase(),
+      otp: String(otp).replace(/\s/g, ''),
+      newPassword,
+    });
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error?.message || 'Reset failed');
+  },
+
+  /**
+   * Update current user profile (name only)
+   * PATCH /api/v1/auth/me
+   * Body: { name: string }
+   */
+  async updateProfile(name: string): Promise<User> {
+    const response = await apiClient.patch<ApiResponse<User>>('/auth/me', { name: name.trim() });
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error?.message || 'Profile update failed');
+  },
+
+  /**
+   * Change password (authenticated user). Requires current password; new password is stored hashed on server.
+   * POST /api/v1/auth/change-password
+   * Body: { currentPassword: string, newPassword: string }
+   */
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>('/auth/change-password', {
+      currentPassword,
+      newPassword,
+    });
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error?.message || 'Password change failed');
+  },
 };
 

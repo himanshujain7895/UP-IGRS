@@ -7,7 +7,17 @@
 import React, { useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useMeetings } from "@/hooks/useMeetings";
+import { useAuth } from "@/hooks/useAuth";
+import { Pagination } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Calendar,
   CalendarCheck,
@@ -157,13 +167,20 @@ function formatDateTime(iso?: string): string {
 const MeetingsPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { meetings, fetchMeetings, loading, pagination } = useMeetings();
+  const { meetings, fetchMeetings, updateMeeting, loading, pagination } =
+    useMeetings();
+  const { isAdmin } = useAuth();
+  const [currentPage, setCurrentPage] = React.useState(1);
   const statusFilter = getStatusFromPath(location.pathname);
+  const highlightId = React.useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("highlight") || undefined;
+  }, [location.search]);
 
-  // Single fetch on mount. Filter by status on the client (client-only: use whatever response we get).
+  // Fetch meetings whenever page changes. Filter by status on the client.
   useEffect(() => {
-    fetchMeetings(1, 20);
-  }, [fetchMeetings]);
+    fetchMeetings(currentPage, 20);
+  }, [fetchMeetings, currentPage]);
 
   // Client-side filter: no extra API calls when changing status tab/sidebar.
   const filteredMeetings = useMemo(() => {
@@ -173,6 +190,13 @@ const MeetingsPage: React.FC = () => {
 
   const handleFilterClick = (path: string) => {
     navigate(path);
+  };
+
+  const handleStatusSelectChange = (value: MeetingStatusFilter) => {
+    const target = STATUS_OPTIONS.find((opt) => opt.value === value);
+    if (target) {
+      handleFilterClick(target.path);
+    }
   };
 
   return (
@@ -187,28 +211,55 @@ const MeetingsPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Status filter – underline style, minimal */}
-      <nav className="flex items-center gap-0 border-b border-border/80">
-        {STATUS_OPTIONS.map((opt) => {
-          const isActive = statusFilter === opt.value;
-          const Icon = opt.icon;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => handleFilterClick(opt.path)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium transition-colors -mb-px border-b-2",
-                isActive
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {opt.label}
-            </button>
-          );
-        })}
+      {/* Status filter – select on small screens, tabs on larger screens */}
+      {/* Mobile: full-width select (Radix portal avoids overflow clipping) */}
+      <div className="sm:hidden">
+        <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          Status
+        </label>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) =>
+            handleStatusSelectChange(value as MeetingStatusFilter)
+          }
+        >
+          <SelectTrigger className="w-full text-[13px] h-9">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent position="popper" className="max-h-[min(16rem,70vh)]">
+            {STATUS_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value} className="text-[13px]">
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Desktop / tablet: horizontal tabs */}
+      <nav className="relative -mx-3 px-3 overflow-x-auto hidden sm:block">
+        <div className="flex items-stretch gap-0 border-b border-border/80 min-w-max">
+          {STATUS_OPTIONS.map((opt) => {
+            const isActive = statusFilter === opt.value;
+            const Icon = opt.icon;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleFilterClick(opt.path)}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 px-3 py-2 text-[12px] sm:text-[13px] font-medium transition-colors -mb-px border-b-2 whitespace-nowrap",
+                  isActive
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Content */}
@@ -226,17 +277,27 @@ const MeetingsPage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {filteredMeetings.map((meeting: Meeting) => (
-            <MeetingCard key={meeting.id} meeting={meeting} />
+            <MeetingCard
+              key={meeting.id}
+              meeting={meeting}
+              canManage={isAdmin}
+              highlighted={highlightId === meeting.id}
+              onChangeStatus={(status) =>
+                updateMeeting(meeting.id, { status } as Partial<Meeting>)
+              }
+            />
           ))}
         </div>
       )}
 
-      {/* Pagination summary – subtle */}
+      {/* Pagination */}
       {!loading && filteredMeetings.length > 0 && pagination && (
-        <p className="text-[11px] text-muted-foreground/90">
-          {filteredMeetings.length} of {pagination.total} meetings
-          {statusFilter !== "all" && ` in this view`}
-        </p>
+        <Pagination
+          meta={pagination}
+          page={pagination.page}
+          onPageChange={(page) => setCurrentPage(page)}
+          itemLabel="meetings"
+        />
       )}
     </div>
   );
@@ -252,9 +313,27 @@ function normalizePurpose(text: string | undefined): string {
     .join("\n");
 }
 
-function MeetingCard({ meeting }: { meeting: Meeting }) {
+function MeetingCard({
+  meeting,
+  canManage,
+  highlighted,
+  onChangeStatus,
+}: {
+  meeting: Meeting;
+  canManage: boolean;
+  highlighted?: boolean;
+  onChangeStatus?: (status: Meeting["status"]) => void;
+}) {
+  const cardRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (highlighted && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlighted]);
+
   const hasAttachments =
-    meeting.attachment_urls?.length && meeting.attachment_urls.length > 0;
+    (meeting.attachment_urls?.length ?? 0) > 0;
   const purposeText = normalizePurpose(meeting.purpose);
   const statusColor =
     meeting.status === "pending"
@@ -267,9 +346,11 @@ function MeetingCard({ meeting }: { meeting: Meeting }) {
 
   return (
     <Card
+      ref={cardRef}
       className={cn(
         "overflow-hidden border border-border/70 bg-card border-l-[3px] shadow-[0_1px_2px_rgba(0,0,0,0.04)]",
         statusColor,
+        highlighted && "ring-2 ring-primary/60 border-primary/70"
       )}
     >
       <CardHeader className="space-y-2 pb-3">
@@ -384,9 +465,45 @@ function MeetingCard({ meeting }: { meeting: Meeting }) {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-x-3 border-t border-border/50 pt-2.5 text-[10px] text-muted-foreground/80">
-          <span>Created {formatDateTime(meeting.created_at)}</span>
-          <span>Updated {formatDateTime(meeting.updated_at)}</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-2.5 text-[10px] text-muted-foreground/80">
+          <div className="flex flex-wrap gap-x-3">
+            <span>Created {formatDateTime(meeting.created_at)}</span>
+            <span>Updated {formatDateTime(meeting.updated_at)}</span>
+          </div>
+          {canManage && (
+            <div className="flex flex-wrap gap-1.5">
+              {meeting.status === "pending" && (
+                <>
+                  <Button
+                    size="sm"
+                    className="h-6 px-2 text-[11px]"
+                    variant="default"
+                    onClick={() => onChangeStatus?.("approved")}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-6 px-2 text-[11px]"
+                    variant="outline"
+                    onClick={() => onChangeStatus?.("rejected")}
+                  >
+                    Reject
+                  </Button>
+                </>
+              )}
+              {meeting.status === "approved" && (
+                <Button
+                  size="sm"
+                  className="h-6 px-2 text-[11px]"
+                  variant="outline"
+                  onClick={() => onChangeStatus?.("completed")}
+                >
+                  Mark Completed
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

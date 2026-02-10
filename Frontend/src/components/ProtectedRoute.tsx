@@ -6,8 +6,6 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -15,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, Lock, Mail, Key, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface ProtectedRouteProps {
@@ -24,98 +22,6 @@ interface ProtectedRouteProps {
   requireOfficer?: boolean;
   allowOfficer?: boolean; // Allow both admin and officer
 }
-
-const AdminLoginForm: React.FC = () => {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const { login, loading } = useAuth();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Redux thunk returns a promise that resolves to the action
-    const result = await login(email.trim(), password);
-
-    // Check if login was successful (fulfilled) or failed (rejected)
-    if (result.type === "auth/login/fulfilled") {
-      toast.success("Login successful!");
-      // ProtectedRoute will automatically show admin UI when auth state updates
-    } else if (result.type === "auth/login/rejected") {
-      // Error is stored in Redux state and will be shown via useEffect
-      // But we can also show it here as fallback
-      const errorMessage = (result.payload as string) || "Failed to login";
-      toast.error(errorMessage);
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <Lock className="w-8 h-8 text-primary" />
-          </div>
-          <CardTitle className="text-2xl font-bold">Portal Access</CardTitle>
-          <CardDescription>
-            Sign in to access the admin or officer portal
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
-                  required
-                  className="pl-10"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Password
-              </label>
-              <div className="relative">
-                <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  required
-                  className="pl-10"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
 
 const LoadingSpinner: React.FC = () => (
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100">
@@ -166,7 +72,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!user || !isAuthenticated) {
-    return <AdminLoginForm />;
+    navigate("/login", { state: { from: location.pathname }, replace: true });
+    return null;
   }
 
   // Check role requirements

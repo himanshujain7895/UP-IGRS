@@ -11,7 +11,7 @@
  *   - extension_requester  → resolved from payload.request_id (extension request's requested_by = User id)
  */
 
-import type { NotifiableEventType } from "./types";
+import type { NotifiableEventType, CommonNotifiableEventType } from "./types";
 
 /** Receiver kind: who gets the notification (resolved to user ids in handlers). */
 export type ReceiverKind =
@@ -81,6 +81,28 @@ export const EVENT_RECEIVER_MAP: Record<
     receivers: ["admins"],
   },
   officer_document_added: {
+    receivers: ["admins"],
+  },
+};
+
+// ---- Common working notifications (parallel: meetings, inventory, etc.) ----
+
+/** Receiver kind for common events (no complaint context). */
+export type CommonReceiverKind = "admins";
+
+export interface CommonEventReceiverConfig {
+  receivers: CommonReceiverKind[];
+}
+
+/**
+ * Map: common event_type → who receives it.
+ * Used by resolveCommonEvent / handleCommonEvent only.
+ */
+export const COMMON_EVENT_RECEIVER_MAP: Record<
+  CommonNotifiableEventType,
+  CommonEventReceiverConfig
+> = {
+  meeting_requested: {
     receivers: ["admins"],
   },
 };

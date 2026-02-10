@@ -37,14 +37,23 @@ class ApiClient {
       (response) => response,
       async (error: AxiosError) => {
         if (error.response?.status === 401) {
-          // Unauthorized - Clear token
-          localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-          localStorage.removeItem(STORAGE_KEYS.USER);
-
-          // Only redirect if not already on admin login page
-          // This prevents redirecting away from admin login form
-          if (!window.location.pathname.startsWith("/admin")) {
-            window.location.href = "/";
+          const url = (error.config?.url as string) ?? "";
+          const message = (error.response?.data as any)?.error?.message ?? "";
+          // Login failure: do not clear storage or redirect – let the login page show the error
+          const isLoginRequest = url.includes("auth/login");
+          const isWrongCurrentPassword =
+            url.includes("change-password") ||
+            String(message).toLowerCase().includes("current password");
+          if (isLoginRequest) {
+            // Reject so Login.tsx can show "Invalid email or password" (or similar)
+            return Promise.reject(error);
+          }
+          if (!isWrongCurrentPassword) {
+            localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.USER);
+            if (!window.location.pathname.startsWith("/admin")) {
+              window.location.href = "/";
+            }
           }
         }
 

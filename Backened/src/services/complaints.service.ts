@@ -1758,7 +1758,7 @@ export const assignNewOfficerService = async (
   complaint.arrivalTime = new Date();
   complaint.timeBoundary = 7; // 1 week default
   complaint.status = "in_progress";
-  await complaint.save();
+  await complaint.save({ validateModifiedOnly: true });
 
   try {
     if (previousAssignedUserId && previousOfficerId) {
@@ -1873,7 +1873,7 @@ export const assignExistingOfficerService = async (
   complaint.arrivalTime = new Date();
   complaint.timeBoundary = 7; // 1 week default
   complaint.status = "in_progress";
-  await complaint.save();
+  await complaint.save({ validateModifiedOnly: true });
 
   try {
     if (previousAssignedUserId && previousOfficerId) {
@@ -2070,7 +2070,7 @@ export const reassignOfficer = async (
     complaint.isComplaintClosed = false;
     // closingDetails kept for audit; complaint is effectively reopened for new officer
   }
-  await complaint.save();
+  await complaint.save({ validateModifiedOnly: true });
 
   try {
     await complaintTimeline.appendOfficerReassigned(
@@ -2136,7 +2136,7 @@ export const unassignComplaint = async (
   if (complaint.status === "in_progress") {
     complaint.status = "pending";
   }
-  await complaint.save();
+  await complaint.save({ validateModifiedOnly: true });
 
   try {
     if (previousOfficerId) {

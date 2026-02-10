@@ -107,18 +107,18 @@ const NotificationsPage: React.FC = () => {
   }, {});
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 max-w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-            <Bell className="w-6 h-6 text-primary" />
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2">
+            <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             Notifications
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
             Updates on your assigned complaints
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-start sm:justify-end gap-2">
           <Button
             variant={unreadOnly ? "default" : "outline"}
             size="sm"
@@ -156,8 +156,8 @@ const NotificationsPage: React.FC = () => {
               className="border-orange-200 overflow-hidden transition-shadow hover:shadow-md"
             >
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                  <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                     <FileText className="w-4 h-4 text-primary" />
                     Complaint {complaintId}
                   </CardTitle>
@@ -180,28 +180,30 @@ const NotificationsPage: React.FC = () => {
                   <div
                     key={n.id}
                     className={cn(
-                      "flex items-start justify-between gap-3 rounded-lg p-3 border bg-card",
+                      "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 rounded-lg p-3 border bg-card",
                       !n.read_at && "bg-orange-50/50 border-orange-200"
                     )}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm">{n.title}</span>
-                        <Badge variant="secondary" className="text-xs">
+                        <span className="font-medium text-sm sm:text-base">
+                          {n.title}
+                        </span>
+                        <Badge variant="secondary" className="text-[10px] sm:text-xs">
                           {EVENT_TYPE_LABELS[n.event_type] ?? n.event_type}
                         </Badge>
                         {!n.read_at && (
-                          <Badge variant="default" className="text-xs">
+                          <Badge variant="default" className="text-[10px] sm:text-xs">
                             New
                           </Badge>
                         )}
                       </div>
                       {n.body && (
-                        <p className="text-sm text-muted-foreground mt-1 truncate max-w-md">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
                           {n.body}
                         </p>
                       )}
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {formatDistanceToNow(new Date(n.created_at), {
                           addSuffix: true,
                         })}
@@ -211,6 +213,7 @@ const NotificationsPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="mt-1 self-end sm:self-auto"
                         disabled={markingId === n.id}
                         onClick={() => handleMarkAsRead(n.id)}
                       >

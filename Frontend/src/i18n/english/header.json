@@ -4,13 +4,12 @@
   },
   "navigation": {
     "home": "Home",
-    "governmentOrders": "Government Orders",
-    "download": "Download",
-    "antiLandMafia": "Anti Land Mafia Portal",
-    "antiCorruption": "Anti Corruption Portal",
-    "cmMonitoring": "Chief Minister Monitoring System",
-    "sandesApp": "Sandes App",
-    "new": "NEW!"
+    "about": "About Us",
+    "contact": "Contact Us",
+    "feedback": "Feedback",
+    "privacyPolicy": "Privacy Policy",
+    "termsAndConditions": "Terms & Conditions",
+    "userRights": "User Rights"
   },
   "login": {
     "officerLogin": "Officer Login",

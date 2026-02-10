@@ -1205,7 +1205,7 @@ const FileComplaint: React.FC = () => {
   if (step === "success") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-8 md:py-12">
-        <div className="container mx-auto max-w-6xl px-4">
+        <div className="container mx-auto max-w-6xl px-3 sm:px-4 w-full">
           <Card className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
             <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 md:p-8 text-white">
               <div className="flex items-center gap-4">
@@ -1270,18 +1270,18 @@ const FileComplaint: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-4 md:py-6">
-      <div className="container mx-auto max-w-6xl px-4">
-        {/* Header Section with Gradient */}
-        <div className="mb-4">
-          <div className="bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-4 md:p-6 text-gray-800 shadow-lg border border-gray-300">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-gray-300 rounded-lg">
-                  <FileText className="w-6 h-6 md:w-7 md:h-7 text-gray-700" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-3 sm:py-4 md:py-6">
+      <div className="container mx-auto max-w-6xl px-3 sm:px-4 w-full">
+        {/* Header Section with Gradient - responsive */}
+        <div className="mb-3 sm:mb-4">
+          <div className="bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 text-gray-800 shadow-lg border border-gray-300">
+            <div className="flex items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div className="p-2 bg-gray-300 rounded-lg flex-shrink-0">
+                  <FileText className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-gray-700" />
                 </div>
-                <div>
-                  <h1 className="text-xl md:text-2xl font-bold mb-1 text-gray-900">
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-0.5 sm:mb-1 text-gray-900 leading-tight">
                     File a New Complaint
                   </h1>
                   <p className="text-gray-600 text-xs md:text-sm">
@@ -1294,7 +1294,7 @@ const FileComplaint: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/")}
-                className="text-gray-700 hover:bg-gray-300 hidden md:flex"
+                className="text-gray-700 hover:bg-gray-300 hidden md:flex flex-shrink-0"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
@@ -1304,66 +1304,66 @@ const FileComplaint: React.FC = () => {
         </div>
 
         {/* Main Complaint Form Card */}
-        <Card className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <CardContent className="p-4 md:p-6">
+        <Card className="bg-white rounded-lg sm:rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <CardContent className="p-3 sm:p-4 md:p-6">
             {/* Mobile Back Button */}
-            <div className="md:hidden mb-4">
+            <div className="md:hidden mb-3 sm:mb-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/")}
-                className="text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 -ml-1"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
             </div>
 
-            {/* Tabs for Form and Document Scan */}
+            {/* Tabs for Form and Document Scan - responsive */}
             <Tabs
               value={activeTab}
               onValueChange={(value) => setActiveTab(value as "form" | "scan")}
-              className="w-full"
+              className="w-full min-w-0"
             >
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="form" className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Fill Form
+              <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6 h-11 sm:h-10 gap-0.5 p-0.5">
+                <TabsTrigger value="form" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5">
+                  <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span className="truncate">Fill Form</span>
                 </TabsTrigger>
-                <TabsTrigger value="scan" className="flex items-center gap-2">
-                  <Scan className="w-4 h-4" />
-                  Scan Document
+                <TabsTrigger value="scan" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5">
+                  <Scan className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span className="truncate">Scan Document</span>
                 </TabsTrigger>
               </TabsList>
 
-              {/* Document Scan Tab */}
-              <TabsContent value="scan" className="space-y-4">
+              {/* Document Scan Tab - responsive */}
+              <TabsContent value="scan" className="space-y-3 sm:space-y-4 mt-0">
                 <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
-                  <CardContent className="p-6">
-                    <div className="text-center space-y-4">
-                      <div className="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-                        <Scan className="w-8 h-8 text-orange-600" />
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="text-center space-y-3 sm:space-y-4">
+                      <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                        <Scan className="w-7 h-7 sm:w-8 sm:h-8 text-orange-600" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-1 sm:mb-2">
                           Scan Your Document
                         </h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-xs sm:text-sm text-gray-600">
                           Upload a document (PDF, Image) or take a photo to
                           automatically extract information and fill the form
                         </p>
                       </div>
 
                       {scanningDocument ? (
-                        <div className="flex flex-col items-center gap-3 py-6">
+                        <div className="flex flex-col items-center gap-3 py-4 sm:py-6">
                           <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
                           <p className="text-sm text-gray-600">
                             Scanning document...
                           </p>
                         </div>
                       ) : (
-                        <div className="space-y-4">
-                          <div className="border-2 border-dashed border-orange-300 rounded-lg p-8 bg-white hover:border-orange-400 transition-colors">
+                        <div className="space-y-3 sm:space-y-4">
+                          <div className="border-2 border-dashed border-orange-300 rounded-lg p-4 sm:p-6 md:p-8 bg-white hover:border-orange-400 transition-colors">
                             <input
                               type="file"
                               id="scan-file-upload"
@@ -1496,19 +1496,19 @@ const FileComplaint: React.FC = () => {
 
               {/* Form Tab */}
               <TabsContent value="form">
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                   {/* Personal Information Section */}
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                      <div className="p-1.5 bg-gray-100 rounded-lg">
+                      <div className="p-1.5 bg-gray-100 rounded-lg flex-shrink-0">
                         <User className="w-4 h-4 text-gray-600" />
                       </div>
-                      <h2 className="text-base font-bold text-gray-800">
+                      <h2 className="text-sm sm:text-base font-bold text-gray-800">
                         Personal Information
                       </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                       {/* Full Name */}
                       <div className="space-y-1.5">
                         <Label
@@ -1528,7 +1528,7 @@ const FileComplaint: React.FC = () => {
                             handleBlur("contactName", e.target.value)
                           }
                           placeholder="Enter your full name (2-100 characters)"
-                          className={`bg-gray-50 h-10 ${
+                          className={`bg-gray-50 h-11 sm:h-10 min-w-0 ${
                             errors.contactName
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
@@ -1564,7 +1564,7 @@ const FileComplaint: React.FC = () => {
                           }
                           placeholder="10-digit phone number (starts with 6-9)"
                           maxLength={10}
-                          className={`bg-gray-50 h-10 ${
+                          className={`bg-gray-50 h-11 sm:h-10 min-w-0 ${
                             errors.contactPhone
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
@@ -1598,7 +1598,7 @@ const FileComplaint: React.FC = () => {
                             handleBlur("contactEmail", e.target.value)
                           }
                           placeholder="your.email@example.com"
-                          className={`bg-gray-50 h-10 ${
+                          className={`bg-gray-50 h-11 sm:h-10 min-w-0 ${
                             errors.contactEmail
                               ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                               : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
@@ -1616,8 +1616,8 @@ const FileComplaint: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Location */}
-                      <div className="space-y-1.5">
+                      {/* Location - stacked on mobile for better touch targets */}
+                      <div className="space-y-1.5 md:col-span-2">
                         <Label
                           htmlFor="location"
                           className="text-sm font-semibold text-gray-700 flex items-center gap-1.5"
@@ -1625,7 +1625,7 @@ const FileComplaint: React.FC = () => {
                           <MapPinIcon className="w-3.5 h-3.5 text-gray-600" />
                           Location <span className="text-red-500">*</span>
                         </Label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Input
                             id="location"
                             value={formData.location}
@@ -1637,7 +1637,7 @@ const FileComplaint: React.FC = () => {
                             }
                             placeholder="Enter complaint location or use map icon to auto-detect (max 500 characters)"
                             required
-                            className={`bg-gray-50 flex-1 h-10 ${
+                            className={`bg-gray-50 flex-1 min-w-0 h-11 sm:h-10 ${
                               errors.location
                                 ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                                 : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
@@ -1649,7 +1649,7 @@ const FileComplaint: React.FC = () => {
                             onClick={handleAutoDetectLocation}
                             disabled={detectingLocation}
                             title="Auto-detect location from map"
-                            className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 h-10 px-3"
+                            className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 h-11 sm:h-10 w-full sm:w-auto px-4 flex-shrink-0"
                           >
                             {detectingLocation ? (
                               <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
@@ -1674,7 +1674,7 @@ const FileComplaint: React.FC = () => {
 
                   {/* Address Details (Auto-filled from map) */}
                   {(formData.city || formData.locality || formData.pincode) && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="space-y-2">
                         <Label
                           htmlFor="city"
@@ -1723,17 +1723,17 @@ const FileComplaint: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Administrative Location Section */}
-                  <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  {/* Administrative Location Section - responsive */}
+                  <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-center gap-2 pb-2 border-b border-blue-200">
-                      <div className="p-1.5 bg-blue-100 rounded-lg">
+                      <div className="p-1.5 bg-blue-100 rounded-lg flex-shrink-0">
                         <MapPinIcon className="w-4 h-4 text-blue-600" />
                       </div>
                       <h3 className="text-sm font-bold text-blue-900">
                         Administrative Location
                       </h3>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                       {/* District Name */}
                       <div className="space-y-2">
                         <Label
@@ -1830,13 +1830,13 @@ const FileComplaint: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Complaint Details Section */}
-                  <div className="space-y-4">
+                  {/* Complaint Details Section - responsive */}
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                      <div className="p-1.5 bg-gray-100 rounded-lg">
+                      <div className="p-1.5 bg-gray-100 rounded-lg flex-shrink-0">
                         <MessageSquare className="w-4 h-4 text-gray-600" />
                       </div>
-                      <h2 className="text-base font-bold text-gray-800">
+                      <h2 className="text-sm sm:text-base font-bold text-gray-800">
                         Complaint Details
                       </h2>
                     </div>
@@ -1858,7 +1858,7 @@ const FileComplaint: React.FC = () => {
                         }
                         onBlur={(e) => handleBlur("title", e.target.value)}
                         placeholder="Brief title of your complaint (5-255 characters)"
-                        className={`bg-gray-50 h-10 ${
+                        className={`bg-gray-50 h-11 sm:h-10 min-w-0 ${
                           errors.title
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                             : "border-gray-300 focus:border-orange-500 focus:ring-orange-500"
@@ -1878,7 +1878,7 @@ const FileComplaint: React.FC = () => {
                     </div>
 
                     {/* Category & Sub-Category - Two Column */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                       <div className="space-y-1.5">
                         <Label
                           htmlFor="category"
@@ -1904,7 +1904,7 @@ const FileComplaint: React.FC = () => {
                         >
                           <SelectTrigger
                             id="category"
-                            className={`bg-gray-50 h-10 ${
+                            className={`bg-gray-50 h-11 sm:h-10 min-w-0 ${
                               errors.category
                                 ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                                 : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
@@ -1979,7 +1979,7 @@ const FileComplaint: React.FC = () => {
                         }
                         placeholder="Describe your complaint in detail (20-5000 characters)..."
                         rows={5}
-                        className={`bg-gray-50 resize-none ${
+                        className={`bg-gray-50 resize-none min-w-0 ${
                           errors.description
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                             : "border-gray-300 focus:border-orange-500 focus:ring-orange-500"
@@ -2042,19 +2042,19 @@ const FileComplaint: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* File Attachments Section */}
-                  <div className="space-y-4">
+                  {/* File Attachments Section - responsive */}
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                      <div className="p-1.5 bg-gray-100 rounded-lg">
+                      <div className="p-1.5 bg-gray-100 rounded-lg flex-shrink-0">
                         <ImageIcon className="w-4 h-4 text-gray-600" />
                       </div>
-                      <h2 className="text-base font-bold text-gray-800">
+                      <h2 className="text-sm sm:text-base font-bold text-gray-800">
                         Attachments (Optional)
                       </h2>
                     </div>
 
                     <div className="space-y-3">
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gradient-to-br from-gray-50 to-gray-100/50 hover:border-gray-400 transition-colors">
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-gray-100/50 hover:border-gray-400 transition-colors">
                         <input
                           type="file"
                           id="file-upload"
@@ -2065,13 +2065,13 @@ const FileComplaint: React.FC = () => {
                         />
                         <label
                           htmlFor="file-upload"
-                          className="cursor-pointer flex flex-col items-center justify-center space-y-2"
+                          className="cursor-pointer flex flex-col items-center justify-center space-y-2 min-h-[100px] sm:min-h-0"
                         >
-                          <div className="p-3 bg-white rounded-full shadow-md">
-                            <Upload className="w-6 h-6 text-gray-600" />
+                          <div className="p-3 bg-white rounded-full shadow-md flex-shrink-0">
+                            <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
                           </div>
                           <div className="text-center">
-                            <span className="text-sm font-semibold text-gray-700 block mb-1">
+                            <span className="text-xs sm:text-sm font-semibold text-gray-700 block mb-1">
                               Click to upload or drag and drop
                             </span>
                             <span className="text-xs text-gray-500">
@@ -2081,7 +2081,7 @@ const FileComplaint: React.FC = () => {
                         </label>
                       </div>
                       {attachments.length > 0 && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                           {attachments.map((attachment, index) => (
                             <div key={index} className="relative group">
                               {attachment.file.type.startsWith("image/") ? (
@@ -2165,20 +2165,20 @@ const FileComplaint: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Submit Buttons */}
-                  <div className="flex gap-3 pt-4 border-t border-gray-200">
+                  {/* Submit Buttons - stack on mobile for better touch targets */}
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-gray-200">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => navigate("/")}
-                      className="flex-1 border-gray-300 hover:bg-gray-50 h-11 text-sm font-semibold"
+                      className="w-full sm:flex-1 border-gray-300 hover:bg-gray-50 h-11 text-sm font-semibold"
                     >
                       Cancel
                     </Button>
                     <Button
                       type="submit"
                       disabled={submitting}
-                      className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white h-11 text-sm font-semibold shadow-lg hover:shadow-xl transition-all"
+                      className="w-full sm:flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white h-11 text-sm font-semibold shadow-lg hover:shadow-xl transition-all"
                     >
                       {submitting ? (
                         <>

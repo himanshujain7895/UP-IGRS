@@ -61,9 +61,35 @@ const apiLimiter = rateLimit({
   },
 });
 
+// Stricter rate limit for password reset (per IP)
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Too many password reset requests from this IP. Please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: "Too many reset attempts from this IP. Please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+const resendPasswordOTPLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Too many resend requests from this IP. Please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Apply auth rate limiter to auth routes FIRST
 app.use("/api/v1/auth/login", authLimiter);
 app.use("/api/v1/auth/register", authLimiter);
+app.use("/api/v1/auth/forgot-password", forgotPasswordLimiter);
+app.use("/api/v1/auth/resend-password-otp", resendPasswordOTPLimiter);
+app.use("/api/v1/auth/reset-password", resetPasswordLimiter);
 
 // Apply general rate limiter to all other API routes (auth routes are skipped)
 app.use("/api/", apiLimiter);

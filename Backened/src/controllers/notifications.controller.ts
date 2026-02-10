@@ -33,9 +33,11 @@ export const listNotifications = async (
     const limitNum = limit ?? 50;
     const skipNum = skip ?? 0;
 
+    const role = req.user!.role;
     const { notifications, total } =
       await notificationsService.listNotifications({
         user_id: userId,
+        role,
         complaint_id,
         event_type,
         unread_only,
@@ -68,7 +70,8 @@ export const getUnreadCount = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const count = await notificationsService.getUnreadCount(userId);
+    const role = req.user!.role;
+    const count = await notificationsService.getUnreadCount(userId, role);
     sendSuccess(res, { count });
   } catch (error) {
     next(error);
@@ -86,8 +89,9 @@ export const markAsRead = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
+    const role = req.user!.role;
     const { id } = req.params;
-    await notificationsService.markAsRead(id, userId);
+    await notificationsService.markAsRead(id, userId, role);
     sendSuccess(res, { id, read: true });
   } catch (error) {
     next(error);
@@ -105,7 +109,8 @@ export const markAllAsRead = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const modifiedCount = await notificationsService.markAllAsRead(userId);
+    const role = req.user!.role;
+    const modifiedCount = await notificationsService.markAllAsRead(userId, role);
     sendSuccess(res, { modifiedCount });
   } catch (error) {
     next(error);

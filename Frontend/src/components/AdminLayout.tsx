@@ -3,7 +3,7 @@
  * Sidebar-based layout for admin pages with saffron theme
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotificationContext } from "@/contexts/NotificationContext";
@@ -87,12 +87,32 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
+  // Mobile (< 1150px): start with sidebar closed so content is full width; desktop: keep open
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1150;
+    if (isMobile) setSidebarOpen(false);
+  }, []);
+
+  // Mobile (< 1150px): close sidebar when user navigates (e.g. clicks a menu link)
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1150;
+    if (isMobile) setSidebarOpen(false);
+  }, [location.pathname]);
+
   const handleLogout = async () => {
     await logout();
     navigate("/");
   };
 
   const isActive = (path: string) => {
+    // Special-case dashboard so it isn't 'active' for every /admin/* route
+    if (path === "/admin") {
+      return (
+        location.pathname === "/admin" ||
+        location.pathname === "/admin/dashboard"
+      );
+    }
+
     return (
       location.pathname === path || location.pathname.startsWith(path + "/")
     );
@@ -104,6 +124,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
       path: "/admin",
       icon: LayoutDashboard,
       label: "Dashboard",
+      exact: true,
     },
     // {
     //   type: "item",
@@ -116,7 +137,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
       label: "Complaints",
       icon: FileText,
       items: [
-        { path: "/admin/complaints", label: "All Complaints", icon: FileText },
+        {
+          path: "/admin/complaints",
+          label: "All Complaints",
+          icon: FileText,
+          exact: true,
+        },
         // { path: "/admin/complaints/heatmap", label: "Heat Map", icon: MapPin },
         { path: "/admin/complaints/pending", label: "Pending", icon: Clock },
         {
@@ -177,7 +203,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
       label: "Meetings",
       icon: Calendar,
       items: [
-        { path: "/admin/meetings", label: "All Meetings", icon: Calendar },
+        {
+          path: "/admin/meetings",
+          label: "All Meetings",
+          icon: Calendar,
+          exact: true,
+        },
         {
           path: "/admin/meetings/pending",
           label: "Pending Requests",
@@ -200,7 +231,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
       label: "Inventory",
       icon: Package,
       items: [
-        { path: "/admin/inventory", label: "All Items", icon: Package },
+        {
+          path: "/admin/inventory",
+          label: "All Items",
+          icon: Package,
+          exact: true,
+        },
         { path: "/admin/inventory/add", label: "Add New Item", icon: Package },
         { path: "/admin/inventory/by-type", label: "By Type", icon: Package },
         {
@@ -215,7 +251,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
       label: "Documents",
       icon: FolderOpen,
       items: [
-        { path: "/admin/documents", label: "All Documents", icon: FolderOpen },
+        {
+          path: "/admin/documents",
+          label: "All Documents",
+          icon: FolderOpen,
+          exact: true,
+        },
         {
           path: "/admin/documents/upload",
           label: "Upload Document",
@@ -293,7 +334,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
   const renderMenuItem = (item: any, level = 0) => {
     if (item.type === "item") {
       const Icon = item.icon;
-      const isItemActive = isActive(item.path);
+      const isItemActive = item.exact
+        ? location.pathname === item.path
+        : isActive(item.path);
       const isNotifications = item.path === "/admin/notifications";
       const showBadge = isNotifications && notificationUnreadCount > 0;
       return (
@@ -357,8 +400,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
     }
 
     if (item.type === "group") {
+      const isChildActive = (child: any) =>
+        child.exact
+          ? location.pathname === child.path
+          : isActive(child.path);
       const hasActiveChild = item.items?.some((child: any) => {
-        if (child.path) return isActive(child.path);
+        if (child.path) return isChildActive(child);
         if (child.items) {
           return child.items.some((subChild: any) => isActive(subChild.path));
         }
@@ -433,7 +480,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
             return (
               <SidebarMenuItem key={child.path}>
                 <SidebarMenuButton
-                  active={isActive(child.path)}
+                  active={isChildActive(child)}
                   icon={<ChildIcon className="w-4 h-4" />}
                   onClick={() => navigate(child.path)}
                 >
@@ -449,64 +496,79 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
     return null;
   };
 
+  const handleSidebarToggle = () => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 1150;
+    if (isMobile) {
+      setSidebarOpen((prev) => {
+        if (!prev) setSidebarCollapsed(false);
+        return !prev;
+      });
+    } else {
+      setSidebarOpen((prev) => !prev);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-orange-50 to-white overflow-hidden">
-      {/* Sidebar */}
+      {/* Backdrop: only on mobile (< 1150px) when sidebar is open (overlay mode) */}
       <div
         className={cn(
-          "transition-all duration-300 ease-in-out relative",
-          sidebarOpen ? (sidebarCollapsed ? "w-16" : "w-64") : "w-0"
+          "fixed inset-0 bg-black/50 z-30 transition-opacity duration-300 min-[1150px]:hidden",
+          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={() => setSidebarOpen(false)}
+        onKeyDown={(e) => e.key === "Escape" && setSidebarOpen(false)}
+        aria-hidden={!sidebarOpen}
+      />
+
+      {/* Sidebar wrapper: on mobile always 0 width (sidebar overlays); on desktop (>= 1150px) reserves space */}
+      <div
+        className={cn(
+          "flex-shrink-0 transition-all duration-300 ease-in-out w-0",
+          sidebarOpen && (sidebarCollapsed ? "min-[1150px]:w-16" : "min-[1150px]:w-64")
+        )}
+      />
+      {/* Sidebar: fixed, slides in/out; on mobile full width when open, on desktop (>= 1150px) collapsed/expanded */}
+      <Sidebar
+        className={cn(
+          "transition-transform duration-300 ease-in-out",
+          "w-64 min-[1150px]:w-64",
+          sidebarCollapsed && "min-[1150px]:w-16",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <Sidebar
-          className={cn(!sidebarOpen && "hidden", sidebarCollapsed && "w-16")}
-        >
-          <SidebarHeader>
-            <div className="flex items-center justify-between">
-              {!sidebarCollapsed && (
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                    <Home className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <h1 className="text-xl font-bold gradient-orange-text">
-                    Admin Panel
-                  </h1>
+        <SidebarHeader>
+          <div className="flex items-center justify-between">
+            {!sidebarCollapsed && (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Home className="w-5 h-5 text-primary-foreground" />
                 </div>
-              )}
-              {sidebarCollapsed && (
-                <div className="w-full flex items-center justify-center">
-                  <div className="w-8 h-8 flex items-center justify-center">
-                    <Home className="w-5 h-5 " />
-                  </div>
+                <h1 className="text-xl font-bold gradient-orange-text truncate">
+                  Admin Panel
+                </h1>
+              </div>
+            )}
+            {sidebarCollapsed && (
+              <div className="w-full flex items-center justify-center">
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <Home className="w-5 h-5 " />
                 </div>
-              )}
-              {/* <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-sidebar-accent"
-                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  title={
-                    sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-                  }
-                >
-                  {sidebarCollapsed ? (
-                    <ChevronRight className="w-4 h-4" />
-                  ) : (
-                    <ChevronLeft className="w-4 h-4" />
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="md:hidden h-8 w-8"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div> */}
+              </div>
+            )}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="min-[1150px]:hidden h-8 w-8"
+                onClick={() => setSidebarOpen(false)}
+                aria-label="Close sidebar"
+              >
+                <X className="w-5 h-5" />
+              </Button>
             </div>
-          </SidebarHeader>
+          </div>
+        </SidebarHeader>
 
           <SidebarContent>
             <SidebarMenu>
@@ -561,7 +623,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
             </div>
           </SidebarFooter>
         </Sidebar>
-      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -570,8 +631,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden mr-2"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className={cn("mr-2", sidebarOpen && "min-[1150px]:hidden")}
+            onClick={handleSidebarToggle}
+            aria-label="Toggle sidebar"
           >
             <Menu className="w-5 h-5" />
           </Button>
@@ -579,7 +641,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
             <Button
               variant="ghost"
               size="icon"
-              className="hidden md:flex mr-2"
+              className="hidden min-[1150px]:flex mr-2"
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
@@ -610,8 +672,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, stats }) => {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        {/* Page Content: min-w-0 so flex child doesn't overflow and clip right-side content */}
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
           {location.pathname === "/admin/dashboard" && stats && (
             <div className="mb-6">
               {/* Statistics Cards - KPI Tabs */}

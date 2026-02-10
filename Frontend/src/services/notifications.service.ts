@@ -8,14 +8,17 @@ import type { ApiResponse } from "@/types";
 
 export interface NotificationItem {
   id: string;
-  user_id: string;
+  user_id?: string;
   event_type: string;
-  complaint_id: string;
+  complaint_id?: string | null;
   title: string;
-  body: string;
+  body?: string;
   payload?: Record<string, unknown>;
   read_at: string | null;
   created_at: string;
+  source?: "complaint" | "common";
+  entity_type?: string;
+  entity_id?: string;
 }
 
 export interface NotificationSettingsItem {

@@ -271,9 +271,9 @@ const UserRights: React.FC = () => {
                 Data Deletion Process
               </h3>
               <p className="text-gray-700 text-sm leading-relaxed">
-                Follow these steps to request deletion of your personal data from
-                the system. Note that some data may need to be retained for legal
-                or operational reasons.
+                Follow these steps to request deletion of your personal data
+                from the system. Note that some data may need to be retained for
+                legal or operational reasons.
               </p>
             </div>
           </div>
@@ -342,9 +342,9 @@ const UserRights: React.FC = () => {
               <h3 className="text-2xl font-semibold">How to Exercise Rights</h3>
             </div>
             <p className="text-sm text-gray-700 leading-relaxed mb-4">
-              To exercise any of your data rights, you can contact us through the
-              following channels. Please include your grievance reference number
-              if applicable.
+              To exercise any of your data rights, you can contact us through
+              the following channels. Please include your grievance reference
+              number if applicable.
             </p>
             <ul className="space-y-2 text-sm text-gray-800 leading-relaxed">
               <li className="flex gap-2">
@@ -383,14 +383,18 @@ const UserRights: React.FC = () => {
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-semibold w-28">Phone</span>
-                <a href="tel:+915224321111" className="text-orange-200 hover:underline">
+                <a
+                  href="tel:+915224321111"
+                  className="text-orange-200 hover:underline"
+                >
                   +91 522 432 1111
                 </a>
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-semibold w-28">Hours</span>
                 <p className="text-white/80">
-                  Monday to Friday: 9:00 AM - 6:00 PM<br />
+                  Monday to Friday: 9:00 AM - 6:00 PM
+                  <br />
                   (Excluding government holidays)
                 </p>
               </div>

@@ -1,0 +1,133 @@
+# Privacy Policy
+
+**UP-IGRS** (Uttar Pradesh Integrated Grievance Redressal System) is a digital grievance redressal initiative developed for **citizens of Uttar Pradesh**. At **UP-IGRS**, we value your trust and are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal and grievance-related information when you use our web portal, mobile application, and related services (including Jansunwai-Samadhan). By using our portal or app, you agree to the terms of this Privacy Policy.
+
+---
+
+## 1. Information We Collect and How We Use It
+
+### User Information
+
+When you register or use our services, we may collect information such as your **name, email, contact number, address, district, and related details**. This allows us to create your profile, verify your identity, and provide access to grievance filing, tracking, and status updates within the portal and app.
+
+### Grievance and Complaint Data
+
+We may collect **grievance-related data** such as complaint text, uploaded documents (images, PDFs, identity proofs, supporting papers), timestamps, reference IDs, and status history. These are used for intake, allocation to the correct authority, resolution, and audit trails, **in line with applicable public service and grievance redressal guidelines**.
+
+### Device Data
+
+We may collect device-specific information, such as:
+
+- **Device Attributes:** OS type and version, app/ browser version, screen resolution, and language preferences.
+- **Network Information:** IP address, internet service provider, and connection type (Wi-Fi, mobile data).
+- **Crash and Performance Data:** For portal/ app stability and troubleshooting.
+
+### Log Data and Analytics
+
+We automatically collect **log data** and may use **analytics tools** (such as Firebase, Google Analytics, or similar) to understand usage patterns and improve features. No sensitive grievance content (e.g., detailed complaint text or documents) is shared through analytics beyond what is necessary for operational improvement.
+
+### Location Information
+
+If enabled, we may collect **approximate location or district-level data** to route grievances to the correct jurisdiction or provide location-based features (e.g., regional helplines or office information).
+
+### Support and Feedback Data
+
+Any information you voluntarily share with our support or feedback channels (text, screenshots, error reports) may be stored to help resolve issues and improve portal and app performance.
+
+---
+
+## 2. How We Use the Data
+
+We use collected data for:
+
+- Account/ profile creation and secure access to the portal and app.
+- Delivering grievance filing, tracking, and status-update features.
+- Allocating grievances to the correct authority and maintaining audit trails.
+- Providing updates and notifications related to your complaints and service improvements.
+- Enhancing portal and app performance and user experience.
+- Responding to technical or support queries.
+- Maintaining compliance with institutional and regulatory requirements (including government grievance redressal norms).
+
+---
+
+## 3. Disclosure of Information
+
+We **do not sell or rent** your personal data to any third party. Your data may be shared only:
+
+- With your **explicit consent** where applicable.
+- With **competent government or judicial authorities** when required for redressal, audit, or law enforcement.
+- With **trusted service partners** (e.g., cloud hosting, analytics, communication gateways) only to enable portal/ app functionality, under confidentiality and data protection agreements.
+- When required by **law, court order, or government regulation**.
+
+All third-party partners are bound by confidentiality and data protection agreements.
+
+---
+
+## 4. Security Practices
+
+We employ **industry-standard security measures** (encryption in transit, secure access control, role-based access for officials, and limited data retention) to protect your information.
+Users are responsible for maintaining the **confidentiality of their login credentials**.
+
+---
+
+## 5. Storage of Personal Information
+
+Your data is stored on **secure, encrypted servers** hosted on **trusted cloud platforms** compliant with applicable government and security standards.
+Access is restricted to **authorized personnel only** for legitimate grievance redressal and operational purposes.
+
+---
+
+## 6. Your Data Rights
+
+You have the right to:
+
+- **Access, update, or delete** your profile information through the portal or by contacting the Grievance Officer.
+- **Withdraw consent** for data collection as per **Section 5(7) of the IT Rules, 2011**.
+- **Review or correct** any personal information under **Section 5(6) of the IT Rules, 2011**.
+
+Please note that revoking consent or limiting data may affect access to certain portal or app features necessary for grievance filing and tracking.
+
+---
+
+## 7. Data Retention
+
+We retain your data only as long as necessary to provide grievance redressal services, maintain audit trails, or as required by policy and law.
+Once your account is deleted or a grievance is closed, associated data is retained or anonymized in accordance with applicable retention and archival policies.
+
+---
+
+## 8. Cookies and Local Storage
+
+The portal and app may use **local storage or cookies** for login persistence, session security, and improving usability. You can manage permissions through your device or browser settings; disabling certain cookies may affect sign-in or session behaviour.
+
+---
+
+## 9. Communication
+
+We may contact you via **email, SMS, or in-app notifications** regarding:
+
+- Important portal/ app updates or feature changes.
+- Policy changes or compliance notices.
+- Grievance-related communications such as acknowledgements, status updates, and resolution notices.
+
+---
+
+## 10. Policy Updates
+
+We may modify this Privacy Policy periodically. Updated versions will be reflected within the portal or website, and users will be notified of **material changes**.
+
+---
+
+## 11. Contact Information
+
+For questions, support, or privacy-related concerns, please contact the **Grievance Officer**:
+
+- **Email:** [privacy@jansunwai-up.gov.in](mailto:privacy@jansunwai-up.gov.in)
+- **Phone:** +91 522 432 1111
+- **Address:** Department of Public Grievances, Government of Uttar Pradesh, Lucknow, Uttar Pradesh.
+
+---
+
+## 12. Conclusion
+
+At **UP-IGRS**, your **privacy and data security** are our top priorities. We are dedicated to maintaining **transparency**, ensuring **ethical data use**, and supporting **safe, responsible grievance redressal** for the citizens of Uttar Pradesh.

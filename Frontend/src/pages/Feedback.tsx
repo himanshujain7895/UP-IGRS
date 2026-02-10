@@ -3,50 +3,52 @@
  * Submit feedback about the service
  */
 
-import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
-import { 
-  CheckCircle, 
-  Loader2, 
-  MessageSquare, 
+import React, { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  CheckCircle,
+  Loader2,
+  MessageSquare,
   ArrowLeft,
   User,
   Mail,
   ThumbsUp,
   Lightbulb,
-  AlertCircle
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { feedbackService } from '@/services/feedback.service';
+  AlertCircle,
+} from "lucide-react";
+import { toast } from "sonner";
+import { feedbackService } from "@/services/feedback.service";
 
 const Feedback: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const complaintId = searchParams.get('complaintId') || '';
+  const complaintId = searchParams.get("complaintId") || "";
 
-  const [step, setStep] = useState<'form' | 'success'>('form');
-  const [comment, setComment] = useState('');
-  const [feedbackType, setFeedbackType] = useState<'suggestion' | 'praise' | 'issue'>('issue');
+  const [step, setStep] = useState<"form" | "success">("form");
+  const [comment, setComment] = useState("");
+  const [feedbackType, setFeedbackType] = useState<
+    "suggestion" | "praise" | "issue"
+  >("issue");
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!comment.trim()) {
-      toast.error('Please provide your feedback');
+      toast.error("Please provide your feedback");
       return;
     }
 
     if (comment.trim().length < 10) {
-      toast.error('Feedback must be at least 10 characters');
+      toast.error("Feedback must be at least 10 characters");
       return;
     }
 
@@ -56,29 +58,29 @@ const Feedback: React.FC = () => {
         complaintId: complaintId || undefined,
         comment: comment.trim(),
         category: feedbackType,
-        userName: isAnonymous ? undefined : (userName.trim() || undefined),
-        userEmail: isAnonymous ? undefined : (userEmail.trim() || undefined),
+        userName: isAnonymous ? undefined : userName.trim() || undefined,
+        userEmail: isAnonymous ? undefined : userEmail.trim() || undefined,
       });
-      
-      setStep('success');
-      toast.success('Thank you for your feedback!');
+
+      setStep("success");
+      toast.success("Thank you for your feedback!");
     } catch (error: any) {
-      toast.error(error.message || 'Failed to submit feedback');
+      toast.error(error.message || "Failed to submit feedback");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleReset = () => {
-    setStep('form');
-    setComment('');
-    setFeedbackType('issue');
+    setStep("form");
+    setComment("");
+    setFeedbackType("issue");
     setIsAnonymous(false);
-    setUserName('');
-    setUserEmail('');
+    setUserName("");
+    setUserEmail("");
   };
 
-  if (step === 'success') {
+  if (step === "success") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 py-4 md:py-6">
         <div className="container mx-auto max-w-6xl px-4">
@@ -89,7 +91,9 @@ const Feedback: React.FC = () => {
                   <CheckCircle className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
                 <div>
-                  <h1 className="text-xl md:text-2xl font-bold mb-1">Thank You!</h1>
+                  <h1 className="text-xl md:text-2xl font-bold mb-1">
+                    Thank You!
+                  </h1>
                   <p className="text-green-100 text-xs md:text-sm">
                     Your feedback helps us improve our services.
                   </p>
@@ -110,16 +114,16 @@ const Feedback: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                  <Button 
-                    onClick={() => navigate('/')} 
-                    variant="outline" 
+                  <Button
+                    onClick={() => navigate("/")}
+                    variant="outline"
                     className="flex-1 border-gray-300 hover:bg-gray-50 h-11 text-sm font-semibold"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Home
                   </Button>
-                  <Button 
-                    onClick={handleReset} 
+                  <Button
+                    onClick={handleReset}
                     className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white h-11 text-sm font-semibold shadow-lg hover:shadow-xl transition-all"
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
@@ -146,16 +150,18 @@ const Feedback: React.FC = () => {
                   <MessageSquare className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
                 <div>
-                  <h1 className="text-xl md:text-2xl font-bold mb-1">Share Your Feedback</h1>
+                  <h1 className="text-xl md:text-2xl font-bold mb-1">
+                    Share Your Feedback
+                  </h1>
                   <p className="text-orange-100 text-xs md:text-sm">
                     Help us improve by sharing your thoughts and suggestions
                   </p>
                 </div>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => navigate('/')}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/")}
                 className="text-white hover:bg-white/20 hidden md:flex"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -170,10 +176,10 @@ const Feedback: React.FC = () => {
           <CardContent className="p-4 md:p-6">
             {/* Mobile Back Button */}
             <div className="md:hidden mb-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => navigate('/')}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/")}
                 className="text-gray-700 hover:bg-orange-100 hover:text-orange-700"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -188,18 +194,22 @@ const Feedback: React.FC = () => {
                   <div className="p-1.5 bg-orange-100 rounded-lg">
                     <MessageSquare className="w-4 h-4 text-orange-600" />
                   </div>
-                  <h2 className="text-base font-bold text-gray-800">Feedback Type <span className="text-red-500">*</span></h2>
+                  <h2 className="text-base font-bold text-gray-800">
+                    Feedback Type <span className="text-red-500">*</span>
+                  </h2>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
                   <Button
                     type="button"
-                    variant={feedbackType === 'suggestion' ? 'default' : 'outline'}
-                    onClick={() => setFeedbackType('suggestion')}
+                    variant={
+                      feedbackType === "suggestion" ? "default" : "outline"
+                    }
+                    onClick={() => setFeedbackType("suggestion")}
                     className={`h-12 text-sm font-semibold ${
-                      feedbackType === 'suggestion' 
-                        ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0' 
-                        : 'border-gray-300 hover:bg-orange-50'
+                      feedbackType === "suggestion"
+                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0"
+                        : "border-gray-300 hover:bg-orange-50"
                     }`}
                   >
                     <Lightbulb className="w-4 h-4 mr-2" />
@@ -207,12 +217,12 @@ const Feedback: React.FC = () => {
                   </Button>
                   <Button
                     type="button"
-                    variant={feedbackType === 'praise' ? 'default' : 'outline'}
-                    onClick={() => setFeedbackType('praise')}
+                    variant={feedbackType === "praise" ? "default" : "outline"}
+                    onClick={() => setFeedbackType("praise")}
                     className={`h-12 text-sm font-semibold ${
-                      feedbackType === 'praise' 
-                        ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0' 
-                        : 'border-gray-300 hover:bg-orange-50'
+                      feedbackType === "praise"
+                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0"
+                        : "border-gray-300 hover:bg-orange-50"
                     }`}
                   >
                     <ThumbsUp className="w-4 h-4 mr-2" />
@@ -220,12 +230,12 @@ const Feedback: React.FC = () => {
                   </Button>
                   <Button
                     type="button"
-                    variant={feedbackType === 'issue' ? 'default' : 'outline'}
-                    onClick={() => setFeedbackType('issue')}
+                    variant={feedbackType === "issue" ? "default" : "outline"}
+                    onClick={() => setFeedbackType("issue")}
                     className={`h-12 text-sm font-semibold ${
-                      feedbackType === 'issue' 
-                        ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0' 
-                        : 'border-gray-300 hover:bg-orange-50'
+                      feedbackType === "issue"
+                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0"
+                        : "border-gray-300 hover:bg-orange-50"
                     }`}
                   >
                     <AlertCircle className="w-4 h-4 mr-2" />
@@ -240,11 +250,16 @@ const Feedback: React.FC = () => {
                   <div className="p-1.5 bg-orange-100 rounded-lg">
                     <MessageSquare className="w-4 h-4 text-orange-600" />
                   </div>
-                  <h2 className="text-base font-bold text-gray-800">Your Feedback</h2>
+                  <h2 className="text-base font-bold text-gray-800">
+                    Your Feedback
+                  </h2>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="comment" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+                  <Label
+                    htmlFor="comment"
+                    className="text-sm font-semibold text-gray-700 flex items-center gap-1.5"
+                  >
                     <MessageSquare className="w-3.5 h-3.5 text-orange-600" />
                     Feedback <span className="text-red-500">*</span>
                   </Label>
@@ -273,7 +288,10 @@ const Feedback: React.FC = () => {
                   onChange={(e) => setIsAnonymous(e.target.checked)}
                   className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                 />
-                <Label htmlFor="anonymous" className="cursor-pointer text-sm text-gray-700">
+                <Label
+                  htmlFor="anonymous"
+                  className="cursor-pointer text-sm text-gray-700"
+                >
                   Submit anonymously
                 </Label>
               </div>
@@ -285,11 +303,16 @@ const Feedback: React.FC = () => {
                     <div className="p-1.5 bg-orange-100 rounded-lg">
                       <User className="w-4 h-4 text-orange-600" />
                     </div>
-                    <h2 className="text-base font-bold text-gray-800">Contact Information (Optional)</h2>
+                    <h2 className="text-base font-bold text-gray-800">
+                      Contact Information (Optional)
+                    </h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="feedback-name" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+                      <Label
+                        htmlFor="feedback-name"
+                        className="text-sm font-semibold text-gray-700 flex items-center gap-1.5"
+                      >
                         <User className="w-3.5 h-3.5 text-orange-600" />
                         Your Name
                       </Label>
@@ -302,7 +325,10 @@ const Feedback: React.FC = () => {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="feedback-email" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+                      <Label
+                        htmlFor="feedback-email"
+                        className="text-sm font-semibold text-gray-700 flex items-center gap-1.5"
+                      >
                         <Mail className="w-3.5 h-3.5 text-orange-600" />
                         Your Email
                       </Label>
@@ -321,17 +347,17 @@ const Feedback: React.FC = () => {
 
               {/* Submit Buttons */}
               <div className="flex gap-3 pt-4 border-t border-orange-200">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => navigate('/')} 
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate("/")}
                   className="flex-1 border-gray-300 hover:bg-gray-50 h-11 text-sm font-semibold"
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
-                  disabled={submitting || comment.trim().length < 10} 
+                <Button
+                  type="submit"
+                  disabled={submitting || comment.trim().length < 10}
                   className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white h-11 text-sm font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
                 >
                   {submitting ? (

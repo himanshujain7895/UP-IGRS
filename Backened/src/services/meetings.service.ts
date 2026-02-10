@@ -1,6 +1,7 @@
 import { Meeting } from '../models/Meeting';
 import { NotFoundError } from '../utils/errors';
 import logger from '../config/logger';
+import { notifyCommonAsync } from '../modules/notifications';
 
 /**
  * Meetings Service
@@ -125,6 +126,16 @@ export const createMeeting = async (data: CreateMeetingDto) => {
 
   await meeting.save();
   logger.info(`Meeting created: ${meeting.id}`);
+
+  notifyCommonAsync({
+    event_type: 'meeting_requested',
+    context_type: 'meeting',
+    entity_type: 'meeting',
+    entity_id: meeting.id,
+    meeting_subject: meeting.meeting_subject,
+    requester_name: meeting.requester_name,
+    requester_email: meeting.requester_email,
+  });
 
   return meeting.toObject();
 };

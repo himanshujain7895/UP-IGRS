@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { complaintsService } from "@/services/complaints.service";
 import { Complaint } from "@/types";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Search,
   Eye,
@@ -33,20 +34,37 @@ import {
   FileText,
   Clock,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 
 const MyComplaintsPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
+  const initialPage = isNaN(pageFromUrl) || pageFromUrl < 1 ? 1 : pageFromUrl;
+
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(20);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const updatePageAndUrl = (p: number) => {
+    setPage(p);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("page", String(p));
+      return next;
+    });
+  };
 
   useEffect(() => {
     loadComplaints();
@@ -69,16 +87,19 @@ const MyComplaintsPage: React.FC = () => {
       // Response is PaginatedResponse<Complaint> with { success, data: Complaint[], meta: { total, page, limit, totalPages } }
       if (response && response.data) {
         setComplaints(response.data);
-        setTotal(response.meta?.total || response.data.length);
+        setTotal(response.meta?.total ?? response.data.length);
+        setTotalPages(response.meta?.totalPages ?? Math.ceil((response.meta?.total ?? response.data.length) / limit));
       } else {
         setComplaints([]);
         setTotal(0);
+        setTotalPages(1);
       }
     } catch (error: any) {
       console.error("Error loading complaints:", error);
       toast.error(error.message || "Failed to load complaints");
       setComplaints([]);
       setTotal(0);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -201,8 +222,6 @@ const MyComplaintsPage: React.FC = () => {
     navigate(`/officer/complaints/${complaintId}`);
   };
 
-  const totalPages = Math.ceil(total / limit);
-
   // Calculate statistics
   const stats = {
     total: complaints.length,
@@ -220,75 +239,75 @@ const MyComplaintsPage: React.FC = () => {
     <div className="space-y-8 pb-8">
       {/* Professional Header Section */}
       <div className="space-y-6">
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-slate-50 to-white">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+        {/* Statistics Cards - compact on small screens */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 min-w-0">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-slate-50 to-white min-w-0 overflow-hidden">
+            <CardContent className="p-3 sm:p-5">
+              <div className="flex items-center justify-between gap-2 min-w-0">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
                     Total Cases
                   </p>
-                  <p className="text-2xl font-bold text-slate-900">
+                  <p className="text-lg sm:text-2xl font-bold text-slate-900 tabular-nums">
                     {stats.total}
                   </p>
                 </div>
-                <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-slate-600" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4 sm:w-6 sm:h-6 text-slate-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-amber-50 to-white">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-amber-600 uppercase tracking-wide mb-1">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-amber-50 to-white min-w-0 overflow-hidden">
+            <CardContent className="p-3 sm:p-5">
+              <div className="flex items-center justify-between gap-2 min-w-0">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs font-medium text-amber-600 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
                     Pending
                   </p>
-                  <p className="text-2xl font-bold text-amber-700">
+                  <p className="text-lg sm:text-2xl font-bold text-amber-700 tabular-nums">
                     {stats.pending}
                   </p>
                 </div>
-                <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-amber-600" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-white">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-blue-600 uppercase tracking-wide mb-1">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-white min-w-0 overflow-hidden">
+            <CardContent className="p-3 sm:p-5">
+              <div className="flex items-center justify-between gap-2 min-w-0">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs font-medium text-blue-600 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
                     In Progress
                   </p>
-                  <p className="text-2xl font-bold text-blue-700">
+                  <p className="text-lg sm:text-2xl font-bold text-blue-700 tabular-nums">
                     {stats.inProgress}
                   </p>
                 </div>
-                <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-blue-600" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-red-50 to-white">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-red-600 uppercase tracking-wide mb-1">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-red-50 to-white min-w-0 overflow-hidden">
+            <CardContent className="p-3 sm:p-5">
+              <div className="flex items-center justify-between gap-2 min-w-0">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs font-medium text-red-600 uppercase tracking-wide mb-0.5 sm:mb-1 truncate">
                     Overdue
                   </p>
-                  <p className="text-2xl font-bold text-red-700">
+                  <p className="text-lg sm:text-2xl font-bold text-red-700 tabular-nums">
                     {stats.overdue}
                   </p>
                 </div>
-                <div className="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-red-600" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-red-600" />
                 </div>
               </div>
             </CardContent>
@@ -296,91 +315,118 @@ const MyComplaintsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Professional Filters Section */}
-      <Card className="border-0 shadow-sm bg-white">
-        <CardHeader className="pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-600" />
-            <CardTitle className="text-base font-semibold text-slate-900">
-              Filter & Search
-            </CardTitle>
+      {/* Filter & Search - collapsible, default closed */}
+      <Card className="border-0 shadow-sm bg-white min-w-0 overflow-hidden">
+        <CardHeader
+          role="button"
+          tabIndex={0}
+          aria-expanded={filtersOpen}
+          aria-label={filtersOpen ? "Collapse filters" : "Expand filters"}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setFiltersOpen((o) => !o);
+            }
+          }}
+          className="py-3 sm:py-4 px-4 sm:px-6 border-b border-slate-100 cursor-pointer hover:bg-slate-50/50 transition-colors"
+          onClick={() => setFiltersOpen((o) => !o)}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Filter className="w-4 h-4 text-slate-600 shrink-0" />
+              <CardTitle className="text-sm sm:text-base font-semibold text-slate-900">
+                Filter & Search
+              </CardTitle>
+              {(!filtersOpen && (searchTerm || statusFilter !== "all" || priorityFilter !== "all" || categoryFilter !== "all")) && (
+                <span className="text-xs text-slate-500 truncate">
+                  (filters active)
+                </span>
+              )}
+            </div>
+            {filtersOpen ? (
+              <ChevronUp className="w-4 h-4 text-slate-500 shrink-0" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
+            )}
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <Input
-                placeholder="Search by title, ID, or description..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setPage(1);
+        {filtersOpen && (
+          <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
+              <div className="relative md:col-span-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Input
+                  placeholder="Search by title, ID, or desc"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    updatePageAndUrl(1);
+                  }}
+                  className="pl-9 sm:pl-10 h-10 sm:h-11 border-slate-200 focus:border-primary focus:ring-primary text-sm"
+                />
+              </div>
+              <Select
+                value={statusFilter}
+                onValueChange={(value) => {
+                  setStatusFilter(value);
+                  updatePageAndUrl(1);
                 }}
-                className="pl-10 h-11 border-slate-200 focus:border-primary focus:ring-primary"
-              />
+              >
+                <SelectTrigger className="h-10 sm:h-11 border-slate-200 focus:border-primary focus:ring-primary text-sm">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="resolved">Resolved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={priorityFilter}
+                onValueChange={(value) => {
+                  setPriorityFilter(value);
+                  updatePageAndUrl(1);
+                }}
+              >
+                <SelectTrigger className="h-10 sm:h-11 border-slate-200 focus:border-primary focus:ring-primary text-sm">
+                  <SelectValue placeholder="All Priorities" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={categoryFilter}
+                onValueChange={(value) => {
+                  setCategoryFilter(value);
+                  updatePageAndUrl(1);
+                }}
+              >
+                <SelectTrigger className="h-10 sm:h-11 border-slate-200 focus:border-primary focus:ring-primary text-sm">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="roads">Roads & Infrastructure</SelectItem>
+                  <SelectItem value="water">Water Supply</SelectItem>
+                  <SelectItem value="electricity">Electricity</SelectItem>
+                  <SelectItem value="documents">
+                    Documents & Certificates
+                  </SelectItem>
+                  <SelectItem value="health">Health Services</SelectItem>
+                  <SelectItem value="education">Education</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => {
-                setStatusFilter(value);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="h-11 border-slate-200 focus:border-primary focus:ring-primary">
-                <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={priorityFilter}
-              onValueChange={(value) => {
-                setPriorityFilter(value);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="h-11 border-slate-200 focus:border-primary focus:ring-primary">
-                <SelectValue placeholder="All Priorities" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priorities</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={categoryFilter}
-              onValueChange={(value) => {
-                setCategoryFilter(value);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="h-11 border-slate-200 focus:border-primary focus:ring-primary">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="roads">Roads & Infrastructure</SelectItem>
-                <SelectItem value="water">Water Supply</SelectItem>
-                <SelectItem value="electricity">Electricity</SelectItem>
-                <SelectItem value="documents">
-                  Documents & Certificates
-                </SelectItem>
-                <SelectItem value="health">Health Services</SelectItem>
-                <SelectItem value="education">Education</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
 
       {/* Complaints List */}
@@ -439,39 +485,39 @@ const MyComplaintsPage: React.FC = () => {
                   className="group border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 cursor-pointer overflow-hidden"
                   onClick={() => handleViewComplaint(complaintId || "")}
                 >
-                  <CardHeader className="pb-4 space-y-3">
-                    {/* Top Row: ID and Status */}
-                    <div className="flex items-start justify-between">
+                  <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6 pt-4 sm:pt-6 space-y-2">
+                    {/* Top Row: ID, Status, Priority - tighter gap */}
+                    <div className="flex items-center gap-2 flex-wrap min-w-0">
                       {complaint.complaint_id && (
-                        <span className="text-xs font-mono font-medium text-slate-500 bg-slate-50 px-2.5 py-1 rounded-md">
+                        <span className="text-[11px] sm:text-xs font-mono font-medium text-slate-500 bg-slate-50 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md shrink-0">
                           {complaint.complaint_id}
                         </span>
                       )}
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                         {getStatusBadge(complaint.status)}
                         {getPriorityBadge(complaint.priority)}
                       </div>
                     </div>
 
                     {/* Title */}
-                    <CardTitle className="text-base font-semibold text-slate-900 leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                    <CardTitle className="text-sm sm:text-base font-semibold text-slate-900 leading-snug group-hover:text-primary transition-colors line-clamp-2 mt-0.5">
                       {complaint.title}
                     </CardTitle>
 
-                    {/* Description */}
-                    <CardDescription className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                    {/* Description (MLC's message text) - smaller font */}
+                    <CardDescription className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
                       {complaint.description}
                     </CardDescription>
                   </CardHeader>
 
-                  <CardContent className="pt-0 space-y-4">
+                  <CardContent className="pt-0 px-4 sm:px-6 pb-4 sm:pb-6 space-y-3">
                     {/* Progress Section */}
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-700 uppercase tracking-wide">
                           Case Progress
                         </span>
-                        <span className="text-xs font-semibold text-slate-900">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-900 shrink-0">
                           {(() => {
                             const steps = [
                               complaint.createdAt ? 1 : 0,
@@ -538,23 +584,23 @@ const MyComplaintsPage: React.FC = () => {
                     </div>
 
                     {/* Category */}
-                    <div className="flex items-center gap-2 py-2 border-y border-slate-100">
-                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    <div className="flex items-center gap-2 py-1.5 border-y border-slate-100">
+                      <span className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wide">
                         Category
                       </span>
                       <span className="text-slate-300">•</span>
-                      <span className="text-xs font-semibold text-slate-700 capitalize">
+                      <span className="text-[10px] sm:text-xs font-semibold text-slate-700 capitalize">
                         {complaint.category}
                       </span>
                     </div>
 
                     {/* Timeline Information */}
-                    <div className="space-y-2.5 pt-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 font-medium">
+                    <div className="space-y-1.5 sm:space-y-2 pt-0.5">
+                      <div className="flex items-center justify-between text-[10px] sm:text-xs gap-2">
+                        <span className="text-slate-500 font-medium shrink-0">
                           Arrived
                         </span>
-                        <span className="text-slate-900 font-semibold">
+                        <span className="text-slate-900 font-semibold text-right truncate min-w-0">
                           {arrivalTime
                             ? new Date(arrivalTime).toLocaleDateString(
                                 "en-IN",
@@ -568,11 +614,11 @@ const MyComplaintsPage: React.FC = () => {
                         </span>
                       </div>
                       {assignedTime && assignedTime !== arrivalTime && (
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-500 font-medium">
+                        <div className="flex items-center justify-between text-[10px] sm:text-xs gap-2">
+                          <span className="text-slate-500 font-medium shrink-0">
                             Assigned
                           </span>
-                          <span className="text-slate-900 font-semibold">
+                          <span className="text-slate-900 font-semibold text-right truncate min-w-0">
                             {new Date(assignedTime).toLocaleDateString(
                               "en-IN",
                               {
@@ -586,8 +632,8 @@ const MyComplaintsPage: React.FC = () => {
                       )}
                       {/* Deadline Date */}
                       {remainingTime && (
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-500 font-medium">
+                        <div className="flex items-center justify-between text-[10px] sm:text-xs gap-2">
+                          <span className="text-slate-500 font-medium shrink-0">
                             Deadline
                           </span>
                           <span
@@ -615,7 +661,7 @@ const MyComplaintsPage: React.FC = () => {
                       )}
                       {remainingTime && (
                         <div
-                          className={`flex items-center justify-between text-xs font-semibold pt-1 border-t border-slate-100 ${
+                          className={`flex items-center justify-between text-[10px] sm:text-xs font-semibold pt-1 border-t border-slate-100 ${
                             remainingTime.isOverdue
                               ? "text-red-600"
                               : remainingTime.remainingDays <= 3
@@ -642,7 +688,7 @@ const MyComplaintsPage: React.FC = () => {
                     </div>
 
                     {/* Action Button */}
-                    <div className="pt-2">
+                    <div className="pt-1.5">
                       <Button
                         variant="outline"
                         size="sm"
@@ -662,62 +708,16 @@ const MyComplaintsPage: React.FC = () => {
             })}
           </div>
 
-          {/* Professional Pagination */}
-          {totalPages > 1 && (
-            <Card className="border-0 shadow-sm bg-white">
-              <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <p className="text-sm font-medium text-slate-600">
-                    Showing{" "}
-                    <span className="font-semibold text-slate-900">
-                      {(page - 1) * limit + 1}
-                    </span>{" "}
-                    to{" "}
-                    <span className="font-semibold text-slate-900">
-                      {Math.min(page * limit, total)}
-                    </span>{" "}
-                    of{" "}
-                    <span className="font-semibold text-slate-900">
-                      {total}
-                    </span>{" "}
-                    cases
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                      className="border-slate-200 hover:border-primary hover:bg-primary hover:text-white disabled:opacity-50"
-                    >
-                      Previous
-                    </Button>
-                    <span className="text-sm font-medium text-slate-600 px-3">
-                      Page{" "}
-                      <span className="font-semibold text-slate-900">
-                        {page}
-                      </span>{" "}
-                      of{" "}
-                      <span className="font-semibold text-slate-900">
-                        {totalPages}
-                      </span>
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setPage((p) => Math.min(totalPages, p + 1))
-                      }
-                      disabled={page === totalPages}
-                      className="border-slate-200 hover:border-primary hover:bg-primary hover:text-white disabled:opacity-50"
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Pagination */}
+          <Pagination
+            page={page}
+            limit={limit}
+            total={total}
+            totalPages={totalPages}
+            onPageChange={updatePageAndUrl}
+            itemLabel="cases"
+            className="pt-2"
+          />
         </>
       )}
     </div>

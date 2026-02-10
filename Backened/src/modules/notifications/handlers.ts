@@ -6,8 +6,10 @@
 
 import type { RecipientResult } from "./types";
 import type { NotificationInput } from "./types";
+import type { CommonNotificationInput } from "./types";
 import type { NotifiableEventType } from "./types";
-import { isNotifiableEventType } from "./types";
+import type { CommonNotifiableEventType } from "./types";
+import { isNotifiableEventType, isCommonNotifiableEventType } from "./types";
 import {
   getAllAdminUserIds,
   getAssignedOfficerUserId,
@@ -16,6 +18,7 @@ import {
 } from "./recipients";
 import {
   EVENT_RECEIVER_MAP,
+  COMMON_EVENT_RECEIVER_MAP,
   type EventReceiverConfig,
   type ReceiverKind,
 } from "./eventReceiversMap";
@@ -254,4 +257,84 @@ export function buildNotificationInputs(
     payload: {},
     timeline_event_id: timelineEventId,
   }));
+}
+
+// ---- Common working notifications (parallel system) ----
+
+export interface ResolveCommonResult {
+  adminUserIds: string[];
+  title: string;
+  body: string;
+}
+
+type CommonPayload = Record<string, unknown>;
+
+/**
+ * Resolve recipients and copy for a common event (meetings, inventory, etc.).
+ * Uses COMMON_EVENT_RECEIVER_MAP only; does not touch complaint logic.
+ */
+export async function resolveCommonEvent(
+  eventType: string,
+  payload: CommonPayload = {}
+): Promise<ResolveCommonResult> {
+  const config = isCommonNotifiableEventType(eventType)
+    ? COMMON_EVENT_RECEIVER_MAP[eventType as CommonNotifiableEventType]
+    : null;
+
+  let adminUserIds: string[] = [];
+  if (config && config.receivers.includes("admins")) {
+    adminUserIds = await getAllAdminUserIds();
+  }
+
+  const { title, body } = getCommonTitleAndBody(eventType, payload);
+  return { adminUserIds, title, body };
+}
+
+function getCommonTitleAndBody(
+  eventType: string,
+  payload: CommonPayload
+): { title: string; body: string } {
+  switch (eventType) {
+    case "meeting_requested":
+      return {
+        title: "Meeting requested",
+        body:
+          payload?.meeting_subject && typeof payload.meeting_subject === "string"
+            ? String(payload.meeting_subject).slice(0, 200)
+            : "A new meeting request has been submitted.",
+      };
+    default:
+      return {
+        title: "Notification",
+        body: `Event: ${eventType}`,
+      };
+  }
+}
+
+/**
+ * Build one common notification input per event (no user_id).
+ * All admins see the same notification; one row per event (e.g. per meeting request).
+ * adminUserIds in res are still used by the orchestrator to push via socket to all admins.
+ */
+export function buildCommonNotificationInputs(
+  eventType: string,
+  res: ResolveCommonResult,
+  options?: {
+    context_type?: string;
+    entity_type?: string;
+    entity_id?: string;
+    payload?: Record<string, unknown>;
+  }
+): CommonNotificationInput[] {
+  return [
+    {
+      event_type: eventType,
+      title: res.title,
+      body: res.body,
+      context_type: options?.context_type,
+      entity_type: options?.entity_type,
+      entity_id: options?.entity_id,
+      payload: options?.payload,
+    },
+  ];
 }

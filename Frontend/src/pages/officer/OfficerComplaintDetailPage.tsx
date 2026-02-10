@@ -18,6 +18,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   ArrowLeft,
   Loader2,
   AlertCircle,
@@ -164,6 +171,7 @@ const OfficerComplaintDetailPage: React.FC = () => {
     "inward"
   );
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
     if (id) {
@@ -185,7 +193,7 @@ const OfficerComplaintDetailPage: React.FC = () => {
     } catch (error: any) {
       console.error("Error loading complaint:", error);
       toast.error(error.message || "Failed to load complaint");
-      navigate("/officer");
+      navigate(-1);
     } finally {
       setLoading(false);
     }
@@ -743,7 +751,7 @@ const OfficerComplaintDetailPage: React.FC = () => {
       <div className="text-center py-12">
         <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">Complaint not found</p>
-        <Button onClick={() => navigate("/officer")} className="mt-4">
+        <Button onClick={() => navigate(-1)} className="mt-4">
           Back to My Complaints
         </Button>
       </div>
@@ -751,34 +759,26 @@ const OfficerComplaintDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden min-w-0">
       {/* Header */}
-      <Card className="border-[#011a60]/30 shadow-lg overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-[#011a60] via-[#023a9f] to-[#011a60] text-white">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-4 flex-1">
+      <Card className="border-[#011a60]/30 shadow-lg overflow-hidden min-w-0">
+        <CardHeader className="bg-gradient-to-r from-[#011a60] via-[#023a9f] to-[#011a60] text-white p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 min-w-0">
+            <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/officer")}
-                className="text-white hover:bg-white/20 mt-1"
+                onClick={() => navigate(-1)}
+                className="text-white hover:bg-white/20 mt-0.5 shrink-0 text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
                 Back
               </Button>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-white mb-3">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-base sm:text-xl md:text-2xl font-bold text-white mb-2 sm:mb-3 line-clamp-3 break-words">
                   {complaint.title}
                 </h1>
-                <div className="flex items-center gap-3 flex-wrap text-white">
-                  {/* <Badge
-                    variant="outline"
-                    className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                  >
-                    <span className="text-xs font-mono">
-                      {complaint.id || complaint._id || "N/A"}
-                    </span>
-                  </Badge> */}
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap text-white text-xs sm:text-sm">
                   {getStatusBadge(complaint.status)}
                   {getPriorityBadge(complaint.priority)}
                 </div>
@@ -789,13 +789,51 @@ const OfficerComplaintDetailPage: React.FC = () => {
       </Card>
 
       {/* Main Content with Tabs */}
-      <Card className="border-[#011a60]/30 shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-xl">Complaint Information</CardTitle>
+      <Card className="border-[#011a60]/30 shadow-lg min-w-0 overflow-hidden">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">Complaint Information</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            {/* Dropdown tab selector: full width, only for width < 700px */}
+            <div className="w-full max-[700px]:block min-[700px]:hidden mb-6">
+              <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger className="w-full h-10 rounded-md border border-input bg-muted/50">
+                  <SelectValue placeholder="Select tab" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="details">
+                    <span className="flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      Complaint Details
+                    </span>
+                  </SelectItem>
+                  <SelectItem
+                    value="mlc-message"
+                    disabled={!(complaint as any).drafted_letter}
+                  >
+                    <span className="flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4" />
+                      MLC's Message
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="notes-proofs">
+                    <span className="flex items-center gap-2">
+                      <StickyNote className="w-4 h-4" />
+                      Notes & Proofs
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="actions">
+                    <span className="flex items-center gap-2">
+                      <Settings className="w-4 h-4" />
+                      Actions
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {/* Horizontal tabs: only for width >= 700px */}
+            <TabsList className="grid w-full grid-cols-4 mb-6 max-[700px]:hidden min-[700px]:grid">
               <TabsTrigger
                 value="details"
                 className="data-[state=active]:bg-[#011a60] data-[state=active]:text-white"
@@ -828,26 +866,26 @@ const OfficerComplaintDetailPage: React.FC = () => {
             </TabsList>
 
             {/* Complaint Details Tab */}
-            <TabsContent value="details" className="space-y-6 mt-0">
+            <TabsContent value="details" className="space-y-4 sm:space-y-6 mt-0 min-w-0 overflow-hidden">
               {/* Basic Information */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
+              <div className="space-y-2 sm:space-y-3 min-w-0">
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-1.5 sm:pb-2">
                   Basic Information
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm min-w-0">
+                  <div className="min-w-0">
                     <Label className="text-xs text-muted-foreground">
                       Description
                     </Label>
-                    <p className="text-foreground mt-1 leading-relaxed">
+                    <p className="text-foreground mt-1 leading-relaxed break-words">
                       {complaint.description}
                     </p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <Label className="text-xs text-muted-foreground">
                       Category
                     </Label>
-                    <p className="text-foreground mt-1 capitalize">
+                    <p className="text-foreground mt-1 capitalize break-words">
                       {complaint.category}
                       {complaint.subCategory && ` - ${complaint.subCategory}`}
                     </p>
@@ -1025,44 +1063,44 @@ const OfficerComplaintDetailPage: React.FC = () => {
               </div>
 
               {/* Officer Timeline */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
+              <div className="space-y-3 min-w-0">
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
                   Officer Timeline
                 </h3>
                 {timelineEvents.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     No timeline events available yet.
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {timelineEvents.map((event) => (
                       <div
                         key={event.id}
-                        className="flex items-start gap-3 rounded-lg border border-[#011a60]/10 bg-white p-3"
+                        className="flex items-start gap-2 sm:gap-3 rounded-lg border border-[#011a60]/10 bg-white p-2.5 sm:p-3 min-w-0 overflow-hidden"
                       >
                         <div
-                          className={`flex h-9 w-9 items-center justify-center rounded-full ${event.iconBg}`}
+                          className={`flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full ${event.iconBg}`}
                         >
                           {event.icon}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-sm font-semibold text-foreground">
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-0.5 sm:gap-2">
+                            <p className="text-xs sm:text-sm font-semibold text-foreground break-words">
                               {event.title}
                             </p>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
                               {formatTimelineDate(event.date)}
                             </span>
                           </div>
                           {event.badge && (
                             <Badge
-                              className={`mt-1 border-0 text-xs ${event.badge.className}`}
+                              className={`mt-1 border-0 text-[10px] sm:text-xs ${event.badge.className}`}
                             >
                               {event.badge.text}
                             </Badge>
                           )}
                           {event.description && (
-                            <p className="mt-2 text-xs text-muted-foreground whitespace-pre-wrap">
+                            <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-muted-foreground whitespace-pre-wrap break-words">
                               {event.description}
                             </p>
                           )}
@@ -1419,20 +1457,20 @@ const OfficerComplaintDetailPage: React.FC = () => {
             <TabsContent value="notes-proofs" className="mt-0">
               <div className="space-y-6">
                 {/* Add Note Section */}
-                <Card className="border-[#011a60]/30">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <StickyNote className="w-5 h-5 text-[#011a60]" />
-                      Add Note
+                <Card className="border-[#011a60]/30 min-w-0 overflow-hidden">
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="text-base sm:text-lg flex items-center gap-2 min-w-0">
+                      <StickyNote className="w-4 h-4 sm:w-5 sm:h-5 text-[#011a60] shrink-0" />
+                      <span className="truncate">Add Note</span>
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-xs sm:text-sm">
                       Add a note to track your progress or observations
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Note Type</Label>
-                      <div className="flex gap-4">
+                  <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
+                    <div className="space-y-1.5 sm:space-y-2 min-w-0">
+                      <Label className="text-xs sm:text-sm">Note Type</Label>
+                      <div className="flex flex-wrap gap-3 sm:gap-4">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="radio"
@@ -1446,9 +1484,9 @@ const OfficerComplaintDetailPage: React.FC = () => {
                             }
                             className="w-4 h-4 text-[#011a60]"
                           />
-                          <div className="flex items-center gap-2">
-                            <ArrowDownCircle className="w-4 h-4 text-blue-600" />
-                            <span className="text-sm font-medium">Inward</span>
+                            <div className="flex items-center gap-2">
+                            <ArrowDownCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                            <span className="text-xs sm:text-sm font-medium">Inward</span>
                           </div>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
@@ -1465,31 +1503,31 @@ const OfficerComplaintDetailPage: React.FC = () => {
                             className="w-4 h-4 text-[#011a60]"
                           />
                           <div className="flex items-center gap-2">
-                            <ArrowUpCircle className="w-4 h-4 text-green-600" />
-                            <span className="text-sm font-medium">Outward</span>
+                            <ArrowUpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" />
+                            <span className="text-xs sm:text-sm font-medium">Outward</span>
                           </div>
                         </label>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="new-note">Note Content</Label>
+                    <div className="space-y-1.5 sm:space-y-2 min-w-0">
+                      <Label htmlFor="new-note" className="text-xs sm:text-sm">Note Content</Label>
                       <Textarea
                         id="new-note"
                         placeholder="Enter your note here..."
                         value={newNote}
                         onChange={(e) => setNewNote(e.target.value)}
-                        rows={4}
-                        className="resize-none"
+                        rows={3}
+                        className="resize-none text-sm min-w-0 max-w-full"
                         maxLength={2000}
                       />
-                      <p className="text-xs text-muted-foreground text-right">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground text-right">
                         {newNote.length}/2000 characters
                       </p>
                     </div>
                     <Button
                       onClick={handleAddNote}
                       disabled={isAddingNote || !newNote.trim()}
-                      className="bg-[#011a60] hover:bg-[#023a9f]"
+                      className="bg-[#011a60] hover:bg-[#023a9f] w-full sm:w-auto text-sm"
                     >
                       {isAddingNote ? (
                         <>
@@ -1651,21 +1689,21 @@ const OfficerComplaintDetailPage: React.FC = () => {
                 </Card>
 
                 {/* Upload File Section */}
-                <Card className="border-[#011a60]/30">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Upload className="w-5 h-5 text-[#011a60]" />
-                      Upload Document/Image
+                <Card className="border-[#011a60]/30 min-w-0 overflow-hidden">
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="text-base sm:text-lg flex items-center gap-2 min-w-0">
+                      <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-[#011a60] shrink-0" />
+                      <span className="truncate">Upload Document/Image</span>
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-xs sm:text-sm">
                       Upload images or documents as proof of your actions
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
                     {/* Document Type Selection */}
-                    <div className="space-y-2">
-                      <Label>Document Type</Label>
-                      <div className="flex gap-4">
+                    <div className="space-y-1.5 sm:space-y-2 min-w-0">
+                      <Label className="text-xs sm:text-sm">Document Type</Label>
+                      <div className="flex flex-wrap gap-3 sm:gap-4">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="radio"
@@ -1680,8 +1718,8 @@ const OfficerComplaintDetailPage: React.FC = () => {
                             className="w-4 h-4 text-[#011a60]"
                           />
                           <div className="flex items-center gap-2">
-                            <ArrowDownCircle className="w-4 h-4 text-blue-600" />
-                            <span className="text-sm font-medium">Inward</span>
+                            <ArrowDownCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                            <span className="text-xs sm:text-sm font-medium">Inward</span>
                           </div>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
@@ -1698,20 +1736,20 @@ const OfficerComplaintDetailPage: React.FC = () => {
                             className="w-4 h-4 text-[#011a60]"
                           />
                           <div className="flex items-center gap-2">
-                            <ArrowUpCircle className="w-4 h-4 text-green-600" />
-                            <span className="text-sm font-medium">Outward</span>
+                            <ArrowUpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" />
+                            <span className="text-xs sm:text-sm font-medium">Outward</span>
                           </div>
                         </label>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Inward: Documents received | Outward: Documents sent
+                      <p className="text-[10px] sm:text-xs text-muted-foreground break-words">
+                        Inward: received · Outward: sent
                       </p>
                     </div>
 
                     {/* File Upload */}
-                    <div className="space-y-2">
-                      <Label htmlFor="file-upload-input">Select File</Label>
-                      <div className="border-2 border-dashed border-[#011a60]/30 rounded-lg p-6 hover:border-[#011a60]/50 transition-colors">
+                    <div className="space-y-1.5 sm:space-y-2 min-w-0">
+                      <Label htmlFor="file-upload-input" className="text-xs sm:text-sm">Select File</Label>
+                      <div className="border-2 border-dashed border-[#011a60]/30 rounded-lg p-4 sm:p-6 hover:border-[#011a60]/50 transition-colors min-w-0">
                         <input
                           id="file-upload-input"
                           type="file"
@@ -1745,14 +1783,13 @@ const OfficerComplaintDetailPage: React.FC = () => {
                               </p>
                             </div>
                           ) : (
-                            <div className="text-center space-y-2">
-                              <Upload className="w-12 h-12 mx-auto text-[#011a60]/50" />
-                              <p className="text-sm font-medium text-foreground">
+                            <div className="text-center space-y-1.5 sm:space-y-2 min-w-0">
+                              <Upload className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-[#011a60]/50" />
+                              <p className="text-xs sm:text-sm font-medium text-foreground px-1">
                                 Click to upload or drag and drop
                               </p>
-                              <p className="text-xs text-muted-foreground">
-                                Images, PDF, DOC, DOCX, XLS, XLSX, TXT (Max
-                                10MB)
+                              <p className="text-[10px] sm:text-xs text-muted-foreground px-1 break-words">
+                                Images, PDF, DOC, DOCX, XLS, XLSX, TXT (Max 10MB)
                               </p>
                             </div>
                           )}
@@ -1799,25 +1836,25 @@ const OfficerComplaintDetailPage: React.FC = () => {
                 </Card>
 
                 {/* Admin Documents - Orange (read-only, same as admin panel) */}
-                <Card className="border-orange-200 shadow-sm">
-                  <CardHeader className="bg-orange-50/50 border-b border-orange-200">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-orange-600" />
-                        Admin Documents ({adminDocuments.length})
+                <Card className="border-orange-200 shadow-sm min-w-0 overflow-hidden">
+                  <CardHeader className="bg-orange-50/50 border-b border-orange-200 p-4 sm:p-6">
+                    <div className="flex items-center gap-2 flex-wrap min-w-0">
+                      <CardTitle className="text-base sm:text-lg flex items-center gap-2 min-w-0">
+                        <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 shrink-0" />
+                        <span className="truncate">Admin Documents ({adminDocuments.length})</span>
                       </CardTitle>
-                      <Badge className="bg-orange-500 hover:bg-orange-600 text-white border-0">
+                      <Badge className="bg-orange-500 hover:bg-orange-600 text-white border-0 text-xs shrink-0">
                         Admin
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-4">
+                  <CardContent className="pt-4 p-4 sm:p-6">
                     {adminDocuments.length === 0 ? (
-                      <p className="text-sm text-muted-foreground py-4">
+                      <p className="text-xs sm:text-sm text-muted-foreground py-4">
                         No admin documents yet
                       </p>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 min-w-0">
                         {adminDocuments.map((doc) => {
                           const isPdf =
                             doc.fileName?.toLowerCase().endsWith(".pdf") ||
@@ -1828,11 +1865,11 @@ const OfficerComplaintDetailPage: React.FC = () => {
                           return (
                             <div
                               key={doc._id}
-                              className="bg-orange-50/50 border border-orange-200 rounded-xl p-4 hover:shadow-md transition-all"
+                              className="bg-orange-50/50 border border-orange-200 rounded-xl p-3 sm:p-4 hover:shadow-md transition-all min-w-0 overflow-hidden"
                             >
-                              <div className="flex items-start gap-3">
+                              <div className="flex items-start gap-2 sm:gap-3 min-w-0">
                                 <div
-                                  className={`p-2 rounded-lg shrink-0 ${
+                                  className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${
                                     isPdf
                                       ? "bg-red-100"
                                       : isImage
@@ -1841,7 +1878,7 @@ const OfficerComplaintDetailPage: React.FC = () => {
                                   }`}
                                 >
                                   <FileText
-                                    className={`w-5 h-5 ${
+                                    className={`w-4 h-4 sm:w-5 sm:h-5 ${
                                       isPdf
                                         ? "text-red-600"
                                         : isImage
@@ -1850,17 +1887,17 @@ const OfficerComplaintDetailPage: React.FC = () => {
                                     }`}
                                   />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold truncate">
+                                <div className="flex-1 min-w-0 overflow-hidden">
+                                  <p className="text-xs sm:text-sm font-semibold truncate">
                                     {doc.fileName}
                                   </p>
-                                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 flex items-center gap-1 truncate">
+                                    <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />
                                     {doc.createdAt
                                       ? new Date(doc.createdAt).toLocaleString()
                                       : "—"}
                                   </p>
-                                  <div className="flex items-center gap-2 mt-2">
+                                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 min-w-0">
                                     <Badge
                                       variant="outline"
                                       className={`text-xs ${
@@ -2064,58 +2101,52 @@ const OfficerComplaintDetailPage: React.FC = () => {
             <TabsContent value="actions" className="mt-0">
               <div className="space-y-6">
                 {/* Status Information */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-[#011a60]/20 rounded-lg p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-[#011a60]/10 rounded-lg">
-                      <AlertCircle className="w-6 h-6 text-[#011a60]" />
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-[#011a60]/20 rounded-lg p-4 sm:p-6 min-w-0 overflow-hidden">
+                  <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                    <div className="p-2 sm:p-3 bg-[#011a60]/10 rounded-lg shrink-0">
+                      <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#011a60]" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-[#011a60] mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base sm:text-lg font-semibold text-[#011a60] mb-1.5 sm:mb-2">
                         Complaint Status
                       </h3>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Status:</span>
-                          <span className="font-medium text-foreground">
+                      <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
+                        <div className="flex items-center justify-between gap-2 min-w-0">
+                          <span className="text-muted-foreground shrink-0">Status:</span>
+                          <span className="font-medium text-foreground truncate">
                             {isComplaintClosed ? "Closed" : "Open"}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">
+                        <div className="flex items-center justify-between gap-2 min-w-0">
+                          <span className="text-muted-foreground shrink-0">
                             Time Boundary:
                           </span>
-                          <span className="font-medium text-foreground">
+                          <span className="font-medium text-foreground truncate">
                             {complaint.timeBoundary || 7} days
                           </span>
                         </div>
                         {(complaint as any).isExtended && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">
-                              Extension:
-                            </span>
-                            <Badge className="bg-orange-500 text-white">
-                              Extended
-                            </Badge>
+                          <div className="flex items-center justify-between gap-2 min-w-0">
+                            <span className="text-muted-foreground shrink-0">Extension:</span>
+                            <Badge className="bg-orange-500 text-white text-xs shrink-0">Extended</Badge>
                           </div>
                         )}
                         {isComplaintClosed && (
                           <>
                             {closedAt && (
-                              <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">
-                                  Closed At:
-                                </span>
-                                <span className="font-medium text-foreground">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 min-w-0">
+                                <span className="text-muted-foreground shrink-0">Closed At:</span>
+                                <span className="font-medium text-foreground text-xs sm:text-sm break-all">
                                   {new Date(closedAt).toLocaleString()}
                                 </span>
                               </div>
                             )}
                             {closingRemarksValue && (
-                              <div className="mt-2">
-                                <span className="text-muted-foreground block mb-1">
+                              <div className="mt-2 min-w-0">
+                                <span className="text-muted-foreground block mb-1 text-xs sm:text-sm">
                                   Closing Remarks:
                                 </span>
-                                <p className="text-foreground text-sm leading-relaxed">
+                                <p className="text-foreground text-xs sm:text-sm leading-relaxed break-words">
                                   {closingRemarksValue}
                                 </p>
                               </div>
@@ -2129,18 +2160,18 @@ const OfficerComplaintDetailPage: React.FC = () => {
 
                 {/* Extension Requests History */}
                 {extensionRequests.length > 0 && (
-                  <Card className="border-[#011a60]/30">
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-[#011a60]" />
-                        Extension Requests ({extensionRequests.length})
+                  <Card className="border-[#011a60]/30 min-w-0 overflow-hidden">
+                    <CardHeader className="p-4 sm:p-6">
+                      <CardTitle className="text-base sm:text-lg flex items-center gap-2 min-w-0">
+                        <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#011a60] shrink-0" />
+                        <span className="truncate">Extension Requests ({extensionRequests.length})</span>
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-xs sm:text-sm">
                         History of all extension requests for this complaint
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
+                    <CardContent className="p-4 sm:p-6 pt-0">
+                      <div className="space-y-3 sm:space-y-4">
                         {extensionRequests
                           .sort(
                             (a, b) =>
@@ -2150,18 +2181,18 @@ const OfficerComplaintDetailPage: React.FC = () => {
                           .map((request) => (
                             <div
                               key={request._id}
-                              className="border border-[#011a60]/20 rounded-lg p-4 bg-gradient-to-r from-orange-50/50 to-amber-50/50"
+                              className="border border-[#011a60]/20 rounded-lg p-3 sm:p-4 bg-gradient-to-r from-orange-50/50 to-amber-50/50 min-w-0 overflow-hidden"
                             >
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex items-center gap-3">
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2 sm:mb-3 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
                                   <Badge
-                                    className={
+                                    className={`text-xs shrink-0 ${
                                       request.status === "pending"
                                         ? "bg-yellow-500 text-white"
                                         : request.status === "approved"
                                         ? "bg-green-500 text-white"
                                         : "bg-red-500 text-white"
-                                    }
+                                    }`}
                                   >
                                     {request.status === "pending"
                                       ? "Pending"
@@ -2169,44 +2200,35 @@ const OfficerComplaintDetailPage: React.FC = () => {
                                       ? "Approved"
                                       : "Rejected"}
                                   </Badge>
-                                  <span className="text-sm text-muted-foreground">
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
                                     {request.daysRequested} day
-                                    {request.daysRequested !== 1
-                                      ? "s"
-                                      : ""}{" "}
-                                    requested
+                                    {request.daysRequested !== 1 ? "s" : ""} requested
                                   </span>
                                 </div>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0 break-all">
                                   {new Date(request.createdAt).toLocaleString()}
                                 </span>
                               </div>
                               {request.reason && (
-                                <div className="mb-3">
-                                  <p className="text-sm font-medium text-foreground mb-1">
+                                <div className="mb-2 sm:mb-3 min-w-0">
+                                  <p className="text-xs sm:text-sm font-medium text-foreground mb-0.5">
                                     Reason:
                                   </p>
-                                  <p className="text-sm text-foreground whitespace-pre-wrap">
+                                  <p className="text-xs sm:text-sm text-foreground whitespace-pre-wrap break-words">
                                     {request.reason}
                                   </p>
                                 </div>
                               )}
                               {request.status !== "pending" && (
-                                <div className="mt-3 pt-3 border-t border-[#011a60]/10">
-                                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-[#011a60]/10 min-w-0">
+                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[10px] sm:text-xs text-muted-foreground break-words">
                                     <span>
-                                      {request.status === "approved"
-                                        ? "Approved"
-                                        : "Rejected"}{" "}
+                                      {request.status === "approved" ? "Approved" : "Rejected"}{" "}
                                       {request.decidedAt &&
-                                        `on ${new Date(
-                                          request.decidedAt
-                                        ).toLocaleDateString()}`}
+                                        `on ${new Date(request.decidedAt).toLocaleDateString()}`}
                                     </span>
                                     {request.notes && (
-                                      <span className="text-foreground">
-                                        {request.notes}
-                                      </span>
+                                      <span className="text-foreground truncate">{request.notes}</span>
                                     )}
                                   </div>
                                 </div>
@@ -2219,32 +2241,32 @@ const OfficerComplaintDetailPage: React.FC = () => {
                 )}
 
                 {/* Action Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 min-w-0">
                   {/* Request Extension Card */}
-                  <Card className="border-2 border-orange-200 hover:border-orange-300 transition-colors">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-orange-100 rounded-lg">
-                          <Clock className="w-6 h-6 text-orange-600" />
+                  <Card className="border-2 border-orange-200 hover:border-orange-300 transition-colors min-w-0 overflow-hidden">
+                    <CardHeader className="p-4 sm:p-6">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="p-1.5 sm:p-2 bg-orange-100 rounded-lg shrink-0">
+                          <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
                         </div>
-                        <div>
-                          <CardTitle className="text-lg">
+                        <div className="min-w-0">
+                          <CardTitle className="text-base sm:text-lg truncate">
                             Request Term Extension
                           </CardTitle>
-                          <CardDescription>
+                          <CardDescription className="text-xs sm:text-sm line-clamp-2">
                             Request additional time to act on this complaint
                           </CardDescription>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
+                    <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-4 sm:line-clamp-none break-words">
                         If you need more time to resolve this complaint, you can
                         request an extension. Please provide a valid reason for
                         the extension request.
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <AlertTriangle className="w-4 h-4" />
+                      <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground flex-wrap">
+                        <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                         <span>Extension requests are subject to approval</span>
                       </div>
                       <Button
@@ -2273,30 +2295,30 @@ const OfficerComplaintDetailPage: React.FC = () => {
                   </Card>
 
                   {/* Close Complaint Card */}
-                  <Card className="border-2 border-green-200 hover:border-green-300 transition-colors">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-100 rounded-lg">
-                          <CheckCircle className="w-6 h-6 text-green-600" />
+                  <Card className="border-2 border-green-200 hover:border-green-300 transition-colors min-w-0 overflow-hidden">
+                    <CardHeader className="p-4 sm:p-6">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg shrink-0">
+                          <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                         </div>
-                        <div>
-                          <CardTitle className="text-lg">
+                        <div className="min-w-0">
+                          <CardTitle className="text-base sm:text-lg truncate">
                             Close Complaint
                           </CardTitle>
-                          <CardDescription>
+                          <CardDescription className="text-xs sm:text-sm line-clamp-2">
                             Mark this complaint as resolved and closed
                           </CardDescription>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
+                    <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-4 sm:line-clamp-none break-words">
                         Once you have completed all necessary actions on this
                         complaint, you can close it. Please provide closing
                         remarks describing the resolution.
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <AlertTriangle className="w-4 h-4" />
+                      <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground flex-wrap">
+                        <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                         <span>This action cannot be undone easily</span>
                       </div>
                       <Button

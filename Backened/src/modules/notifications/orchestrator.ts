@@ -2,13 +2,20 @@
  * NOTIFICATION MODULE - ORCHESTRATOR
  * Async, fire-and-forget: never blocks timeline or domain logic.
  * Complaint-isolated: every created notification has complaint_id + event_type.
+ * Parallel: common working notifications (meetings, inventory) via handleCommonEvent / notifyCommonAsync.
  */
 
 import Notification from "../../models/Notification";
 import NotificationSettings from "../../models/NotificationSettings";
+import CommonWorkingNotification from "../../models/CommonWorkingNotification";
 import type { TimelineEventLike } from "./types";
-import { isNotifiableEventType } from "./types";
-import { resolveForEvent, buildNotificationInputs } from "./handlers";
+import { isNotifiableEventType, isCommonNotifiableEventType } from "./types";
+import {
+  resolveForEvent,
+  buildNotificationInputs,
+  resolveCommonEvent,
+  buildCommonNotificationInputs,
+} from "./handlers";
 import { emitNewNotificationsToUsers } from "./socket";
 import logger from "../../config/logger";
 
@@ -107,6 +114,96 @@ export function notifyAsync(event: TimelineEventLike): void {
         eventId: event.id,
         complaint_id: event.complaint_id,
         event_type: event.event_type,
+        err,
+      });
+    });
+  });
+}
+
+// ---- Common working notifications (parallel system) ----
+
+export interface CommonEventPayload {
+  event_type: string;
+  context_type?: string;
+  entity_type?: string;
+  entity_id?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Process one common event: resolve recipients, store in CommonWorkingNotification, push via socket.
+ * Does not touch complaint Notification model or timeline.
+ */
+export async function handleCommonEvent(
+  payload: CommonEventPayload
+): Promise<void> {
+  const { event_type, context_type, entity_type, entity_id, ...rest } = payload;
+
+  if (!isCommonNotifiableEventType(event_type)) {
+    logger.debug(
+      `Common notification skip: event type ${event_type} not in COMMON_NOTIFIABLE_EVENT_TYPES`
+    );
+    return;
+  }
+
+  let res;
+  try {
+    res = await resolveCommonEvent(event_type, rest);
+  } catch (err) {
+    logger.error("resolveCommonEvent failed", { event_type, err });
+    return;
+  }
+
+  if (res.adminUserIds.length === 0) {
+    logger.debug(
+      `Common notification skip: no recipients for ${event_type}`
+    );
+    return;
+  }
+
+  const inputs = buildCommonNotificationInputs(event_type, res, {
+    context_type,
+    entity_type,
+    entity_id,
+    payload: Object.keys(rest).length ? (rest as Record<string, unknown>) : undefined,
+  });
+
+  try {
+    // One row per event (no user_id): all admins see the same notification; push socket to all admin ids.
+    await CommonWorkingNotification.insertMany(
+      inputs.map((inp) => ({
+        ...(inp.user_id != null && { user_id: inp.user_id }),
+        event_type: inp.event_type,
+        title: inp.title,
+        body: inp.body,
+        context_type: inp.context_type,
+        entity_type: inp.entity_type,
+        entity_id: inp.entity_id,
+        payload: inp.payload ?? {},
+      }))
+    );
+    logger.debug(
+      `Common notification created (1 row) for ${event_type}, emitting to ${res.adminUserIds.length} admin(s)`
+    );
+    emitNewNotificationsToUsers(res.adminUserIds);
+  } catch (err) {
+    logger.error("CommonWorkingNotification insertMany failed", {
+      event_type,
+      count: inputs.length,
+      err,
+    });
+  }
+}
+
+/**
+ * Fire-and-forget: schedule common notification handling (meetings, inventory, etc.).
+ * Call from domain code (e.g. after creating a meeting). Never await in the caller.
+ */
+export function notifyCommonAsync(payload: CommonEventPayload): void {
+  setImmediate(() => {
+    handleCommonEvent(payload).catch((err) => {
+      logger.error("Common notification handleCommonEvent failed", {
+        event_type: payload.event_type,
         err,
       });
     });

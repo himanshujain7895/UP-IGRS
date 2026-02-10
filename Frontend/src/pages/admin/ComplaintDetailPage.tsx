@@ -248,13 +248,13 @@ const ComplaintDetailPage: React.FC = () => {
   const [officerNotes, setOfficerNotes] = useState<OfficerNote[]>([]);
   const [adminDocuments, setAdminDocuments] = useState<ComplaintDocument[]>([]);
   const [officerDocuments, setOfficerDocuments] = useState<OfficerAttachment[]>(
-    []
+    [],
   );
   const [newNote, setNewNote] = useState("");
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newDocumentFile, setNewDocumentFile] = useState<File | null>(null);
   const [newDocumentType, setNewDocumentType] = useState<"inward" | "outward">(
-    "inward"
+    "inward",
   );
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
 
@@ -286,7 +286,7 @@ const ComplaintDetailPage: React.FC = () => {
   // Actions
   const [actions, setActions] = useState<any>(null);
   const [sendingEmail, setSendingEmail] = useState<{ [key: number]: boolean }>(
-    {}
+    {},
   );
   const [emailHistory, setEmailHistory] = useState<any[]>([]);
   const [loadingEmailHistory, setLoadingEmailHistory] = useState(false);
@@ -358,7 +358,7 @@ const ComplaintDetailPage: React.FC = () => {
     const idx = executives.findIndex(
       (e: any) =>
         (e.email && e.email === so.email) ||
-        (e.name && so.name && e.name.trim() === so.name.trim())
+        (e.name && so.name && e.name.trim() === so.name.trim()),
     );
     if (idx >= 0) setSelectedExecutiveIndex(idx);
   }, [complaint, executives]);
@@ -392,7 +392,7 @@ const ComplaintDetailPage: React.FC = () => {
       });
       console.log(
         "Assigned Officer Details:",
-        (data as any).assignedOfficerDetails
+        (data as any).assignedOfficerDetails,
       );
       console.log("Is Officer Assigned:", (data as any).isOfficerAssigned);
       setComplaint(data);
@@ -445,7 +445,7 @@ const ComplaintDetailPage: React.FC = () => {
       toast.error(error.message || "Failed to load complaint");
       // Don't navigate away immediately, show error first
       setTimeout(() => {
-        navigate("/admin/complaints");
+        navigate(-1);
       }, 2000);
     } finally {
       setLoading(false);
@@ -491,7 +491,7 @@ const ComplaintDetailPage: React.FC = () => {
       // Reset file input
       setNewDocumentFile(null);
       const fileInput = document.getElementById(
-        "document-file-input"
+        "document-file-input",
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
     } catch (error: any) {
@@ -535,7 +535,7 @@ const ComplaintDetailPage: React.FC = () => {
         setExecutives(flattenedExecutives);
         setSelectedExecutiveIndex(0);
         toast.success(
-          `Loaded ${flattenedExecutives.length} executives from cache`
+          `Loaded ${flattenedExecutives.length} executives from cache`,
         );
         setStage1Loading(false);
         return;
@@ -552,7 +552,7 @@ const ComplaintDetailPage: React.FC = () => {
 
         if (result.payload.fromCache) {
           toast.success(
-            `Loaded ${executivesData.length} executives from cache`
+            `Loaded ${executivesData.length} executives from cache`,
           );
         } else {
           toast.success(`Found ${executivesData.length} executives`);
@@ -648,7 +648,7 @@ const ComplaintDetailPage: React.FC = () => {
         behavior: "smooth",
       });
     },
-    []
+    [],
   );
 
   // Check scroll buttons when assignment executives change or component mounts
@@ -669,7 +669,7 @@ const ComplaintDetailPage: React.FC = () => {
       const selectedExecutive = executives[selectedExecutiveIndex];
       const letterData = await draftLetterUtils.draftLetter(
         id,
-        selectedExecutive
+        selectedExecutive,
       );
       setLetter(letterData);
       // Handle both formats: direct body or nested letter.body
@@ -690,7 +690,7 @@ const ComplaintDetailPage: React.FC = () => {
           office_address: selectedExecutive.office_address || "",
         };
         setComplaint((prev) =>
-          prev ? ({ ...prev, selected_officer: officerFormat } as any) : prev
+          prev ? ({ ...prev, selected_officer: officerFormat } as any) : prev,
         );
       }
     } catch (error: any) {
@@ -706,7 +706,7 @@ const ComplaintDetailPage: React.FC = () => {
       const updatedLetter = await draftLetterUtils.saveLetter(
         id,
         letter,
-        editableLetterBody
+        editableLetterBody,
       );
       setLetter(updatedLetter);
     } catch (error: any) {
@@ -724,7 +724,7 @@ const ComplaintDetailPage: React.FC = () => {
         await draftLetterUtils.updateRecipient(id, letter, selectedExecutive);
       setLetter(updatedLetter);
       setComplaint((prev) =>
-        prev ? ({ ...prev, selected_officer: newOfficer } as any) : prev
+        prev ? ({ ...prev, selected_officer: newOfficer } as any) : prev,
       );
       setShowChangeOfficerUI(false);
     } catch (error: any) {
@@ -812,7 +812,7 @@ const ComplaintDetailPage: React.FC = () => {
     try {
       setDeleting(true);
       await detailsUtils.deleteComplaint(id);
-      navigate("/admin/complaints");
+      navigate(-1);
     } catch (error: any) {
       // Error already handled in utility function
     } finally {
@@ -871,7 +871,7 @@ const ComplaintDetailPage: React.FC = () => {
         }
         if (result.payload.fromCache) {
           toast.success(
-            `Loaded ${executivesData.length} executives from cache`
+            `Loaded ${executivesData.length} executives from cache`,
           );
         }
       } else {
@@ -914,6 +914,16 @@ const ComplaintDetailPage: React.FC = () => {
       toast.error("Please select an officer.");
       return;
     }
+    // Validate required executive fields before calling API
+    const name = selectedExecutive.name?.trim?.() ?? "";
+    const designation = selectedExecutive.designation?.trim?.() ?? "";
+    const email = selectedExecutive.email?.trim?.() ?? "";
+    if (!name || !designation || !email) {
+      toast.error(
+        "Selected officer must have name, designation, and email. Please choose an officer with complete details.",
+      );
+      return;
+    }
     const letter = (complaint as any)?.drafted_letter;
     if (!letter) {
       toast.error("Drafted letter not found.");
@@ -923,9 +933,9 @@ const ComplaintDetailPage: React.FC = () => {
       setChangingOfficer(true);
       await draftLetterUtils.updateRecipient(id, letter, selectedExecutive);
       const executiveForAPI = {
-        name: selectedExecutive.name || "",
-        designation: selectedExecutive.designation || "",
-        email: selectedExecutive.email || "",
+        name,
+        designation,
+        email,
         phone: selectedExecutive.phone || "",
         office_address:
           selectedExecutive.office_address ||
@@ -939,7 +949,7 @@ const ComplaintDetailPage: React.FC = () => {
       };
       const result = await complaintsService.assignOfficerAndSendEmail(
         id,
-        executiveForAPI
+        executiveForAPI,
       );
       if (result?.assignment?.complaint) {
         setAssignmentResult(result.assignment);
@@ -947,13 +957,17 @@ const ComplaintDetailPage: React.FC = () => {
         await loadEmailHistory();
         setShowChangeOfficerSelect(false);
         toast.success(
-          "Assigned officer changed and email sent to new officer."
+          "Assigned officer changed and email sent to new officer.",
         );
       } else {
         toast.error("Invalid response from server");
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to change assigned officer");
+      const message =
+        (error?.response?.data as any)?.error?.message ||
+        error?.message ||
+        "Failed to change assigned officer";
+      toast.error(message);
     } finally {
       setChangingOfficer(false);
     }
@@ -985,7 +999,7 @@ const ComplaintDetailPage: React.FC = () => {
       await loadComplaint();
       setShowChangeSelectedOfficerBeforeAssign(false);
       toast.success(
-        'Selected officer updated. Letter "To" field has been updated.'
+        'Selected officer updated. Letter "To" field has been updated.',
       );
     } catch (error: any) {
       // toast handled in updateRecipient
@@ -1005,14 +1019,25 @@ const ComplaintDetailPage: React.FC = () => {
       return;
     }
 
+    // Validate required executive fields before calling API
+    const name = (selectedOfficer.name ?? "").toString().trim();
+    const designation = (selectedOfficer.designation ?? "").toString().trim();
+    const email = (selectedOfficer.email ?? "").toString().trim();
+    if (!name || !designation || !email) {
+      toast.error(
+        "Officer must have name, designation, and email. Please draft the letter again or select an officer with complete details.",
+      );
+      return;
+    }
+
     try {
       setAssigningOfficer(true);
 
       // Convert selected_officer to executive format for API
       const executiveForAPI = {
-        name: selectedOfficer.name || "",
-        designation: selectedOfficer.designation || "",
-        email: selectedOfficer.email || "",
+        name,
+        designation,
+        email,
         phone: selectedOfficer.phone || "",
         office_address: selectedOfficer.office_address || "",
         district:
@@ -1025,7 +1050,7 @@ const ComplaintDetailPage: React.FC = () => {
       // Use unified endpoint: assign officer and send email
       const result = await complaintsService.assignOfficerAndSendEmail(
         id,
-        executiveForAPI
+        executiveForAPI,
       );
 
       if (!result || !result.assignment || !result.assignment.complaint) {
@@ -1045,12 +1070,12 @@ const ComplaintDetailPage: React.FC = () => {
         if (result.email.success) {
           toast.success(
             `Officer assigned and email sent successfully! Password: ${result.assignment.user.password} (sent via email)`,
-            { duration: 10000 }
+            { duration: 10000 },
           );
         } else {
           toast.warning(
             `Officer assigned but email failed. Password: ${result.assignment.user.password}`,
-            { duration: 10000 }
+            { duration: 10000 },
           );
           toast.error(`Email error: ${result.email.error || "Unknown error"}`, {
             duration: 5000,
@@ -1059,7 +1084,7 @@ const ComplaintDetailPage: React.FC = () => {
       } else {
         if (result.email.success) {
           toast.success(
-            "Complaint assigned to existing officer and email sent successfully!"
+            "Complaint assigned to existing officer and email sent successfully!",
           );
         } else {
           toast.warning("Complaint assigned but email failed to send");
@@ -1070,7 +1095,11 @@ const ComplaintDetailPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error("Failed to assign officer and send email:", error);
-      toast.error(error.message || "Failed to assign officer and send email");
+      const message =
+        (error?.response?.data as any)?.error?.message ||
+        error?.message ||
+        "Failed to assign officer and send email";
+      toast.error(message);
     } finally {
       setAssigningOfficer(false);
     }
@@ -1119,7 +1148,7 @@ const ComplaintDetailPage: React.FC = () => {
       });
 
       toast.success(
-        `Extension approved! Time boundary extended to ${result.timeBoundary} days.`
+        `Extension approved! Time boundary extended to ${result.timeBoundary} days.`,
       );
 
       // Reload complaint to get updated extension requests and time boundary
@@ -1230,7 +1259,7 @@ const ComplaintDetailPage: React.FC = () => {
       <div className="text-center py-12">
         <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
         <p className="text-muted-foreground">Complaint not found</p>
-        <Button onClick={() => navigate("/admin/complaints")} className="mt-4">
+        <Button onClick={() => navigate(-1)} className="mt-4">
           Back to Complaints
         </Button>
       </div>
@@ -1238,38 +1267,43 @@ const ComplaintDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card className="">
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-4 flex-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/admin/complaints")}
-                className="mt-1"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-foreground mb-3">
-                  {complaint.title}
-                </h1>
-                <div className="flex items-center gap-3 flex-wrap">
-                  {getStatusBadge(complaint.status)}
-                  {getPriorityBadge(complaint.priority)}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 ml-4">
+    <div className="space-y-6 min-w-0">
+      {/* Header: mobile-optimized layout with clear hierarchy */}
+      <Card className="overflow-hidden">
+        <CardHeader className="px-4 py-4 sm:px-6 sm:py-5 space-y-4">
+          {/* Row 1: Back - full-width tap target on mobile */}
+          <div className="flex justify-start -mx-1 sm:mx-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="h-9 px-3 gap-2 text-muted-foreground hover:text-foreground sm:mt-0"
+            >
+              <ArrowLeft className="w-4 h-4 shrink-0" />
+              <span>Back</span>
+            </Button>
+          </div>
+
+          {/* Row 2: Title */}
+          <h1 className="text-base font-bold text-foreground break-words leading-tight sm:text-xl md:text-2xl pr-0">
+            {complaint.title}
+          </h1>
+
+          {/* Row 3: Badges */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {getStatusBadge(complaint.status)}
+            {getPriorityBadge(complaint.priority)}
+          </div>
+
+          {/* Row 4: Status & Priority side-by-side on mobile; Row 5: Delete */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2">
               <Select
                 value={complaint.status}
                 onValueChange={handleUpdateStatus}
                 disabled={updatingStatus}
               >
-                <SelectTrigger className="w-36">
+                <SelectTrigger className="w-full h-10 sm:h-9 sm:w-36">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1284,7 +1318,7 @@ const ComplaintDetailPage: React.FC = () => {
                 onValueChange={handleUpdatePriority}
                 disabled={updatingPriority}
               >
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-full h-10 sm:h-9 sm:w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1294,545 +1328,632 @@ const ComplaintDetailPage: React.FC = () => {
                   <SelectItem value="urgent">Urgent</SelectItem>
                 </SelectContent>
               </Select>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setShowDeleteDialog(true)}
-              >
-                <Trash className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
             </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowDeleteDialog(true)}
+              className="h-10 w-full sm:h-9 sm:w-auto sm:min-w-[7rem]"
+            >
+              <Trash className="w-4 h-4 sm:mr-2 shrink-0" />
+              <span>Delete</span>
+            </Button>
           </div>
         </CardHeader>
       </Card>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-white">
+      {/* Tabs: responsive — Select for < 900px, horizontal tab bar for >= 900px */}
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full min-w-0"
+      >
+        {/* Select trigger: only on screens < 900px */}
+        <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:gap-2 sm:mb-3 min-[900px]:hidden w-full">
+          <Label
+            htmlFor="complaint-tab-select"
+            className="text-sm font-medium text-muted-foreground shrink-0"
+          >
+            Section
+          </Label>
+          <div className="flex-1 min-w-0 w-full">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger
+                id="complaint-tab-select"
+                className="w-full h-11 sm:h-9 bg-white border-[#011a60]/20 text-base sm:text-sm"
+              >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="details">Details</SelectItem>
+              <SelectItem value="notes">Notes & Docs</SelectItem>
+              <SelectItem value="research">Research</SelectItem>
+              <SelectItem value="draft">Draft Letter</SelectItem>
+              <SelectItem value="actions">Actions</SelectItem>
+            </SelectContent>
+          </Select>
+          </div>
+        </div>
+
+        {/* Horizontal tab bar: only on screens >= 900px */}
+        <TabsList className="hidden min-[900px]:flex w-full justify-stretch rounded-lg bg-white border border-[#011a60]/20 p-1 mb-4 h-auto gap-1">
           <TabsTrigger
             value="details"
-            className="bg-white text-foreground data-[state=active]:bg-[#011a60] data-[state=active]:text-white"
+            className="flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium data-[state=active]:bg-[#1f3162] data-[state=active]:text-white data-[state=inactive]:text-foreground data-[state=inactive]:bg-transparent"
           >
-            <Eye className="w-4 h-4 mr-2" />
+            <Eye className="h-4 w-4 shrink-0" />
             Details
           </TabsTrigger>
           <TabsTrigger
             value="notes"
-            className="bg-white text-foreground data-[state=active]:bg-[#011a60] data-[state=active]:text-white"
+            className="flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium data-[state=active]:bg-[#1f3162] data-[state=active]:text-white data-[state=inactive]:text-foreground data-[state=inactive]:bg-transparent"
           >
-            <FileText className="w-4 h-4 mr-2" />
+            <FileText className="h-4 w-4 shrink-0" />
             Notes & Docs
           </TabsTrigger>
           <TabsTrigger
             value="research"
-            className="bg-white text-foreground data-[state=active]:bg-[#011a60] data-[state=active]:text-white"
+            className="flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium data-[state=active]:bg-[#1f3162] data-[state=active]:text-white data-[state=inactive]:text-foreground data-[state=inactive]:bg-transparent"
           >
-            <Search className="w-4 h-4 mr-2" />
+            <Search className="h-4 w-4 shrink-0" />
             Research
           </TabsTrigger>
           <TabsTrigger
             value="draft"
-            className="bg-white text-foreground data-[state=active]:bg-[#011a60] data-[state=active]:text-white"
+            className="flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium data-[state=active]:bg-[#1f3162] data-[state=active]:text-white data-[state=inactive]:text-foreground data-[state=inactive]:bg-transparent"
           >
-            <Edit className="w-4 h-4 mr-2" />
+            <Edit className="h-4 w-4 shrink-0" />
             Draft Letter
           </TabsTrigger>
           <TabsTrigger
             value="actions"
-            className="bg-white text-foreground data-[state=active]:bg-[#011a60] data-[state=active]:text-white"
+            className="flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium data-[state=active]:bg-[#1f3162] data-[state=active]:text-white data-[state=inactive]:text-foreground data-[state=inactive]:bg-transparent"
           >
-            <Settings className="w-4 h-4 mr-2" />
+            <Settings className="h-4 w-4 shrink-0" />
             Actions
           </TabsTrigger>
         </TabsList>
 
         {/* Details Tab */}
         <TabsContent value="details" className="space-y-4">
-          <Card className="border-[#011a60]/30">
-            <CardHeader>
-              <CardTitle>Complaint Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Timeline */}
-              <div className="pb-6 border-b border-gray-200">
-                <ComplaintTimeline complaint={complaint} variant="detailed" />
-              </div>
-              {/* Basic Information */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
-                  Basic Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">
-                      Description
-                    </Label>
-                    <p className="text-foreground mt-1">
-                      {complaint.description}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">
-                      Category
-                    </Label>
-                    <p className="text-foreground mt-1 capitalize">
-                      {complaint.category}
-                      {complaint.subCategory && ` - ${complaint.subCategory}`}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Contact Information */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
-                  Contact Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">
-                      Contact Name
-                    </Label>
-                    <p className="text-foreground mt-1">
-                      {(complaint as any).contact_name || complaint.contactName}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">
-                      Phone
-                    </Label>
-                    <p className="text-foreground mt-1">
-                      {(complaint as any).contact_phone ||
-                        complaint.contactPhone}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">
-                      Email
-                    </Label>
-                    <p className="text-foreground mt-1">
-                      {(complaint as any).contact_email ||
-                        complaint.contactEmail ||
-                        "N/A"}
-                    </p>
-                  </div>
-                  {complaint.voterId && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        Voter ID
-                      </Label>
-                      <p className="text-foreground mt-1">
-                        {complaint.voterId}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Geographic Information */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
-                  Geographic Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                  {(complaint as any).village_name && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        Village
-                      </Label>
-                      <p className="text-foreground mt-1">
-                        {(complaint as any).village_name}
-                      </p>
-                    </div>
-                  )}
-                  {(complaint as any).subdistrict_name && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        Sub-District
-                      </Label>
-                      <p className="text-foreground mt-1">
-                        {(complaint as any).subdistrict_name}
-                      </p>
-                    </div>
-                  )}
-                  {(complaint as any).district_name && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        District
-                      </Label>
-                      <p className="text-foreground mt-1">
-                        {(complaint as any).district_name}
-                      </p>
-                    </div>
-                  )}
-                  {complaint.latitude && complaint.longitude && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        Coordinates
-                      </Label>
-                      <p className="text-foreground mt-1 text-xs">
-                        {complaint.latitude.toFixed(6)},{" "}
-                        {complaint.longitude.toFixed(6)}
-                      </p>
-                      <a
-                        href={`https://www.google.com/maps?q=${complaint.latitude},${complaint.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary hover:underline mt-1 inline-flex items-center gap-1"
-                      >
-                        View on Maps <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                  )}
-                </div>
-                {typeof complaint.location === "string" && (
-                  <div className="text-sm">
-                    <Label className="text-xs text-muted-foreground">
-                      Location
-                    </Label>
-                    <p className="text-foreground mt-1">{complaint.location}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Timestamps */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
-                  Timestamps
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">
-                      Created At
-                    </Label>
-                    <p className="text-foreground mt-1">
-                      {(complaint as any).created_at || complaint.createdAt
-                        ? new Date(
-                            (complaint as any).created_at || complaint.createdAt
-                          ).toLocaleString()
-                        : "N/A"}
-                    </p>
-                  </div>
-                  {(complaint as any).updated_at && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        Updated At
-                      </Label>
-                      <p className="text-foreground mt-1">
-                        {new Date(
-                          (complaint as any).updated_at
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-                  )}
-                  {(complaint as any).arrivalTime && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        Arrival Time
-                      </Label>
-                      <p className="text-foreground mt-1">
-                        {new Date(
-                          (complaint as any).arrivalTime
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-                  )}
-                  {(complaint as any).assignedTime && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        Assigned Time
-                      </Label>
-                      <p className="text-foreground mt-1">
-                        {new Date(
-                          (complaint as any).assignedTime
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Assignment Information */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
-                  Assignment Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">
-                      Officer Assigned
-                    </Label>
-                    <p className="text-foreground mt-1">
-                      {(complaint as any).isOfficerAssigned ? "Yes" : "No"}
-                    </p>
-                  </div>
-                  {(complaint as any).assignedOfficer && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        Assigned Officer ID
-                      </Label>
-                      <p className="text-foreground mt-1 text-xs font-mono">
-                        {typeof (complaint as any).assignedOfficer === "string"
-                          ? (complaint as any).assignedOfficer
-                          : (complaint as any).assignedOfficer?.name || "N/A"}
-                      </p>
-                    </div>
-                  )}
-                  <div>
-                    <Label className="text-xs text-muted-foreground">
-                      Created by Admin
-                    </Label>
-                    <p className="text-foreground mt-1">
-                      {(complaint as any).created_by_admin ? "Yes" : "No"}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">
-                      Status
-                    </Label>
-                    <p className="text-foreground mt-1">
-                      {(complaint as any).isClosed ? "Closed" : "Open"}
-                      {(complaint as any).isExtended && " (Extended)"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Assigned Officer Details */}
-                {(complaint as any)?.assignedOfficerDetails && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2 mb-4">
-                      Assigned Officer Details
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      {(complaint as any).assignedOfficerDetails.name && (
+          <Card className="border-[#011a60]/30 overflow-hidden">
+            <Accordion type="single" collapsible defaultValue="details" className="w-full">
+              <AccordionItem value="details" className="border-none">
+                <AccordionTrigger className="px-4 sm:px-6 py-4 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                  <CardTitle className="text-base font-semibold sm:text-lg md:text-xl">
+                    Complaint Details
+                  </CardTitle>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CardContent className="space-y-6 pt-0">
+                    {/* Timeline: collapsible, default closed */}
+                    <Accordion
+                      type="single"
+                      collapsible
+                      className="border-b border-gray-200 pb-6"
+                    >
+                      <AccordionItem value="timeline" className="border-none">
+                        <AccordionTrigger className="py-3 hover:no-underline text-sm font-semibold sm:text-base">
+                          Complaint Timeline
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-1 pb-2">
+                          <ComplaintTimeline
+                            complaint={complaint}
+                            variant="detailed"
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                    {/* Basic Information */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
+                        Basic Information
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
                           <Label className="text-xs text-muted-foreground">
-                            Officer Name
+                            Description
                           </Label>
                           <p className="text-foreground mt-1">
-                            {(complaint as any).assignedOfficerDetails.name}
+                            {complaint.description}
                           </p>
                         </div>
-                      )}
-                      {(complaint as any).assignedOfficerDetails
-                        .designation && (
                         <div>
                           <Label className="text-xs text-muted-foreground">
-                            Designation
+                            Category
                           </Label>
-                          <p className="text-foreground mt-1">
-                            {
-                              (complaint as any).assignedOfficerDetails
-                                .designation
-                            }
+                          <p className="text-foreground mt-1 capitalize">
+                            {complaint.category}
+                            {complaint.subCategory &&
+                              ` - ${complaint.subCategory}`}
                           </p>
                         </div>
-                      )}
-                      {(complaint as any).assignedOfficerDetails.department && (
+                      </div>
+                    </div>
+
+                    {/* Contact Information */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
+                        Contact Information
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div>
                           <Label className="text-xs text-muted-foreground">
-                            Department
+                            Contact Name
                           </Label>
                           <p className="text-foreground mt-1">
-                            {
-                              (complaint as any).assignedOfficerDetails
-                                .department
-                            }
+                            {(complaint as any).contact_name ||
+                              complaint.contactName}
                           </p>
                         </div>
-                      )}
-                      {(complaint as any).assignedOfficerDetails.email && (
-                        <div>
-                          <Label className="text-xs text-muted-foreground">
-                            Email
-                          </Label>
-                          <p className="text-foreground mt-1">
-                            <a
-                              href={`mailto:${
-                                (complaint as any).assignedOfficerDetails.email
-                              }`}
-                              className="text-primary hover:underline break-all"
-                            >
-                              {(complaint as any).assignedOfficerDetails.email}
-                            </a>
-                          </p>
-                        </div>
-                      )}
-                      {(complaint as any).assignedOfficerDetails.phone && (
                         <div>
                           <Label className="text-xs text-muted-foreground">
                             Phone
                           </Label>
                           <p className="text-foreground mt-1">
-                            <a
-                              href={`tel:${
-                                (complaint as any).assignedOfficerDetails.phone
-                              }`}
-                              className="text-primary hover:underline"
-                            >
-                              {(complaint as any).assignedOfficerDetails.phone}
-                            </a>
+                            {(complaint as any).contact_phone ||
+                              complaint.contactPhone}
                           </p>
                         </div>
-                      )}
-                      {(complaint as any).assignedOfficerDetails
-                        .districtName && (
                         <div>
                           <Label className="text-xs text-muted-foreground">
-                            District
+                            Email
                           </Label>
                           <p className="text-foreground mt-1">
-                            {
-                              (complaint as any).assignedOfficerDetails
-                                .districtName
-                            }
+                            {(complaint as any).contact_email ||
+                              complaint.contactEmail ||
+                              "N/A"}
                           </p>
                         </div>
-                      )}
-                      {(complaint as any).assignedOfficerDetails
-                        .officeAddress && (
-                        <div className="md:col-span-3">
+                        {complaint.voterId && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Voter ID
+                            </Label>
+                            <p className="text-foreground mt-1">
+                              {complaint.voterId}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Geographic Information */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
+                        Geographic Information
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                        {(complaint as any).village_name && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Village
+                            </Label>
+                            <p className="text-foreground mt-1">
+                              {(complaint as any).village_name}
+                            </p>
+                          </div>
+                        )}
+                        {(complaint as any).subdistrict_name && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Sub-District
+                            </Label>
+                            <p className="text-foreground mt-1">
+                              {(complaint as any).subdistrict_name}
+                            </p>
+                          </div>
+                        )}
+                        {(complaint as any).district_name && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              District
+                            </Label>
+                            <p className="text-foreground mt-1">
+                              {(complaint as any).district_name}
+                            </p>
+                          </div>
+                        )}
+                        {complaint.latitude && complaint.longitude && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Coordinates
+                            </Label>
+                            <p className="text-foreground mt-1 text-xs">
+                              {complaint.latitude.toFixed(6)},{" "}
+                              {complaint.longitude.toFixed(6)}
+                            </p>
+                            <a
+                              href={`https://www.google.com/maps?q=${complaint.latitude},${complaint.longitude}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline mt-1 inline-flex items-center gap-1"
+                            >
+                              View on Maps <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                      {typeof complaint.location === "string" && (
+                        <div className="text-sm">
                           <Label className="text-xs text-muted-foreground">
-                            Office Address
+                            Location
                           </Label>
                           <p className="text-foreground mt-1">
-                            {
-                              (complaint as any).assignedOfficerDetails
-                                .officeAddress
-                            }
+                            {complaint.location}
                           </p>
                         </div>
                       )}
                     </div>
-                  </div>
-                )}
-              </div>
 
-              {/* User-submitted docs (images array: images + PDFs/documents) — shown via presigned URLs */}
-              {(complaint as any).images &&
-                Array.isArray((complaint as any).images) &&
-                (complaint as any).images.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
-                      User-submitted documents (
-                      {(complaint as any).images.length})
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {(complaint as any).images.map(
-                        (s3Url: string, index: number) => (
-                          <UserSubmittedDocCard
-                            key={`${s3Url}-${index}`}
-                            s3Url={s3Url}
-                            index={index}
-                            onViewDocument={handleViewDocument}
-                          />
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-
-              {/* Documents (admin + officer from segregated state) */}
-              {(adminDocuments.length > 0 || officerDocuments.length > 0) && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
-                    Documents ({adminDocuments.length + officerDocuments.length}
-                    )
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {adminDocuments.map((doc, index) => (
-                      <button
-                        key={`admin-${doc._id}`}
-                        type="button"
-                        onClick={() => handleViewDocument(doc.fileUrl)}
-                        className="flex items-center gap-3 p-3 border border-orange-200 rounded-lg hover:border-orange-400 transition-all w-full text-left bg-orange-50/30"
-                      >
-                        <FileText className="w-5 h-5 text-foreground" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {doc.fileName || `Document ${index + 1}`}
+                    {/* Timestamps */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
+                        Timestamps
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">
+                            Created At
+                          </Label>
+                          <p className="text-foreground mt-1">
+                            {(complaint as any).created_at ||
+                            complaint.createdAt
+                              ? new Date(
+                                  (complaint as any).created_at ||
+                                    complaint.createdAt,
+                                ).toLocaleString()
+                              : "N/A"}
                           </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            {doc.fileType && (
-                              <span className="text-xs text-muted-foreground">
-                                {doc.fileType}
-                              </span>
+                        </div>
+                        {(complaint as any).updated_at && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Updated At
+                            </Label>
+                            <p className="text-foreground mt-1">
+                              {new Date(
+                                (complaint as any).updated_at,
+                              ).toLocaleString()}
+                            </p>
+                          </div>
+                        )}
+                        {(complaint as any).arrivalTime && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Arrival Time
+                            </Label>
+                            <p className="text-foreground mt-1">
+                              {new Date(
+                                (complaint as any).arrivalTime,
+                              ).toLocaleString()}
+                            </p>
+                          </div>
+                        )}
+                        {(complaint as any).assignedTime && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Assigned Time
+                            </Label>
+                            <p className="text-foreground mt-1">
+                              {new Date(
+                                (complaint as any).assignedTime,
+                              ).toLocaleString()}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Assignment Information */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
+                        Assignment Information
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">
+                            Officer Assigned
+                          </Label>
+                          <p className="text-foreground mt-1">
+                            {(complaint as any).isOfficerAssigned
+                              ? "Yes"
+                              : "No"}
+                          </p>
+                        </div>
+                        {(complaint as any).assignedOfficer && (
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Assigned Officer ID
+                            </Label>
+                            <p className="text-foreground mt-1 text-xs font-mono">
+                              {typeof (complaint as any).assignedOfficer ===
+                              "string"
+                                ? (complaint as any).assignedOfficer
+                                : (complaint as any).assignedOfficer?.name ||
+                                  "N/A"}
+                            </p>
+                          </div>
+                        )}
+                        <div>
+                          <Label className="text-xs text-muted-foreground">
+                            Created by Admin
+                          </Label>
+                          <p className="text-foreground mt-1">
+                            {(complaint as any).created_by_admin ? "Yes" : "No"}
+                          </p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">
+                            Status
+                          </Label>
+                          <p className="text-foreground mt-1">
+                            {(complaint as any).isClosed ? "Closed" : "Open"}
+                            {(complaint as any).isExtended && " (Extended)"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Assigned Officer Details */}
+                      {(complaint as any)?.assignedOfficerDetails && (
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2 mb-4">
+                            Assigned Officer Details
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            {(complaint as any).assignedOfficerDetails.name && (
+                              <div>
+                                <Label className="text-xs text-muted-foreground">
+                                  Officer Name
+                                </Label>
+                                <p className="text-foreground mt-1">
+                                  {
+                                    (complaint as any).assignedOfficerDetails
+                                      .name
+                                  }
+                                </p>
+                              </div>
                             )}
-                            <Badge className="bg-orange-500 text-white text-[10px] px-1.5">
-                              Admin
-                            </Badge>
+                            {(complaint as any).assignedOfficerDetails
+                              .designation && (
+                              <div>
+                                <Label className="text-xs text-muted-foreground">
+                                  Designation
+                                </Label>
+                                <p className="text-foreground mt-1">
+                                  {
+                                    (complaint as any).assignedOfficerDetails
+                                      .designation
+                                  }
+                                </p>
+                              </div>
+                            )}
+                            {(complaint as any).assignedOfficerDetails
+                              .department && (
+                              <div>
+                                <Label className="text-xs text-muted-foreground">
+                                  Department
+                                </Label>
+                                <p className="text-foreground mt-1">
+                                  {
+                                    (complaint as any).assignedOfficerDetails
+                                      .department
+                                  }
+                                </p>
+                              </div>
+                            )}
+                            {(complaint as any).assignedOfficerDetails
+                              .email && (
+                              <div>
+                                <Label className="text-xs text-muted-foreground">
+                                  Email
+                                </Label>
+                                <p className="text-foreground mt-1">
+                                  <a
+                                    href={`mailto:${
+                                      (complaint as any).assignedOfficerDetails
+                                        .email
+                                    }`}
+                                    className="text-primary hover:underline break-all"
+                                  >
+                                    {
+                                      (complaint as any).assignedOfficerDetails
+                                        .email
+                                    }
+                                  </a>
+                                </p>
+                              </div>
+                            )}
+                            {(complaint as any).assignedOfficerDetails
+                              .phone && (
+                              <div>
+                                <Label className="text-xs text-muted-foreground">
+                                  Phone
+                                </Label>
+                                <p className="text-foreground mt-1">
+                                  <a
+                                    href={`tel:${
+                                      (complaint as any).assignedOfficerDetails
+                                        .phone
+                                    }`}
+                                    className="text-primary hover:underline"
+                                  >
+                                    {
+                                      (complaint as any).assignedOfficerDetails
+                                        .phone
+                                    }
+                                  </a>
+                                </p>
+                              </div>
+                            )}
+                            {(complaint as any).assignedOfficerDetails
+                              .districtName && (
+                              <div>
+                                <Label className="text-xs text-muted-foreground">
+                                  District
+                                </Label>
+                                <p className="text-foreground mt-1">
+                                  {
+                                    (complaint as any).assignedOfficerDetails
+                                      .districtName
+                                  }
+                                </p>
+                              </div>
+                            )}
+                            {(complaint as any).assignedOfficerDetails
+                              .officeAddress && (
+                              <div className="md:col-span-3">
+                                <Label className="text-xs text-muted-foreground">
+                                  Office Address
+                                </Label>
+                                <p className="text-foreground mt-1">
+                                  {
+                                    (complaint as any).assignedOfficerDetails
+                                      .officeAddress
+                                  }
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                      </button>
-                    ))}
-                    {officerDocuments.map((doc, index) => (
-                      <button
-                        key={`officer-${doc._id}`}
-                        type="button"
-                        onClick={() => handleViewDocument(doc.fileUrl)}
-                        className="flex items-center gap-3 p-3 border border-[#011a60]/30 rounded-lg hover:border-[#011a60]/60 transition-all w-full text-left bg-[#011a60]/5"
-                      >
-                        <FileText className="w-5 h-5 text-foreground" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {doc.fileName || `Document ${index + 1}`}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            {doc.attachmentType && (
-                              <span className="text-xs text-muted-foreground">
-                                {doc.attachmentType}
-                              </span>
-                            )}
-                            <Badge className="bg-[#011a60] text-white text-[10px] px-1.5">
-                              Officer
-                            </Badge>
-                          </div>
-                        </div>
-                        <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Officer Attachments */}
-              {(complaint as any).officerAttachments &&
-                Array.isArray((complaint as any).officerAttachments) &&
-                (complaint as any).officerAttachments.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
-                      Officer Attachments (
-                      {(complaint as any).officerAttachments.length})
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {(complaint as any).officerAttachments.map(
-                        (attachmentUrl: string, index: number) => (
-                          <button
-                            key={index}
-                            type="button"
-                            onClick={() => handleViewDocument(attachmentUrl)}
-                            className="flex items-center gap-3 p-3 border border-[#011a60]/30 rounded-lg hover:border-[#011a60]/60 transition-all w-full text-left"
-                          >
-                            <FileText className="w-5 h-5 text-foreground" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">
-                                Attachment {index + 1}
-                              </p>
-                            </div>
-                            <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                          </button>
-                        )
                       )}
                     </div>
-                  </div>
-                )}
-            </CardContent>
+
+                    {/* User-submitted docs (images array: images + PDFs/documents) — shown via presigned URLs */}
+                    {(complaint as any).images &&
+                      Array.isArray((complaint as any).images) &&
+                      (complaint as any).images.length > 0 && (
+                        <div className="space-y-3">
+                          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
+                            User-submitted documents (
+                            {(complaint as any).images.length})
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {(complaint as any).images.map(
+                              (s3Url: string, index: number) => (
+                                <UserSubmittedDocCard
+                                  key={`${s3Url}-${index}`}
+                                  s3Url={s3Url}
+                                  index={index}
+                                  onViewDocument={handleViewDocument}
+                                />
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Documents (admin + officer from segregated state) */}
+                    {(adminDocuments.length > 0 ||
+                      officerDocuments.length > 0) && (
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
+                          Documents (
+                          {adminDocuments.length + officerDocuments.length})
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {adminDocuments.map((doc, index) => (
+                            <button
+                              key={`admin-${doc._id}`}
+                              type="button"
+                              onClick={() => handleViewDocument(doc.fileUrl)}
+                              className="flex items-center gap-3 p-3 border border-orange-200 rounded-lg hover:border-orange-400 transition-all w-full text-left bg-orange-50/30"
+                            >
+                              <FileText className="w-5 h-5 text-foreground" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  {doc.fileName || `Document ${index + 1}`}
+                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  {doc.fileType && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {doc.fileType}
+                                    </span>
+                                  )}
+                                  <Badge className="bg-orange-500 text-white text-[10px] px-1.5">
+                                    Admin
+                                  </Badge>
+                                </div>
+                              </div>
+                              <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                            </button>
+                          ))}
+                          {officerDocuments.map((doc, index) => (
+                            <button
+                              key={`officer-${doc._id}`}
+                              type="button"
+                              onClick={() => handleViewDocument(doc.fileUrl)}
+                              className="flex items-center gap-3 p-3 border border-[#011a60]/30 rounded-lg hover:border-[#011a60]/60 transition-all w-full text-left bg-[#011a60]/5"
+                            >
+                              <FileText className="w-5 h-5 text-foreground" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  {doc.fileName || `Document ${index + 1}`}
+                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  {doc.attachmentType && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {doc.attachmentType}
+                                    </span>
+                                  )}
+                                  <Badge className="bg-[#011a60] text-white text-[10px] px-1.5">
+                                    Officer
+                                  </Badge>
+                                </div>
+                              </div>
+                              <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Officer Attachments */}
+                    {(complaint as any).officerAttachments &&
+                      Array.isArray((complaint as any).officerAttachments) &&
+                      (complaint as any).officerAttachments.length > 0 && (
+                        <div className="space-y-3">
+                          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide border-b pb-2">
+                            Officer Attachments (
+                            {(complaint as any).officerAttachments.length})
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {(complaint as any).officerAttachments.map(
+                              (attachmentUrl: string, index: number) => (
+                                <button
+                                  key={index}
+                                  type="button"
+                                  onClick={() =>
+                                    handleViewDocument(attachmentUrl)
+                                  }
+                                  className="flex items-center gap-3 p-3 border border-[#011a60]/30 rounded-lg hover:border-[#011a60]/60 transition-all w-full text-left"
+                                >
+                                  <FileText className="w-5 h-5 text-foreground" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-foreground truncate">
+                                      Attachment {index + 1}
+                                    </p>
+                                  </div>
+                                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                                </button>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
+                  </CardContent>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </Card>
 
-          {/* Document summaries (AI) */}
-          {complaint?.id && <DocumentSummaryPanel complaintId={complaint.id} />}
+          {/* Document summaries (AI): only when complaint has attachments (images array not empty) */}
+          {complaint?.id &&
+            (complaint as any).images &&
+            Array.isArray((complaint as any).images) &&
+            (complaint as any).images.length > 0 && (
+              <DocumentSummaryPanel complaintId={complaint.id} />
+            )}
         </TabsContent>
 
         {/* Notes & Documents Tab */}
@@ -1844,7 +1965,9 @@ const ComplaintDetailPage: React.FC = () => {
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <MessageCircle className="w-5 h-5 text-primary" />
                 </div>
-                <CardTitle className="text-xl">Add New Note</CardTitle>
+                <CardTitle className="text-base font-semibold sm:text-lg md:text-xl">
+                  Add New Note
+                </CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
@@ -1903,7 +2026,9 @@ const ComplaintDetailPage: React.FC = () => {
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <FileText className="w-5 h-5 text-primary" />
                 </div>
-                <CardTitle className="text-xl">Notes History</CardTitle>
+                <CardTitle className="text-base font-semibold sm:text-lg md:text-xl">
+                  Notes History
+                </CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-8">
@@ -2040,7 +2165,7 @@ const ComplaintDetailPage: React.FC = () => {
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <FileUp className="w-5 h-5 text-primary" />
                 </div>
-                <CardTitle className="text-xl">
+                <CardTitle className="text-base font-semibold sm:text-lg md:text-xl">
                   Upload Document or Image
                 </CardTitle>
               </div>
@@ -2136,7 +2261,9 @@ const ComplaintDetailPage: React.FC = () => {
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <FileDown className="w-5 h-5 text-primary" />
                 </div>
-                <CardTitle className="text-xl">Documents History</CardTitle>
+                <CardTitle className="text-base font-semibold sm:text-lg md:text-xl">
+                  Documents History
+                </CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-8">
@@ -2158,7 +2285,7 @@ const ComplaintDetailPage: React.FC = () => {
                         doc.fileName?.toLowerCase().endsWith(".pdf") ||
                         doc.fileUrl?.toLowerCase().includes(".pdf");
                       const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(
-                        doc.fileName || ""
+                        doc.fileName || "",
                       );
                       return (
                         <div
@@ -2171,8 +2298,8 @@ const ComplaintDetailPage: React.FC = () => {
                                 isPdf
                                   ? "bg-red-100"
                                   : isImage
-                                  ? "bg-blue-100"
-                                  : "bg-gray-100"
+                                    ? "bg-blue-100"
+                                    : "bg-gray-100"
                               }`}
                             >
                               {isPdf ? (
@@ -2247,7 +2374,7 @@ const ComplaintDetailPage: React.FC = () => {
                         doc.fileName?.toLowerCase().endsWith(".pdf") ||
                         doc.fileUrl?.toLowerCase().includes(".pdf");
                       const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(
-                        doc.fileName || ""
+                        doc.fileName || "",
                       );
                       const direction =
                         doc.attachmentType === "inward" ? "inward" : "outward";
@@ -2262,8 +2389,8 @@ const ComplaintDetailPage: React.FC = () => {
                                 isPdf
                                   ? "bg-red-100"
                                   : isImage
-                                  ? "bg-blue-100"
-                                  : "bg-gray-100"
+                                    ? "bg-blue-100"
+                                    : "bg-gray-100"
                               }`}
                             >
                               {isPdf ? (
@@ -2325,26 +2452,26 @@ const ComplaintDetailPage: React.FC = () => {
 
         {/* Research Tab */}
         <TabsContent value="research" className="space-y-6">
-          <Card className="border-orange-200 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                    <Sparkles className="w-6 h-6 text-white" />
+          <Card className="border-orange-200 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm flex-shrink-0">
+                    <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <div>
-                    <CardTitle className="text-2xl text-white">
+                  <div className="min-w-0">
+                    <CardTitle className="text-base font-semibold sm:text-lg md:text-xl text-white leading-tight break-words">
                       AI Research & Analysis
                     </CardTitle>
-                    <p className="text-sm text-orange-100 mt-1">
+                    <p className="text-xs sm:text-sm text-orange-100 mt-1 break-words">
                       Comprehensive research on related issues and key facts
                     </p>
                   </div>
                 </div>
                 {researchData ? (
-                  <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
-                    <CheckCircle className="w-5 h-5 text-white" />
-                    <span className="text-sm font-medium text-white">
+                  <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm w-fit flex-shrink-0">
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    <span className="text-xs sm:text-sm font-medium text-white whitespace-nowrap">
                       Completed
                     </span>
                   </div>
@@ -2353,7 +2480,7 @@ const ComplaintDetailPage: React.FC = () => {
                     onClick={handleResearch}
                     disabled={researchLoading}
                     size="lg"
-                    className="bg-white text-primary hover:bg-orange-50 shadow-lg"
+                    className="w-full sm:w-auto h-11 sm:h-10 bg-white text-primary hover:bg-orange-50 shadow-lg flex-shrink-0"
                   >
                     {researchLoading ? (
                       <>
@@ -2370,7 +2497,7 @@ const ComplaintDetailPage: React.FC = () => {
                 )}
               </div>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               {researchLoading ? (
                 <div className="flex flex-col items-center justify-center gap-4 py-16">
                   <div className="relative">
@@ -2378,10 +2505,10 @@ const ComplaintDetailPage: React.FC = () => {
                     <Sparkles className="w-8 h-8 text-primary absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-semibold text-foreground">
+                    <p className="text-base font-semibold text-foreground sm:text-lg">
                       Researching related issues...
                     </p>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                       This may take a few moments
                     </p>
                   </div>
@@ -2447,7 +2574,7 @@ const ComplaintDetailPage: React.FC = () => {
                                       {item.summary}
                                     </p>
                                   </div>
-                                )
+                                ),
                               )}
                             </div>
                           </AccordionContent>
@@ -2570,7 +2697,7 @@ const ComplaintDetailPage: React.FC = () => {
                                       {item.summary}
                                     </p>
                                   </div>
-                                )
+                                ),
                               )}
                             </div>
                           </AccordionContent>
@@ -2616,7 +2743,7 @@ const ComplaintDetailPage: React.FC = () => {
                                         {fact}
                                       </p>
                                     </div>
-                                  )
+                                  ),
                                 )}
                               </div>
                             </div>
@@ -2653,10 +2780,10 @@ const ComplaintDetailPage: React.FC = () => {
                   <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
                     <Search className="w-10 h-10 text-orange-400" />
                   </div>
-                  <p className="text-lg font-semibold text-foreground mb-2">
+                  <p className="text-base font-semibold text-foreground mb-2 sm:text-lg">
                     Ready to Research
                   </p>
-                  <p className="text-sm text-muted-foreground mb-6">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-6">
                     Click "Start Research" to find related issues, news
                     articles, and key facts
                   </p>
@@ -2677,11 +2804,11 @@ const ComplaintDetailPage: React.FC = () => {
 
         {/* Draft Letter Tab */}
         <TabsContent value="draft" className="space-y-6">
-          {/* Progress Indicator */}
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="flex items-center gap-2">
+          {/* Progress Indicator — compact on mobile, full size on desktop */}
+          {/* <div className="flex items-center justify-center gap-1 sm:gap-4 mb-4 sm:mb-6 overflow-x-auto py-2 -mx-1">
+            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all ${
                   executives.length > 0 || (complaint as any)?.selected_officer
                     ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg"
                     : "bg-gray-200 text-gray-500"
@@ -2689,79 +2816,79 @@ const ComplaintDetailPage: React.FC = () => {
               >
                 {executives.length > 0 ||
                 (complaint as any)?.selected_officer ? (
-                  <CheckCircle className="w-5 h-5" />
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                 ) : (
                   "1"
                 )}
               </div>
               <div
-                className={`w-16 h-1 ${
+                className={`w-6 sm:w-16 h-0.5 sm:h-1 ${
                   executives.length > 0 || (complaint as any)?.selected_officer
                     ? "bg-gradient-to-r from-green-500 to-primary"
                     : "bg-gray-200"
                 }`}
-              ></div>
+              />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all ${
                   letter
                     ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg"
                     : executives.length > 0 ||
-                      (complaint as any)?.selected_officer
-                    ? "bg-primary text-white"
-                    : "bg-gray-200 text-gray-500"
+                        (complaint as any)?.selected_officer
+                      ? "bg-primary text-white"
+                      : "bg-gray-200 text-gray-500"
                 }`}
               >
-                {letter ? <CheckCircle className="w-5 h-5" /> : "2"}
+                {letter ? <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" /> : "2"}
               </div>
               <div
-                className={`w-16 h-1 ${
+                className={`w-6 sm:w-16 h-0.5 sm:h-1 ${
                   letter
                     ? "bg-gradient-to-r from-green-500 to-primary"
                     : executives.length > 0 ||
-                      (complaint as any)?.selected_officer
-                    ? "bg-primary"
-                    : "bg-gray-200"
+                        (complaint as any)?.selected_officer
+                      ? "bg-primary"
+                      : "bg-gray-200"
                 }`}
-              ></div>
+              />
             </div>
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all flex-shrink-0 ${
                 actions
                   ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg"
                   : letter
-                  ? "bg-primary text-white"
-                  : "bg-gray-200 text-gray-500"
+                    ? "bg-primary text-white"
+                    : "bg-gray-200 text-gray-500"
               }`}
             >
-              {actions ? <CheckCircle className="w-5 h-5" /> : "3"}
+              {actions ? <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" /> : "3"}
             </div>
-          </div>
+          </div> */}
 
-          {/* Stage 1: Find Officers */}
-          <Card className="border-orange-200 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white">
+          {/* Stage 1: Find Officers — stacks on mobile */}
+          <Card className="border-orange-200 shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                      <Users className="w-6 h-6 text-white" />
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm flex-shrink-0">
+                      <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div>
-                      <CardTitle className="text-2xl text-white">
+                    <div className="min-w-0">
+                      <CardTitle className="text-base font-semibold sm:text-lg md:text-xl text-white leading-tight break-words">
                         Stage 1: Find Officers
                       </CardTitle>
-                      <p className="text-sm text-orange-100 mt-1">
+                      <p className="text-xs sm:text-sm text-orange-100 mt-1 break-words">
                         Identify relevant officers to address the complaint
                       </p>
                     </div>
                   </div>
                   {(executives.length > 0 ||
                     (complaint as any)?.selected_officer) && (
-                    <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                      <span className="text-sm font-medium text-white">
+                    <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm w-fit flex-shrink-0">
+                      <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      <span className="text-xs sm:text-sm font-medium text-white whitespace-nowrap">
                         {(complaint as any)?.selected_officer
                           ? "Officer Selected"
                           : "Completed"}
@@ -2774,25 +2901,25 @@ const ComplaintDetailPage: React.FC = () => {
                 {(complaint as any)?.selected_officer && (
                   <div className="mt-4 pt-4 border-t border-white/20">
                     <div className="flex items-center gap-2 mb-3">
-                      <UserCheck className="w-4 h-4 text-white/90" />
-                      <span className="text-xs font-semibold text-white/90 uppercase tracking-wide">
+                      <UserCheck className="w-4 h-4 text-white/90 shrink-0" />
+                      <span className="text-xs font-semibold text-white/90 uppercase tracking-wide break-words">
                         Selected Officer Details:
                       </span>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-lg flex-shrink-0 border-2 border-white/30">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-white/20">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 border-2 border-white/30">
                           {(complaint as any).selected_officer.name
                             ?.charAt(0)
                             .toUpperCase() || "O"}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="mb-3">
-                            <h3 className="text-lg font-bold text-white mb-1">
+                            <h3 className="text-base font-bold text-white mb-1 sm:text-lg">
                               {(complaint as any).selected_officer.name ||
                                 "Unknown"}
                             </h3>
-                            <p className="text-sm font-medium text-white/90">
+                            <p className="text-xs sm:text-sm font-medium text-white/90">
                               {(complaint as any).selected_officer.designation}
                             </p>
                           </div>
@@ -2851,10 +2978,10 @@ const ComplaintDetailPage: React.FC = () => {
                     <Users className="w-8 h-8 text-primary absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-semibold text-foreground">
+                    <p className="text-base font-semibold text-foreground sm:text-lg">
                       Searching for officers...
                     </p>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                       Finding the most relevant officials
                     </p>
                   </div>
@@ -2868,24 +2995,12 @@ const ComplaintDetailPage: React.FC = () => {
                     complaint, use the same officer on the Actions tab or change
                     the recipient below.
                   </p>
-                  <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border">
-                    <UserCheck className="w-5 h-5 text-primary flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-foreground">
-                        {(complaint as any).selected_officer.name || "Unknown"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {(complaint as any).selected_officer.designation}
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowChangeOfficerUI(true)}
-                      className="ml-auto"
-                    >
-                      Change officer
-                    </Button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowChangeOfficerUI(true)}
+                  >
+                    Change officer
+                  </Button>
                 </div>
               ) : letter &&
                 (complaint as any)?.selected_officer &&
@@ -2993,12 +3108,12 @@ const ComplaintDetailPage: React.FC = () => {
                   <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
                     <Users className="w-10 h-10 text-blue-400" />
                   </div>
-                  <p className="text-lg font-semibold text-foreground mb-2">
+                  <p className="text-base font-semibold text-foreground mb-2 sm:text-lg">
                     {flattenedExecutives.length === 0
                       ? "Ready to Find Officers"
                       : "No Executives Available"}
                   </p>
-                  <p className="text-sm text-muted-foreground mb-6">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-6">
                     {flattenedExecutives.length === 0
                       ? "Click the button below to fetch officers from the API and store them in context"
                       : "Executives have been loaded but none are available for this complaint"}
@@ -3028,35 +3143,35 @@ const ComplaintDetailPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Stage 2: Draft Letter */}
+          {/* Stage 2: Draft Letter — stacks on mobile */}
           {letter && (
-            <Card className="border-orange-200 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                      <FileText className="w-6 h-6 text-white" />
+            <Card className="border-orange-200 shadow-lg overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm flex-shrink-0">
+                      <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div>
-                      <CardTitle className="text-2xl text-white">
+                    <div className="min-w-0">
+                      <CardTitle className="text-base font-semibold sm:text-lg md:text-xl text-white leading-tight break-words">
                         Stage 2: Draft Letter
                       </CardTitle>
-                      <p className="text-sm text-orange-100 mt-1">
+                      <p className="text-xs sm:text-sm text-orange-100 mt-1 break-words">
                         {executives.length > 0
                           ? "AI-generated complaint letter for selected executive"
                           : "Saved complaint letter"}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
-                    <CheckCircle className="w-5 h-5 text-white" />
-                    <span className="text-sm font-medium text-white">
+                  <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm w-fit flex-shrink-0">
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    <span className="text-xs sm:text-sm font-medium text-white whitespace-nowrap">
                       Drafted
                     </span>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 {stage2Loading ? (
                   <div className="flex flex-col items-center justify-center gap-4 py-16">
                     <div className="relative">
@@ -3064,10 +3179,10 @@ const ComplaintDetailPage: React.FC = () => {
                       <FileText className="w-8 h-8 text-primary absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
                     </div>
                     <div className="text-center">
-                      <p className="text-lg font-semibold text-foreground">
+                      <p className="text-base font-semibold text-foreground sm:text-lg">
                         Drafting letter...
                       </p>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                         AI is generating the complaint letter
                       </p>
                     </div>
@@ -3189,7 +3304,7 @@ const ComplaintDetailPage: React.FC = () => {
                                   Attachment {idx + 1}
                                   <ExternalLink className="w-3 h-3" />
                                 </a>
-                              )
+                              ),
                             )}
                           </div>
                         </div>
@@ -3200,26 +3315,28 @@ const ComplaintDetailPage: React.FC = () => {
             </Card>
           )}
 
-          {/* Stage 3: Proceed to Actions Panel */}
+          {/* Stage 3: Proceed to Actions Panel — responsive */}
           {letter && (
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-primary text-white">
+            <Card className="overflow-hidden">
+              <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-4 sm:p-6">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs font-bold bg-primary text-white flex-shrink-0">
                     3
                   </div>
-                  <CardTitle>Stage 3: Proceed to Actions Panel</CardTitle>
+                  <CardTitle className="text-base font-semibold sm:text-lg md:text-xl leading-tight break-words">
+                    Stage 3: Proceed to Actions Panel
+                  </CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="border-t">
+              <CardContent className="border-t p-4 sm:p-6">
                 <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     Continue to the Actions tab to assign officers and manage
                     complaint resolution.
                   </p>
                   <Button
                     onClick={handleProceedToActions}
-                    className="w-full bg-primary hover:bg-primary/90"
+                    className="w-full h-11 sm:h-10 bg-primary hover:bg-primary/90"
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Proceed to Actions Panel
@@ -3234,31 +3351,31 @@ const ComplaintDetailPage: React.FC = () => {
         <TabsContent value="actions" className="space-y-4">
           {/* Check if drafted_letter exists */}
           {!(complaint as any)?.drafted_letter && !letter ? (
-            <Card className="border-orange-200 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                    <FileText className="w-6 h-6 text-white" />
+            <Card className="border-orange-200 shadow-lg overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm flex-shrink-0">
+                    <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <div>
-                    <CardTitle className="text-2xl text-white">
+                  <div className="min-w-0">
+                    <CardTitle className="text-base font-semibold sm:text-lg md:text-xl text-white leading-tight break-words">
                       Draft Letter Required
                     </CardTitle>
-                    <p className="text-sm text-orange-100 mt-1">
+                    <p className="text-xs sm:text-sm text-orange-100 mt-1">
                       Please draft a letter first to proceed with actions
                     </p>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
-                    <FileText className="w-10 h-10 text-orange-400" />
+              <CardContent className="p-4 sm:p-6">
+                <div className="text-center py-8 sm:py-12">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
+                    <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-orange-400" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">
+                  <h3 className="text-base font-bold text-foreground mb-2 break-words sm:text-lg md:text-xl">
                     Draft Letter Required
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6 max-w-md mx-auto px-1 break-words">
                     You need to draft a letter for this complaint before you can
                     proceed with actions. Please go to the Draft Letter tab to
                     create the letter first.
@@ -3266,7 +3383,7 @@ const ComplaintDetailPage: React.FC = () => {
                   <Button
                     onClick={() => setActiveTab("draft")}
                     size="lg"
-                    className="bg-orange-500 hover:bg-orange-600 text-white shadow-lg"
+                    className="w-full sm:w-auto h-11 bg-orange-500 hover:bg-orange-600 text-white shadow-lg"
                   >
                     <FileText className="w-4 h-4 mr-2" />
                     Go to Draft Letter Tab
@@ -3276,28 +3393,28 @@ const ComplaintDetailPage: React.FC = () => {
             </Card>
           ) : (
             <>
-              {/* Officer Assignment Section */}
-              <Card className="border-orange-200 shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white">
+              {/* Officer Assignment Section — stacks on mobile */}
+              <Card className="border-orange-200 shadow-lg overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                          <UserCheck className="w-6 h-6 text-white" />
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm flex-shrink-0">
+                          <UserCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                         </div>
-                        <div>
-                          <CardTitle className="text-2xl text-white">
+                        <div className="min-w-0">
+                          <CardTitle className="text-base font-semibold sm:text-lg md:text-xl text-white leading-tight break-words">
                             Assign to Officer
                           </CardTitle>
-                          <p className="text-sm text-orange-100 mt-1">
+                          <p className="text-xs sm:text-sm text-orange-100 mt-1 break-words">
                             Assign this complaint to an officer for resolution
                           </p>
                         </div>
                       </div>
                       {complaint?.isOfficerAssigned && (
-                        <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
-                          <CheckCircle className="w-5 h-5 text-white" />
-                          <span className="text-sm font-medium text-white">
+                        <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm w-fit flex-shrink-0">
+                          <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                          <span className="text-xs sm:text-sm font-medium text-white whitespace-nowrap">
                             Assigned
                           </span>
                         </div>
@@ -3326,7 +3443,7 @@ const ComplaintDetailPage: React.FC = () => {
                                   {(complaint as any).selected_officer.name ||
                                     "Unknown"}
                                 </h3>
-                                <p className="text-sm font-medium text-white/90">
+                                <p className="text-xs sm:text-sm font-medium text-white/90">
                                   {
                                     (complaint as any).selected_officer
                                       .designation
@@ -3613,10 +3730,10 @@ const ComplaintDetailPage: React.FC = () => {
                       <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
                         <UserCheck className="w-10 h-10 text-orange-400" />
                       </div>
-                      <p className="text-lg font-semibold text-foreground mb-2">
+                      <p className="text-base font-semibold text-foreground mb-2 sm:text-lg">
                         No Selected Officer
                       </p>
-                      <p className="text-sm text-muted-foreground mb-6">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-6">
                         Please draft a letter first to select an officer for
                         assignment.
                       </p>
@@ -3640,10 +3757,10 @@ const ComplaintDetailPage: React.FC = () => {
                               <CheckCircle className="w-6 h-6 text-white" />
                             </div>
                             <div className="flex-1">
-                              <h3 className="text-xl font-bold text-green-900 mb-2">
+                              <h3 className="text-base font-bold text-green-900 mb-2 sm:text-lg md:text-xl">
                                 Officer Assigned Successfully!
                               </h3>
-                              <p className="text-sm text-green-700 mb-4">
+                              <p className="text-xs sm:text-sm text-green-700 mb-4">
                                 A new user account has been created for the
                                 officer. Please save the credentials below.
                               </p>
@@ -3663,7 +3780,7 @@ const ComplaintDetailPage: React.FC = () => {
                                         size="sm"
                                         onClick={() =>
                                           handleCopyEmail(
-                                            assignmentResult.user!.email
+                                            assignmentResult.user!.email,
                                           )
                                         }
                                         className="ml-auto h-7 px-2"
@@ -3691,7 +3808,7 @@ const ComplaintDetailPage: React.FC = () => {
                                         size="sm"
                                         onClick={() =>
                                           handleCopyPassword(
-                                            assignmentResult.user!.password!
+                                            assignmentResult.user!.password!,
                                           )
                                         }
                                         className="h-9 px-3 border-green-300 hover:bg-green-50"
@@ -3722,10 +3839,10 @@ const ComplaintDetailPage: React.FC = () => {
                               <CheckCircle className="w-6 h-6 text-white" />
                             </div>
                             <div className="flex-1">
-                              <h3 className="text-xl font-bold text-blue-900 mb-2">
+                              <h3 className="text-base font-bold text-blue-900 mb-2 sm:text-lg md:text-xl">
                                 Complaint Assigned Successfully!
                               </h3>
-                              <p className="text-sm text-blue-700">
+                              <p className="text-xs sm:text-sm text-blue-700">
                                 The complaint has been assigned to an existing
                                 officer. They can now access it from their
                                 dashboard.
@@ -3752,7 +3869,7 @@ const ComplaintDetailPage: React.FC = () => {
                         variant="outline"
                         className="w-full"
                       >
-                        Assign to Another Officer
+                        Change Officer
                       </Button>
                     </div>
                   ) : (
@@ -3790,7 +3907,7 @@ const ComplaintDetailPage: React.FC = () => {
                                   variant="outline"
                                   onClick={() =>
                                     setShowChangeSelectedOfficerBeforeAssign(
-                                      false
+                                      false,
                                     )
                                   }
                                 >
@@ -3823,23 +3940,23 @@ const ComplaintDetailPage: React.FC = () => {
                           {(complaint as any)?.selected_officer && (
                             <div className="bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 border-2 border-orange-300 rounded-xl p-6 shadow-lg">
                               <div className="flex items-start gap-4">
-                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 shadow-lg border-4 border-white">
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-lg sm:text-2xl flex-shrink-0 shadow-lg border-4 border-white">
                                   {(complaint as any).selected_officer.name
                                     ?.charAt(0)
                                     .toUpperCase() || "O"}
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 min-w-0">
                                   <div className="mb-4">
                                     <div className="flex items-center gap-2 mb-2">
-                                      <Badge className="bg-orange-500 text-white border-0">
+                                      <Badge className="bg-orange-500 text-white border-0 text-xs">
                                         Selected Officer
                                       </Badge>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-foreground mb-1">
+                                    <h3 className="text-base font-bold text-foreground mb-1 sm:text-xl md:text-2xl">
                                       {(complaint as any).selected_officer
                                         .name || "Unknown"}
                                     </h3>
-                                    <p className="text-lg font-semibold text-primary">
+                                    <p className="text-sm font-semibold text-primary sm:text-base md:text-lg">
                                       {
                                         (complaint as any).selected_officer
                                           .designation
@@ -3976,7 +4093,7 @@ const ComplaintDetailPage: React.FC = () => {
                     >
                       3
                     </div>
-                    <CardTitle>Stage 3: Action Plan</CardTitle>
+                    <CardTitle className="text-base font-semibold sm:text-lg md:text-xl">Stage 3: Action Plan</CardTitle>
                   </div>
                   {actions && (
                     <CheckCircle className="w-5 h-5 text-green-500" />
@@ -4063,7 +4180,9 @@ const ComplaintDetailPage: React.FC = () => {
                     <div className="mt-8 pt-6 border-t">
                       <div className="flex items-center gap-2 mb-4">
                         <Mail className="w-5 h-5 text-primary" />
-                        <CardTitle className="text-lg">Email History</CardTitle>
+                        <CardTitle className="text-base font-semibold sm:text-lg md:text-xl">
+                          Email History
+                        </CardTitle>
                         {!loadingEmailHistory && (
                           <Badge variant="outline" className="ml-auto">
                             {emailHistory.length}{" "}
@@ -4183,7 +4302,7 @@ const ComplaintDetailPage: React.FC = () => {
                       <div className="mt-8 pt-6 border-t">
                         <div className="flex items-center gap-2 mb-4">
                           <Clock className="w-5 h-5 text-primary" />
-                          <CardTitle className="text-lg">
+                          <CardTitle className="text-base font-semibold sm:text-lg md:text-xl">
                             Extension Requests
                           </CardTitle>
                           <Badge variant="outline" className="ml-auto">
@@ -4211,8 +4330,8 @@ const ComplaintDetailPage: React.FC = () => {
                                     isApproved
                                       ? "border-l-green-500"
                                       : isRejected
-                                      ? "border-l-red-500"
-                                      : "border-l-yellow-500"
+                                        ? "border-l-red-500"
+                                        : "border-l-yellow-500"
                                   }`}
                                 >
                                   <CardContent className="p-4">
@@ -4230,22 +4349,22 @@ const ComplaintDetailPage: React.FC = () => {
                                             isApproved
                                               ? "default"
                                               : isRejected
-                                              ? "destructive"
-                                              : "outline"
+                                                ? "destructive"
+                                                : "outline"
                                           }
                                           className="text-xs"
                                         >
                                           {isPending
                                             ? "Pending"
                                             : isApproved
-                                            ? "Approved"
-                                            : "Rejected"}
+                                              ? "Approved"
+                                              : "Rejected"}
                                         </Badge>
                                       </div>
                                       <p className="text-xs text-muted-foreground">
                                         {new Date(
                                           request.created_at ||
-                                            request.createdAt
+                                            request.createdAt,
                                         ).toLocaleString()}
                                       </p>
                                     </div>
@@ -4286,7 +4405,7 @@ const ComplaintDetailPage: React.FC = () => {
                                           </Label>
                                           <p className="text-sm text-foreground">
                                             {new Date(
-                                              request.decided_at
+                                              request.decided_at,
                                             ).toLocaleString()}
                                           </p>
                                         </div>
@@ -4329,7 +4448,7 @@ const ComplaintDetailPage: React.FC = () => {
                                   </CardContent>
                                 </Card>
                               );
-                            }
+                            },
                           )}
                         </div>
                       </div>

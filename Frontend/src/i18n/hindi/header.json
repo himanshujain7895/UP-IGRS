@@ -4,13 +4,12 @@
   },
   "navigation": {
     "home": "होम",
-    "governmentOrders": "शासनादेश",
-    "download": "डाउनलोड",
-    "antiLandMafia": "एंटी भू-माफिया पोर्टल",
-    "antiCorruption": "एंटी करप्शन पोर्टल",
-    "cmMonitoring": "मुख्यमंत्री अनुश्रवण प्रणाली",
-    "sandesApp": "संदेस एप",
-    "new": "NEW!"
+    "about": "हमारे बारे में",
+    "contact": "संपर्क करें",
+    "feedback": "प्रतिक्रिया",
+    "privacyPolicy": "गोपनीयता नीति",
+    "termsAndConditions": "नियम और शर्तें",
+    "userRights": "उपयोगकर्ता अधिकार"
   },
   "login": {
     "officerLogin": "अधिकारी लॉगिन",

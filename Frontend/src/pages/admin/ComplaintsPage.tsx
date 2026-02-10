@@ -3,8 +3,8 @@
  * Main complaints listing page
  */
 
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation, useParams, useSearchParams } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -38,24 +38,48 @@ import {
   FileText,
   UserCheck,
   MessageSquare,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
+import { Pagination } from "@/components/ui/pagination";
 
 const ComplaintsPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams<{ category?: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, isOfficer } = useAuth();
-  const { complaints, fetchComplaints, loading } = useComplaints();
+  const { complaints, fetchComplaints, loading, pagination } = useComplaints();
+
+  const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
+  const initialPage =
+    isNaN(pageFromUrl) || pageFromUrl < 1 ? 1 : pageFromUrl;
+
   const [myComplaints, setMyComplaints] = React.useState<any[]>([]);
   const [loadingMyComplaints, setLoadingMyComplaints] = React.useState(false);
+  const [currentPage, setCurrentPage] = React.useState(initialPage);
+  const [myComplaintsPage, setMyComplaintsPage] = React.useState(initialPage);
+  const [myComplaintsMeta, setMyComplaintsMeta] = React.useState<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  } | null>(null);
 
   const isMyComplaintsPage = location.pathname.includes("/my-complaints");
+  const prevFiltersRef = useRef<{
+    status: string;
+    category: string;
+    priority: string;
+    search: string;
+  } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [districtFilter, setDistrictFilter] = useState("all");
   const [subDistrictFilter, setSubDistrictFilter] = useState("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // District to Sub-district mapping
   const districtSubDistrictMap: Record<string, string[]> = {
@@ -107,13 +131,43 @@ const ComplaintsPage: React.FC = () => {
     }
   }, [districtFilter]);
 
+  // Reset to page 1 only when a filter value actually changed (not when path-init effect just synced same values)
+  useEffect(() => {
+    const current = {
+      status: statusFilter,
+      category: categoryFilter,
+      priority: priorityFilter,
+      search: searchTerm,
+    };
+    if (prevFiltersRef.current === null) {
+      prevFiltersRef.current = current;
+      return;
+    }
+    const prev = prevFiltersRef.current;
+    const changed =
+      prev.status !== current.status ||
+      prev.category !== current.category ||
+      prev.priority !== current.priority ||
+      prev.search !== current.search;
+    prevFiltersRef.current = current;
+    if (!changed) return;
+    setCurrentPage(1);
+    setMyComplaintsPage(1);
+    setSearchParams((prevParams) => {
+      const next = new URLSearchParams(prevParams);
+      next.set("page", "1");
+      return next;
+    });
+  }, [statusFilter, categoryFilter, priorityFilter, searchTerm]);
+
   useEffect(() => {
     if (isMyComplaintsPage && isOfficer) {
-      // Fetch officer's assigned complaints
       const loadMyComplaints = async () => {
         try {
           setLoadingMyComplaints(true);
           const response = await complaintsService.getMyComplaints({
+            page: myComplaintsPage,
+            limit: 20,
             status: statusFilter !== "all" ? (statusFilter as any) : undefined,
             category:
               categoryFilter !== "all" ? (categoryFilter as any) : undefined,
@@ -122,16 +176,31 @@ const ComplaintsPage: React.FC = () => {
             search: searchTerm || undefined,
           });
           setMyComplaints(response.data || []);
+          if (response.meta) {
+            setMyComplaintsMeta(response.meta);
+          } else {
+            setMyComplaintsMeta(null);
+          }
         } catch (error: any) {
           console.error("Error loading my complaints:", error);
           setMyComplaints([]);
+          setMyComplaintsMeta(null);
         } finally {
           setLoadingMyComplaints(false);
         }
       };
       loadMyComplaints();
     } else {
-      fetchComplaints({});
+      fetchComplaints({
+        page: currentPage,
+        limit: 20,
+        status: statusFilter !== "all" ? (statusFilter as any) : undefined,
+        category:
+          categoryFilter !== "all" ? (categoryFilter as any) : undefined,
+        priority:
+          priorityFilter !== "all" ? (priorityFilter as any) : undefined,
+        search: searchTerm || undefined,
+      });
     }
   }, [
     isMyComplaintsPage,
@@ -140,6 +209,8 @@ const ComplaintsPage: React.FC = () => {
     categoryFilter,
     priorityFilter,
     searchTerm,
+    currentPage,
+    myComplaintsPage,
   ]);
 
   const getStatusBadge = (status: string) => {
@@ -344,35 +415,49 @@ const ComplaintsPage: React.FC = () => {
   }, [categoryFilter, complaints, filteredComplaints]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
+    <div className="space-y-6 min-w-0 w-full">
+      {/* Header: title can shrink so button is never cut off */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">
             {isMyComplaintsPage && isOfficer
               ? "My Complaints"
               : "Complaints Management"}
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             {isMyComplaintsPage && isOfficer
               ? "View complaints assigned to you"
               : "View and manage all complaints"}
           </p>
         </div>
-        <Button onClick={() => navigate("/admin/complaints/new")}>
+        <Button
+          onClick={() => navigate("/admin/complaints/new")}
+          className="flex-shrink-0"
+        >
           <Plus className="w-4 h-4 mr-2" />
           New Complaint
         </Button>
       </div>
 
-      {/* Filters */}
-      <Card className="">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <Filter className="w-5 h-5 text-primary" />
-            Filters
+      {/* Filters: collapsible, closed by default */}
+      <Card className="overflow-hidden">
+        <CardHeader
+          className="cursor-pointer select-none hover:bg-muted/50 transition-colors py-4"
+          onClick={() => setFiltersOpen((prev) => !prev)}
+        >
+          <CardTitle className="flex items-center justify-between gap-2 text-foreground">
+            <span className="flex items-center gap-2">
+              <Filter className="w-5 h-5 text-primary" />
+              Filters
+            </span>
+            {filtersOpen ? (
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            )}
           </CardTitle>
         </CardHeader>
+        {filtersOpen && (
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="relative">
@@ -498,6 +583,7 @@ const ComplaintsPage: React.FC = () => {
             </Select>
           </div>
         </CardContent>
+        )}
       </Card>
 
       {/* Complaints List */}
@@ -664,6 +750,28 @@ const ComplaintsPage: React.FC = () => {
           })
         )}
       </div>
+
+      {/* Pagination */}
+      {!isLoading && filteredComplaints.length > 0 && (
+        <Pagination
+          meta={
+            isMyComplaintsPage && isOfficer ? myComplaintsMeta : pagination
+          }
+          page={
+            isMyComplaintsPage && isOfficer ? myComplaintsPage : currentPage
+          }
+          onPageChange={(p) => {
+            if (isMyComplaintsPage && isOfficer) setMyComplaintsPage(p);
+            else setCurrentPage(p);
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set("page", String(p));
+              return next;
+            });
+          }}
+          itemLabel="complaints"
+        />
+      )}
     </div>
   );
 };

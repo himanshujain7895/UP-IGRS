@@ -28,9 +28,9 @@
       "title": "Track Grievance",
       "subtitle": "Know the details of the action taken via mobile/email"
     },
-    "sendReminder": {
-      "title": "Send Reminder",
-      "subtitle": "Send a reminder if action is not taken within the stipulated time"
+    "requestMeeting": {
+      "title": "Request Meeting",
+      "subtitle": "Request a meeting with the MLC"
     },
     "giveFeedback": {
       "title": "Give Feedback",
@@ -43,6 +43,8 @@
     "fileComplaint": "• How to file a complaint?",
     "trackComplaint": "• How to track my complaint?",
     "requestMeeting": "• Request a meeting"
+  },
+  "quickLinks": {
+    "title": "Quick Links"
   }
 }
-

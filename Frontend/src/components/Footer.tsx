@@ -16,75 +16,75 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-[#1e3a5f] text-white">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        {/* Footer Links */}
-        <div className="flex flex-wrap items-center justify-center gap-6 mb-6">
+    <footer className="bg-[#1e3a5f] text-white w-full">
+      <div className="container mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Footer Links - responsive wrap and gap */}
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
           <Link
             to="/about"
-            className="text-sm hover:text-[#ff791a] transition-colors"
+            className="text-xs sm:text-sm hover:text-[#ff791a] transition-colors py-1"
           >
             {t("footer.links.aboutUs")}
           </Link>
           <Link
             to="/contact"
-            className="text-sm hover:text-[#ff791a] transition-colors"
+            className="text-xs sm:text-sm hover:text-[#ff791a] transition-colors py-1"
           >
             {t("footer.links.contactUs")}
           </Link>
           <Link
             to="/privacy-policy"
-            className="text-sm hover:text-[#ff791a] transition-colors"
+            className="text-xs sm:text-sm hover:text-[#ff791a] transition-colors py-1"
           >
             {t("footer.links.websitePolicies")}
           </Link>
           <Link
             to="/terms-and-conditions"
-            className="text-sm hover:text-[#ff791a] transition-colors"
+            className="text-xs sm:text-sm hover:text-[#ff791a] transition-colors py-1"
           >
             Terms & Conditions
           </Link>
           <Link
             to="/user-rights"
-            className="text-sm hover:text-[#ff791a] transition-colors"
+            className="text-xs sm:text-sm hover:text-[#ff791a] transition-colors py-1"
           >
             User Rights
           </Link>
-          <a
-            href="#"
-            className="text-sm hover:text-[#ff791a] transition-colors"
+          <Link
+            to="/feedback"
+            className="text-xs sm:text-sm hover:text-[#ff791a] transition-colors py-1"
           >
             {t("footer.links.faq")}
-          </a>
+          </Link>
         </div>
 
         {/* Social Media Icons */}
-        <div className="flex items-center justify-center gap-4 mb-6">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <a
             href="#"
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#ff791a] flex items-center justify-center transition-colors"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 hover:bg-[#ff791a] flex items-center justify-center transition-colors flex-shrink-0"
             aria-label={t("footer.social.facebook")}
           >
-            <Facebook className="w-5 h-5" />
+            <Facebook className="w-4 h-4 sm:w-5 sm:h-5" />
           </a>
           <a
             href="#"
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#ff791a] flex items-center justify-center transition-colors"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 hover:bg-[#ff791a] flex items-center justify-center transition-colors flex-shrink-0"
             aria-label={t("footer.social.twitter")}
           >
-            <Twitter className="w-5 h-5" />
+            <Twitter className="w-4 h-4 sm:w-5 sm:h-5" />
           </a>
           <a
             href="#"
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-[#ff791a] flex items-center justify-center transition-colors"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 hover:bg-[#ff791a] flex items-center justify-center transition-colors flex-shrink-0"
             aria-label={t("footer.social.youtube")}
           >
-            <Youtube className="w-5 h-5" />
+            <Youtube className="w-4 h-4 sm:w-5 sm:h-5" />
           </a>
         </div>
 
         {/* Contact Information */}
-        <div className="text-center text-sm text-white/80 mb-4">
+        <div className="text-center text-xs sm:text-sm text-white/80 mb-3 sm:mb-4 px-1">
           <p className="mb-2">{t("footer.contact.queryText")}</p>
           <p className="mb-2">{t("footer.contact.contactPerson")}</p>
           <p className="mb-2">
@@ -99,7 +99,7 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Copyright and Last Updated */}
-        <div className="text-center text-xs text-white/60 border-t border-white/20 pt-4">
+        <div className="text-center text-[10px] sm:text-xs text-white/60 border-t border-white/20 pt-3 sm:pt-4">
           <p className="mb-1">
             {t("footer.copyright.lastUpdated")}{" "}
             {new Date().toLocaleDateString()}
@@ -109,13 +109,13 @@ const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll to Top Button */}
+      {/* Scroll to Top Button - position above chatbot on mobile to avoid overlap */}
       <button
         onClick={scrollToTop}
-        className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-[#ff791a] hover:bg-[#e66a15] rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110"
+        className="fixed bottom-20 sm:bottom-6 right-3 sm:right-6 z-40 w-11 h-11 sm:w-12 sm:h-12 bg-[#ff791a] hover:bg-[#e66a15] rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
         aria-label="Scroll to top"
       >
-        <ArrowUp className="w-6 h-6 text-white" />
+        <ArrowUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
       </button>
     </footer>
   );

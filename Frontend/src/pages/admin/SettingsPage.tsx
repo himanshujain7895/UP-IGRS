@@ -1,6 +1,6 @@
 /**
  * Settings Page
- * Includes Notification Control Panel (admin): which events trigger notifications.
+ * Includes Profile update, Password change, and Notification Control Panel (admin).
  */
 
 import React, { useState, useEffect } from "react";
@@ -15,7 +15,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { Settings, User, Bell, Shield, Loader2 } from "lucide-react";
+import { Settings, User, Bell, Shield, Loader2, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { authService } from "@/services/auth.service";
 import {
   notificationsService,
   type NotificationSettingsItem,
@@ -36,13 +38,36 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   officer_document_added: "Officer document added",
 };
 
+const PASSWORD_MIN_LENGTH = 6;
+
 const SettingsPage: React.FC = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, getMe } = useAuth();
   const [notificationSettings, setNotificationSettings] = useState<
     NotificationSettingsItem[]
   >([]);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+
+  // Profile form
+  const [name, setName] = useState(user?.name ?? "");
+  const [profileSaving, setProfileSaving] = useState(false);
+
+  // Password form
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [currentPasswordError, setCurrentPasswordError] = useState<string | null>(null);
+
+  const passwordConfirmMismatch =
+    confirmPassword.length > 0 && newPassword !== confirmPassword;
+
+  useEffect(() => {
+    setName(user?.name ?? "");
+  }, [user?.name]);
 
   useEffect(() => {
     if (!isAdmin) {
@@ -84,20 +109,52 @@ const SettingsPage: React.FC = () => {
             <CardDescription>Update your personal information</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue={user?.name || ""} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                defaultValue={user?.email || ""}
-                disabled
-              />
-            </div>
-            <Button>Save Changes</Button>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setProfileSaving(true);
+                try {
+                  await authService.updateProfile(name);
+                  await getMe();
+                  toast.success("Profile updated successfully.");
+                } catch (err: any) {
+                  toast.error(err?.message ?? "Failed to update profile.");
+                } finally {
+                  setProfileSaving(false);
+                }
+              }}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  maxLength={100}
+                  disabled={profileSaving}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={user?.email ?? ""}
+                  disabled
+                />
+              </div>
+              <Button type="submit" disabled={profileSaving}>
+                {profileSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </form>
           </CardContent>
         </Card>
 
@@ -113,19 +170,166 @@ const SettingsPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="current-password">Current Password</Label>
-              <Input id="current-password" type="password" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input id="new-password" type="password" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input id="confirm-password" type="password" />
-            </div>
-            <Button>Update Password</Button>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (newPassword.length < PASSWORD_MIN_LENGTH) {
+                  toast.error(`New password must be at least ${PASSWORD_MIN_LENGTH} characters.`);
+                  return;
+                }
+                if (newPassword !== confirmPassword) {
+                  toast.error("New password and confirm password do not match.");
+                  return;
+                }
+                setCurrentPasswordError(null);
+                setPasswordSaving(true);
+                try {
+                  await authService.changePassword(currentPassword, newPassword);
+                  toast.success("Password updated successfully.");
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                } catch (err: any) {
+                  const backendMessage = err?.response?.data?.error?.message;
+                  const isWrongCurrentPassword =
+                    err?.response?.status === 401 &&
+                    (backendMessage?.toLowerCase().includes("current password") ?? false);
+                  const message =
+                    backendMessage ??
+                    err?.message ??
+                    "Failed to update password.";
+                  toast.error(
+                    isWrongCurrentPassword
+                      ? "Your current password is incorrect. Please try again."
+                      : message
+                  );
+                  if (isWrongCurrentPassword) {
+                    setCurrentPasswordError("Your current password is incorrect. Please try again.");
+                  }
+                } finally {
+                  setPasswordSaving(false);
+                }
+              }}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="current-password">Current Password</Label>
+                <div className="relative">
+                  <Input
+                    id="current-password"
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => {
+                      setCurrentPassword(e.target.value);
+                      if (currentPasswordError) setCurrentPasswordError(null);
+                    }}
+                    placeholder="Enter current password"
+                    required
+                    disabled={passwordSaving}
+                    autoComplete="current-password"
+                    className={`pr-10 ${currentPasswordError ? "border-destructive" : ""}`}
+                  />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowCurrentPassword((p) => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus:text-foreground disabled:opacity-50"
+                    aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                    disabled={passwordSaving}
+                  >
+                    {showCurrentPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                {currentPasswordError && (
+                  <p className="text-sm text-destructive font-medium">
+                    {currentPasswordError}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <div className="relative">
+                  <Input
+                    id="new-password"
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
+                    required
+                    minLength={PASSWORD_MIN_LENGTH}
+                    disabled={passwordSaving}
+                    autoComplete="new-password"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowNewPassword((p) => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus:text-foreground disabled:opacity-50"
+                    aria-label={showNewPassword ? "Hide password" : "Show password"}
+                    disabled={passwordSaving}
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    required
+                    disabled={passwordSaving}
+                    autoComplete="new-password"
+                    className={`pr-10 ${passwordConfirmMismatch ? "border-destructive" : ""}`}
+                  />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowConfirmPassword((p) => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus:text-foreground disabled:opacity-50"
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    disabled={passwordSaving}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                {passwordConfirmMismatch && (
+                  <p className="text-sm text-destructive">
+                    New password and confirm password must be equal.
+                  </p>
+                )}
+              </div>
+              <Button
+                type="submit"
+                disabled={passwordSaving || passwordConfirmMismatch}
+              >
+                {passwordSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Password"
+                )}
+              </Button>
+            </form>
           </CardContent>
         </Card>
 

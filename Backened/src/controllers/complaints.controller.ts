@@ -559,7 +559,7 @@ export const assignComplaintToOfficer = async (
 
     complaint.assigned_to_user_id = assigned_to_user_id;
     complaint.status = "in_progress";
-    await complaint.save();
+    await complaint.save({ validateModifiedOnly: true });
 
     logger.info(`Complaint ${id} assigned to officer ${officerUser.email}`);
 
